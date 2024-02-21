@@ -4,18 +4,20 @@
 		
         <h1 class="wp-block-heading has-text-align-center"><strong>Finguer,<br>la forma más rápida y segura de aparcar<br>tu coche y llegar al aeropuerto de Barcelona</strong></h1>
 
-        <img src="/img/transparente-home.png" alt="Finguer, parking aeropuerto de Barcelona" class="wp-image-26" style="width:552px;height:auto" >
+        <div class="container text-center" style="max-width:600px">
+        <img src="/img/transparente-home.png" alt="Finguer, parking aeropuerto de Barcelona" width="100%"/>
+        </div>
 
         <p>Finguer, park your problems and fly away</p>
     </div>
 
 <div class="container" style="margin-top:25px">
     <div class="row">
-        <div class="col-12 col-md-6">
-        <img width="100%" src="/img/tarifas-esp.png" >
+        <div class="col-12 col-md-6 mb-4">
+        <img width="100%" src="/img/tarifas-esp.png" alt="Tarifas del parking" />
         </div>
     
-        <div class="col-12 col-md-6" style="border-style:solid;border-radius: 25px;border-color: #D5D5D5; padding:20px">
+        <div class="col-12 col-md-6 mb-4" style="border-style:solid;border-radius: 25px;border-color: #D5D5D5; padding:20px">
         <h1>Configura tu reserva:</h1>
 
         <!-- Selección del tipo de reserva -->
@@ -62,7 +64,7 @@
 
 <p >Pues ahora, esa sensación de que te ha tocado finguer, la puedes tener cuando piensas en qué hacer con tu coche cuando vas a viajar en avión. Porque cuando contratas Finguer, aparcas tus problemas y disfrutas más del viaje.</p>
 
-<img src="/img/finguer-park-1-1-1-1024x410.jpg" alt="finguer "/>
+<img src="/img/finguer-park-1-1-1-1024x410.jpg" width="100%" alt="finguer" />
 </div>
 
 <div class="container text-center" style="margin-top:50px">
@@ -70,9 +72,9 @@
     <h4><strong>En Finguer tenemos 3 modalidades de servicio:</strong></h4>
 
     <div class="row text-center justify-content-center" style="margin-top:20px">
-        <div class="col-12 col-md-3 mx-3 finguer1" style="background-color:red">
+        <div class="col-12 col-md-3 mx-3 finguer1 mb-4" style="background-color:red">
             <h3 class="wp-block-heading"><strong>Finguer Class</strong></h3>
-            <img src="/img/furgo.svg" alt="finguer"/>
+            <img src="/img/furgo.svg" alt="Finguer class" width="100%"/>
             <hr/>
             <p>Esta es la opción para los que quieren llegar en 3 minutos a su terminal. Llegas a Finguer, aparcas tu coche y en 3 minutos te llevamos en nuestro vehículo privado a tu terminal de salida.</p>
             <p>Y a la vuelta de tu viaje, igual de rápido.</p>
@@ -80,18 +82,18 @@
             <strong>Desde 15 €/día</strong></a>
         </div>
 
-        <div class="col-12 col-md-3 mx-3 finguer2" style="background-color:red">
+        <div class="col-12 col-md-3 mx-3 finguer2 mb-4" style="background-color:red">
             <h3><strong>Gold Finguer Class</strong></h3>
-            <img decoding="async" src="/img/keys.svg" alt="" class="wp-image-1168" style="width:69px;height:auto"/>
+            <img decoding="async" src="/img/keys.svg" alt="Gold finguer class" class="wp-image-1168" width="100%"/>
             <hr/>
             <p>Este servicio es el que escogería el mismísimo James Bond.</p>
             <p>Con la Gold Finguer Class solo tienes que llegar con tu coche a la terminal que te haya tocado (muy importante que nos avises 20 minutos antes de llegar), darnos las llaves del coche y disfrutar de tu viaje. Y a tu vuelta, pues lo mismo. Llegas, sales de la terminal y allí te estaremos esperando con tu coche.</p>
             <strong>Desde 25 €/día</strong>
         </div>
 
-        <div class="col-12 col-md-3 mx-3 finguer3" style="background-color:red">
+        <div class="col-12 col-md-3 mx-3 finguer3 mb-4" style="background-color:red">
             <h3><strong>Anual Finguer Class</strong></h3>
-            <img decoding="async" src="/img/icons-fingueranualclass-gris.svg" height="60" alt=""  /></figure>
+            <img decoding="async" src="/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class"  /></figure>
             <hr/>
             <p>Este es el servicio anual de Finguer.</p>
             <p>Con Annual Finguer Class podrás disfrutar de un servicio y una atención completamente personalizada. Aparca tu coche el tiempo y las veces que quieras.</p>
@@ -118,22 +120,22 @@
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img src="/img/icons-servicio-personalizado.svg" alt="Servicios" height="140px" />
+            <img src="/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140px" />
             <p><strong>Servicio</strong><br><strong>personalizado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img src="/img/icons-mascarilla.svg" alt="Servicios" height="140px"/>
+            <img src="/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140px"/>
             <p><strong>Máxima seguridad</strong><br><strong>e higiene</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img src="/img/icons-parking-lavado.png" alt="Servicios" height="140px" />
+            <img src="/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140px" />
             <p><strong>Servicio </strong><br><strong>de lavado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img src="/img/icons-parking-vigilado.svg" alt="Servicios" height="140px"/>
+            <img src="/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140px"/>
             <p><strong>Parking</strong><br><strong>vigilado 24 h</strong></p>
         </div>
 </div>
@@ -158,7 +160,7 @@
         </div>
 
         <div class="col-12 col-md-10">
-            <img src="/img/mapa-hq-min-min-1024x692.png" alt="" width="100%"/>
+            <img src="/img/mapa-hq-min-min-1024x692.png" alt="Mapa Finguer localizacion" width="100%"/>
         </div>
     </div>
 </div>
