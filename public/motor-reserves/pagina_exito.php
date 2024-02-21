@@ -35,6 +35,16 @@ $token3 = $_ENV['TERMINAL'];
 // Se crea Objeto
 $miObj = new RedsysAPI;
 
+function enviarCorreo($destinatario, $asunto, $mensaje) {
+    // Cabeceras adicionales
+    $cabeceras = 'From: hello@finguer.com' . "\r\n" .
+                 'Reply-To: hello@finguer.com' . "\r\n" .
+                 'X-Mailer: PHP/' . phpversion();
+
+    // Envío del correo
+    mail($destinatario, $asunto, $mensaje, $cabeceras);
+}
+
 
 if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
                 
@@ -67,6 +77,14 @@ if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
         if ($firma === $signatureRecibida) {
             // Llamar a la función JavaScript aquí
             echo '<script>idReserva();</script>';
+
+             // Detalles del correo
+            $destinatario = "elliot@hispantic.com";
+            $asunto = "Reserva completada";
+            $mensaje = "La reserva se ha completado satisfactoriamente.";
+
+            // Envío del correo
+            enviarCorreo($destinatario, $asunto, $mensaje);
 
             ?>
             <div class="container">
