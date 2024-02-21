@@ -1,0 +1,149 @@
+body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+}
+
+
+/* Estilos HOMEPAGE */
+
+.finguer1 {
+  background: linear-gradient(180deg, #002daf 0%, #02164f 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
+}
+
+.finguer2 {
+  background: linear-gradient(180deg, #ffb900 0%,#a57024 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
+}
+
+.finguer3 {
+  background: linear-gradient(180deg, #525252 0%,#c9c9c9 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
+}
+
+.servicios {
+  background: linear-gradient(90deg, #ffb900 0%,#ff0041 100%);
+  border-radius: 25px;
+  padding: 20px;
+}
+
+.bloc1 {
+  background-color: #02164f;
+  border-radius: 25px;
+  padding: 50px;
+  color: white;
+  margin-top:55px;
+}
+
+
+/* Estilos adicionales pueden ir aquí */
+
+.highlight {
+            background-color: #FFFF66 !important; /* Cambia el color de fondo a amarillo */
+}
+
+.container-inici {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+}
+h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        label {
+            font-weight: bold;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        #mensaje_error {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        #total, #dias {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #pagar {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #pagar:hover {
+            background-color: #0056b3;
+        }
+
+        #payment-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+    
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+    
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    
+        #card-element {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+    
+        #card-errors {
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+    
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+    
+        button:hover {
+            background-color: #0056b3;
+        }

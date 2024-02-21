@@ -1,2 +1,5 @@
 /vendor/
+/.vscode/
+/img/
 .env
+error_log
