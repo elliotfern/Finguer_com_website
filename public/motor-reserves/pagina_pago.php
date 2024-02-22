@@ -126,7 +126,7 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
    <div class="container-fluid">
   <div class="row">
     <div class="col-12 col-md-8" style="padding:25px">
-        <div class="container" style="width:60%">
+        <div class="container quadre-formulari-pagina-pagament">
             
             <div class="row g-3">
 

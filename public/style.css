@@ -48,32 +48,12 @@ body {
 }
 
 
-/* ESTILOS DEL CALENDARIO DE RESERVAS */
-.ui-state-active {
-    background-color: #2d63c0!important;
-    /* Cambia el color de fondo */
-    color: #ffffff;
-    /* Cambia el color del texto */
-    border: 1px solid #000000;
-    /* Agrega un borde */
-}
-
- /* Estilo para resaltar los días seleccionados */
- .ui-datepicker-calendar .selected a {
-    position: relative;
-}
-
-.ui-datepicker-calendar .selected a:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ffcc00; /* Color de resaltado */
-    opacity: 0.5; /* Opacidad del resaltado */
-    z-index: -1; /* Enviar el resaltado detrás del número del día */
-    border-radius: 50%; /* Opcional: borde redondeado */
+/* Pagina de pagament */
+@media (min-width: 500px) {
+    /* Agrega aquí tus estilos específicos para dispositivos más grandes de 500px */
+    .quadre-formulari-pagina-pagament {
+        max-width: 60%;
+    }
 }
 
 /* OTROS STILOS */
