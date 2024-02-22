@@ -65,10 +65,12 @@
     } else {
         $telefono = data_input($_POST["telefono"], ENT_NOQUOTES);
     }
-   
+    
+    $tipoUsuario = 2;
+
     if (!isset($hasError)) {
       global $conn;
-      $sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono";
+      $sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario";
       $stmt= $conn->prepare($sql);
       $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
       $stmt->bindParam(":email", $email, PDO::PARAM_STR);
@@ -79,6 +81,7 @@
       $stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
       $stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
       $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
+      $stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
 
       if ($stmt->execute()) {
         // Obtener el ID del nuevo cliente insertado

@@ -269,7 +269,7 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                 
             </div>
 
-                <h3>Datos de facturación (opcionales)</h3>
+                <h3>Datos de facturación (datos opcionales)</h3>
                 <div class="alert alert-dark" role="alert">
                     Sólo rellene estos datos si necesita la factura.
                 </div>
@@ -279,30 +279,77 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                 </div>
 
                 <div class="col-md-6">
-                <label for="nif">NIF/NIE/CIF (opcional)</label>
+                <label for="nif">NIF/NIE/CIF (opcional):</label>
                 <input type="text" class="form-control" id="nif" name="nif">
                 </div>
 
                 <div class="col-md-6">
-                <label for="direccion">Dirección (opcional)</label>
+                <label for="direccion">Dirección (opcional):</label>
                 <input type="text" class="form-control" id="direccion" name="direccion">
                 </div>
 
                 <div class="col-md-6">
-                <label for="ciudad">Localidad / Ciudad (opcional)</label>
+                <label for="ciudad">Localidad / Ciudad (opcional):</label>
                 <input type="text" class="form-control" id="ciudad" name="ciudad">
                 </div>
 
                 <div class="col-md-6">
-                <label for="codigo_postal">Código postal (opcional)</label>
+                <label for="codigo_postal">Código postal (opcional):</label>
                 <input type="text" class="form-control" id="codigo_postal" name="codigo_postal">
                 </div>
 
                 <div class="col-md-6">
-                <label for="pais">País (opcional)</label>
-                <input type="text" class="form-control" id="pais" name="pais">
+                    <label for="pais" class="form-label">País (opcional):</label>
+                    <select class="form-select" name="pais" id="pais">
+                        <option value="">Seleccione un país</option>
+                        <option value="España">España</option>
+                        <option value="Albania">Albania</option>
+                        <option value="Alemania">Alemania</option>
+                        <option value="Andorra">Andorra</option>
+                        <option value="Austria">Austria</option>
+                        <option value="Bélgica">Bélgica</option>
+                        <option value="Bielorrusia">Bielorrusia</option>
+                        <option value="Bosnia y Herzegovina">Bosnia y Herzegovina</option>
+                        <option value="Bulgaria">Bulgaria</option>
+                        <option value="Chipre">Chipre</option>
+                        <option value="Croacia">Croacia</option>
+                        <option value="Dinamarca">Dinamarca</option>
+                        <option value="Eslovaquia">Eslovaquia</option>
+                        <option value="Eslovenia">Eslovenia</option>
+                        <option value="Estonia">Estonia</option>
+                        <option value="Finlandia">Finlandia</option>
+                        <option value="Francia">Francia</option>
+                        <option value="Grecia">Grecia</option>
+                        <option value="Hungría">Hungría</option>
+                        <option value="Irlanda">Irlanda</option>
+                        <option value="Islandia">Islandia</option>
+                        <option value="Italia">Italia</option>
+                        <option value="Kosovo">Kosovo</option>
+                        <option value="Letonia">Letonia</option>
+                        <option value="Liechtenstein">Liechtenstein</option>
+                        <option value="Lituania">Lituania</option>
+                        <option value="Luxemburgo">Luxemburgo</option>
+                        <option value="Malta">Malta</option>
+                        <option value="Moldavia">Moldavia</option>
+                        <option value="Mónaco">Mónaco</option>
+                        <option value="Montenegro">Montenegro</option>
+                        <option value="Noruega">Noruega</option>
+                        <option value="Países Bajos">Países Bajos</option>
+                        <option value="Polonia">Polonia</option>
+                        <option value="Portugal">Portugal</option>
+                        <option value="Reino Unido">Reino Unido</option>
+                        <option value="República Checa">República Checa</option>
+                        <option value="República de Macedonia del Norte">República de Macedonia del Norte</option>
+                        <option value="Rumanía">Rumanía</option>
+                        <option value="Rusia">Rusia</option>
+                        <option value="San Marino">San Marino</option>
+                        <option value="Serbia">Serbia</option>
+                        <option value="Suecia">Suecia</option>
+                        <option value="Suiza">Suiza</option>
+                        <option value="Ucrania">Ucrania</option>
+                        <option value="Vaticano">Vaticano</option>
+                    </select>
                 </div>
-
             </div>
 
         </div>

@@ -3,7 +3,7 @@
         <div class="row justify-content-center">
 
         <div class="col-12 col-md-2">
-            <img width="150" height="71" src="/img/logo-header-sticky.png" alt="" />
+            <img class="img-responsive" src="/img/logo-header-sticky.png" alt="Finguer Parking Aeropuerto El Prat de Barcelona" >
         </div>
 
         <div class="col-12 col-md-2">
@@ -24,7 +24,7 @@
 
         <div class="col-12 col-md-2">
             <h6><strong>SÍGUENOS</strong></h6>
-            <a href="https://www.instagram.com/finguer_parking/" target="_blank"><img src="/img/icons-instagram.svg" alt="" class="wp-image-264"/></a>
+            <a href="https://www.instagram.com/finguer_parking/" target="_blank"><img src="/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
         </div>
 
         </div>
