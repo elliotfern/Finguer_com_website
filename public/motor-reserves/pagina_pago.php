@@ -15,7 +15,6 @@ $fechaSalida = isset($_POST['fechaSalida']) ? $_POST['fechaSalida'] : '';
 $tipoLimpieza = isset($_POST['limpieza']) ? $_POST['limpieza'] : 0;
 $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
 
-
 // Obtener el precio total de la reserva desde la URL
     if ($tipoReserva === "finguer_class") {
         $tipoReserva2 = "Finguer Class";
@@ -414,6 +413,7 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
 
         <!-- Formulario para ingresar la información del pago -->
         <form name="frm" action="" method="POST">
+        <input type="hidden" id="importe" name="importe" value="<?php echo $importe_total; ?>">
 
             <!-- Un contenedor donde se mostrarán mensajes de error o éxito de Stripe -->
             <div id="card-errors" role="alert"></div>
@@ -504,7 +504,6 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
 
                         // Manejar el ID del nuevo cliente
                         nuevoClienteID = response.idCliente;
-                        console.log("ID del nuevo cliente:", nuevoClienteID);
 
                          // Ahora puedes enviar los datos junto con el ID del nuevo cliente a guardar_datos_tabla2.php
                         let numeroAleatorio = Math.floor(1000 + Math.random() * 9000);
@@ -526,7 +525,8 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                                     matricula: $("#matricula").val(),
                                     vuelo: $("#vuelo").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
-                                    processed: "0", // quité la coma extra al final
+                                    processed: "0",
+                                    importe: $("#importe").val(),
                                 },
                                 success: function(response) {
                                     // Manejar la respuesta si es necesario

@@ -176,6 +176,7 @@ $(document).ready(function() {
         minDate: moment().startOf('day').add(2, 'days'), // No permitir seleccionar fechas anteriores a la fecha actual
         locale: {
             format: 'DD-MM-YYYY',
+            firstDay: 1, // Configura el primer día de la semana como lunes (0 para domingo, 1 para lunes, 2 para martes, etc.)
             cancelLabel: 'Cancelar',
             applyLabel: 'Aplicar', // Etiqueta del botón Aplicar
             daysOfWeek: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"], // Nombres de los días de la semana

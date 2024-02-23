@@ -63,6 +63,7 @@
 
     $limpieza = $_POST["limpieza"];
     $processed = $_POST["processed"];
+    $importe = $_POST["importe"];
 
     $diaEntrada2 = $_POST["diaEntrada"]; // Suponiendo que $_POST["diaSalida"] contiene la fecha en formato "DD-MM-YYYY"
     $fecha_objeto = DateTime::createFromFormat("Y-d-m", $diaEntrada2);
@@ -77,7 +78,7 @@
 
     if (!isset($hasError)) {
       global $conn;
-      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva";
+      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, importe=:importe";
       $stmt= $conn->prepare($sql);
       $stmt->bindParam(":idClient", $idClient, PDO::PARAM_STR);
       $stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_STR);
@@ -93,6 +94,7 @@
       $stmt->bindParam(":processed", $processed, PDO::PARAM_STR);
       $stmt->bindParam(":checkIn", $checkIn, PDO::PARAM_STR);
       $stmt->bindParam(":fechaReserva", $fechaReserva, PDO::PARAM_STR);
+      $stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
 
       if ($stmt->execute()) {      
         // response output

@@ -3,3 +3,5 @@
 /img/
 .env
 error_log
+finguer-web.code-workspace
+.gitignore
