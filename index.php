@@ -147,9 +147,13 @@ $route->add("/api/pago-ok-reserva","process-data/modificar-reserva-pago-ok.php")
 
         // 01. Inici
         $route->add("/","public/index.php");
+        $route->add("/fr","public/index.php");
+        $route->add("/en","public/index.php");
 
         // 02. motor reserves
         $route->add("/pago","public/motor-reserves/pagina_pago.php");
+        $route->add("/fr/pago","public/motor-reserves/pagina_pago.php");
+        $route->add("/en/pago","public/motor-reserves/pagina_pago.php");
 
         // 03. Post redireccion redsys
         $route->add("/compra-realizada","public/motor-reserves/pagina_exito.php");

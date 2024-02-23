@@ -19,12 +19,14 @@ try {
     $password = $dbPass;
    
     $conn = new PDO(
-        "mysql:host=$servername; dbname=$dbname;charset=utf8",
+        "mysql:host=$servername; dbname=$dbname;",
         $username, $password
     );
-      
-    $conn->setAttribute(PDO::ATTR_ERRMODE, 
-                PDO::ERRMODE_EXCEPTION);
+
+    // Establecer la codificación de caracteres después de establecer la conexión
+    $conn->exec("SET NAMES utf8");
+    
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       
 } catch(PDOException $e) {
     echo "Connection failed: " 

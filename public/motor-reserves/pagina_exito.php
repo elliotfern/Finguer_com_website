@@ -79,9 +79,9 @@ if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
             echo '<script>idReserva();</script>';
 
              // Detalles del correo
-            $destinatario = "elliot@hispantic.com";
-            $asunto = "Reserva completada";
-            $mensaje = "La reserva se ha completado satisfactoriamente.";
+            $destinatario = "elliot@hispantic.com, hello@finguer.com";
+            $asunto = "Nueva reserva en Finguer.com";
+            $mensaje = "Acaba de entrar una nueva reserva en el sistema.";
 
             // Envío del correo
             enviarCorreo($destinatario, $asunto, $mensaje);
