@@ -4,6 +4,26 @@
  * FUNCIONS UPDATE BOOK
  * @update_book_ajax
  */
+  // envio confirmacion cliente:
+  $email = $_POST['email_cliente'];
+
+  function enviarCorreo($destinatario, $asunto, $mensaje) {
+    // Cabeceras adicionales
+    $cabeceras = 'From: hello@finguer.com' . "\r\n" .
+                 'Reply-To: hello@finguer.com' . "\r\n" .
+                 'X-Mailer: PHP/' . phpversion();
+
+    // Envío del correo
+    mail($destinatario, $asunto, $mensaje, $cabeceras);
+  }
+
+    // Detalles del correo para avisar al propietario del parking
+    $destinatario =  $email;
+    $asunto = "Confirmación de su reserva en Finguer.com";
+    $mensaje = "Le confirmamos que hemos procesado correctamente la reserva que acaba de hacer en nuestra página web. Muchas gracias por su confianza";
+
+    // Envío del correo
+    enviarCorreo($destinatario, $asunto, $mensaje);
 
   global $conn;
 

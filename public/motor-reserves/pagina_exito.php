@@ -2,22 +2,21 @@
     function idReserva() {
         // Recuperar el valor de idReserva almacenado en el navegador
         let idReserva = sessionStorage.getItem('idReserva');
-        console.log("El valor de idReserva recuperado es:", idReserva);
+        let emailCliente = sessionStorage.getItem('email_cliente');
 
         // Llamada AJAX para actualizar la base de datos
         $.ajax({
             url: '/api/pago-ok-reserva', // Ruta a tu script PHP que actualiza la base de datos
             type: 'POST',
             data: { 
-                idReserva: idReserva
+                idReserva: idReserva,
+                emailCliente: emailCliente,
              },
 
             success: function(response) {
-                console.log('Base de datos actualizada:', response);
                 // Aquí puedes manejar la respuesta del servidor si es necesario
             },
             error: function(xhr, status, error) {
-                console.error('Error al actualizar la base de datos:', error);
                 // Aquí puedes manejar errores si es necesario
             }
         });
@@ -78,8 +77,16 @@ if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
             // Llamar a la función JavaScript aquí
             echo '<script>idReserva();</script>';
 
-             // Detalles del correo
+            // Detalles del correo para avisar al propietario del parking
             $destinatario = "elliot@hispantic.com, hello@finguer.com";
+            $asunto = "Nueva reserva en Finguer.com";
+            $mensaje = "Acaba de entrar una nueva reserva en el sistema.";
+
+            // Envío del correo
+            enviarCorreo($destinatario, $asunto, $mensaje);
+
+            // Detalles del correo para avisar al cliente:
+            $destinatario = emailCliente;
             $asunto = "Nueva reserva en Finguer.com";
             $mensaje = "Acaba de entrar una nueva reserva en el sistema.";
 
