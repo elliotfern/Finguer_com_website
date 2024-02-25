@@ -85,14 +85,6 @@ if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
             // Envío del correo
             enviarCorreo($destinatario, $asunto, $mensaje);
 
-            // Detalles del correo para avisar al cliente:
-            $destinatario = emailCliente;
-            $asunto = "Nueva reserva en Finguer.com";
-            $mensaje = "Acaba de entrar una nueva reserva en el sistema.";
-
-            // Envío del correo
-            enviarCorreo($destinatario, $asunto, $mensaje);
-
             ?>
             <div class="container">
                     <div class="row justify-content-center">
