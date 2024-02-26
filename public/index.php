@@ -5,7 +5,7 @@
         <h1 class="wp-block-heading has-text-align-center"><strong>Finguer,<br>la forma más rápida y segura de aparcar<br>tu coche y llegar al aeropuerto de Barcelona</strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
-        <img class="img-responsive" src="/img/transparente-home.png" alt="Finguer, parking aeropuerto de Barcelona">
+        <img class="img-responsive" src="/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
         </div>
 
         <p>Finguer, park your problems and fly away</p>
@@ -13,11 +13,11 @@
 
 <div class="container" style="margin-top:25px">
     <div class="row">
-        <div class="col-12 col-md-6 mb-4">
-        <img class="img-responsive" src="/img/tarifas-esp.png" alt="Tarifas del parking">
+        <div class="col-12 col-md-6 mb-4 text-end">
+        <img class="img-responsive" src="/img/tarifas-esp.jpg" alt="Tarifas del parking">
         </div>
     
-        <div class="col-12 col-md-6 mb-4" style="border-style:solid;border-radius: 25px;border-color: #D5D5D5; padding:20px">
+        <div class="col-12 col-md-6 mb-4 text-start quadre_reserves">
         <h1>Configura tu reserva:</h1>
 
         <!-- Selección del tipo de reserva -->
@@ -64,7 +64,7 @@
 
 <p >Pues ahora, esa sensación de que te ha tocado finguer, la puedes tener cuando piensas en qué hacer con tu coche cuando vas a viajar en avión. Porque cuando contratas Finguer, aparcas tus problemas y disfrutas más del viaje.</p>
 
-<img class="img-responsive" src="/img/finguer-park-1-1-1-1024x410.jpg" alt="Finguer">
+<img class="img-responsive" src="/img/finguer-park.jpg" alt="Finguer">
 </div>
 
 <div class="container text-center" id="servicios" style="margin-top:50px">
@@ -160,7 +160,7 @@
         </div>
 
         <div class="col-12 col-md-10">
-            <img class="img-responsive" src="/img/mapa-hq-min-min-1024x692.png" alt="Mapa Finguer localizacion">
+            <img class="img-responsive" src="/img/mapa-finguer.jpg" alt="Mapa Finguer localizacion">
         </div>
     </div>
 </div>

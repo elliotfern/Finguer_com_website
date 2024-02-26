@@ -4,6 +4,8 @@
         let idReserva = sessionStorage.getItem('idReserva');
         let emailCliente = sessionStorage.getItem('email_cliente');
         let importe = sessionStorage.getItem('importe');
+        let diaEntrada = sessionStorage.getItem('diaEntrada');
+        let dias = sessionStorage.getItem('dias');
 
         // Llamada AJAX para actualizar la base de datos
         $.ajax({
@@ -13,6 +15,8 @@
                 idReserva: idReserva,
                 emailCliente: emailCliente,
                 importe: importe,
+                diaEntrada: diaEntrada,
+                dias: dias,
              },
 
             success: function(response) {

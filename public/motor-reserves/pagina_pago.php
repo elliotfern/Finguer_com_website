@@ -514,8 +514,14 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                         // el correo electronico del cliente:
                         sessionStorage.setItem('email_cliente', $("#email").val());
 
-                         // importe total:
-                         sessionStorage.setItem('importe', $("#importe").val());
+                        // importe total:
+                        sessionStorage.setItem('importe', $("#importe").val());
+
+                        // dia entrada:
+                        sessionStorage.setItem('diaEntrada', <?php echo $fechaEntrada2; ?>);
+
+                        // dias:
+                        sessionStorage.setItem('dias', <?php echo $numDias; ?>);
 
                         $.ajax({
                                 url: '/api/alta-reserva',

@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
-    color: #333;
+    color: #000000;
 }
 
 /* IMATGES */
@@ -11,6 +11,20 @@ body {
 }
 
 /* Estilos HOMEPAGE */
+
+.quadre_reserves {
+    border-style:solid;
+    border-radius: 25px;
+    border-color: #D5D5D5;
+    padding:20px;
+}
+
+/* Pagina de pagament */
+@media (min-width: 500px) {
+    .quadre_reserves {
+        width: 500px;
+    }
+}
 
 .finguer1 {
     background: linear-gradient(180deg, #002daf 0%, #02164f 100%);
@@ -149,7 +163,8 @@ input[type="text"] {
     margin-bottom: 20px;
 }
 
-button {
+#pagar,
+#pago_bizum {
     display: block;
     width: 100%;
     padding: 10px;
@@ -161,8 +176,48 @@ button {
     transition: background-color 0.3s ease;
 }
 
-button:hover {
+#pagar:hover,
+#pago_bizum:hover {
     background-color: #0056b3;
+}
+
+/* NAV BAR MOBIL */
+@media (max-width: 450px) {
+    .navbar {
+        width: 100%; /* Ajusta el ancho para que ocupe toda la pantalla */
+        z-index: 1000; /* Asegura que el navbar esté por encima del contenido de la página */
+    }
+
+    .navbar-collapse {
+        background-color: #333; /* Cambia el color de fondo según tus preferencias */
+        padding: 5px; /* Agrega un padding para los márgenes internos */
+        border-radius:25px;
+        max-height: 0; /* Oculta el menú inicialmente */
+        overflow: hidden; /* Oculta cualquier contenido que exceda la altura máxima */
+        transition: max-height 0.3s ease; /* Agrega una transición suave */
+    }
+
+    .navbar-collapse.show {
+        max-height: 500px; /* Establece la altura máxima para mostrar el menú */
+    }
+
+    /* Estilos para los elementos del menú desplegable */
+    .navbar-collapse .navbar-nav .nav-item {
+        margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
+        color: white;
+        padding-right: 15px; /* Agrega un padding para los márgenes internos */
+        padding-left: 15px; /* Agrega un padding para los márgenes internos */
+    }
+
+    .navbar-collapse .navbar-nav .nav-link {
+        margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
+        color: white!important;
+    }
+
+    /* Estilos para el texto del menú desplegable */
+    .navbar-collapse.navbar-nav .nav-link {
+        color: #fff; /* Cambia el color del texto según tus preferencias */
+    }
 }
 
 /* COOKIE BANNER */

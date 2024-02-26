@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finguer - Parking Aeropuerto Barcelona El Prat T1 y T2</title>
+    <meta name="description" content="Finguer es un parking para coches con servicio de traslado y recogida al aeropuerto de Barcelona. Pero nosotros nos consideramos más como un hotel para mascotas.">
+    <meta name="keywords" content="Parking, Aeropuerto, El Prat, finguer, traslado">
     <link rel="icon" href="/img/favicon.png" type="image/png">
 
     <!-- Agrega los scripts de Stripe y jQuery -->
