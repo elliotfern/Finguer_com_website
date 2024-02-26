@@ -511,8 +511,11 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                         // Almacenar el número aleatorio en la sesión del navegador
                         sessionStorage.setItem('idReserva', numeroAleatorio);
 
-                        // y tambien el correo electronico del cliente:
+                        // el correo electronico del cliente:
                         sessionStorage.setItem('email_cliente', $("#email").val());
+
+                         // importe total:
+                         sessionStorage.setItem('importe', $("#importe").val());
 
                         $.ajax({
                                 url: '/api/alta-reserva',

@@ -3,6 +3,7 @@
         // Recuperar el valor de idReserva almacenado en el navegador
         let idReserva = sessionStorage.getItem('idReserva');
         let emailCliente = sessionStorage.getItem('email_cliente');
+        let importe = sessionStorage.getItem('importe');
 
         // Llamada AJAX para actualizar la base de datos
         $.ajax({
@@ -11,6 +12,7 @@
             data: { 
                 idReserva: idReserva,
                 emailCliente: emailCliente,
+                importe: importe,
              },
 
             success: function(response) {
@@ -33,17 +35,6 @@ $token3 = $_ENV['TERMINAL'];
 
 // Se crea Objeto
 $miObj = new RedsysAPI;
-
-function enviarCorreo($destinatario, $asunto, $mensaje) {
-    // Cabeceras adicionales
-    $cabeceras = 'From: hello@finguer.com' . "\r\n" .
-                 'Reply-To: hello@finguer.com' . "\r\n" .
-                 'X-Mailer: PHP/' . phpversion();
-
-    // Envío del correo
-    mail($destinatario, $asunto, $mensaje, $cabeceras);
-}
-
 
 if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
                 
@@ -76,14 +67,6 @@ if (!empty( $_POST ) ) {//URL DE RESP. ONLINE
         if ($firma === $signatureRecibida) {
             // Llamar a la función JavaScript aquí
             echo '<script>idReserva();</script>';
-
-            // Detalles del correo para avisar al propietario del parking
-            $destinatario = "elliot@hispantic.com, hello@finguer.com";
-            $asunto = "Nueva reserva en Finguer.com";
-            $mensaje = "Acaba de entrar una nueva reserva en el sistema.";
-
-            // Envío del correo
-            enviarCorreo($destinatario, $asunto, $mensaje);
 
             ?>
             <div class="container">
