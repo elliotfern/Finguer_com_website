@@ -79,9 +79,9 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
         $url="";
         $urlOK= $url_Ok;
         $urlKO= $url_Ko;
-        $id=time();
+        $id=date("mdHis");
         $amount=$importe_total * 100;
-        $payment="z";
+        $payment="C";
 
         // Se Rellenan los campos
         $miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
@@ -130,15 +130,17 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
             <div class="row g-3">
 
             <div class="alert alert-success" id="messageOk" style="display:none" role="alert">
-            <h4 class="alert-heading"><strong>Todo OK</h4></strong>
+            <h4 class="alert-heading"><strong>Todo OK</strong></h4>
             <h6>Datos guardados</h6>
             </div>
                 
             <div class="alert alert-danger" id="messageErr" style="display:none" role="alert">
-            <h4 class="alert-heading"><strong>¡Error!</h4></strong>
+            <h4 class="alert-heading"><strong>¡Error!</strong></h4>
             <h6>Por favor revise los datos que ha introducido antes de completar el pedido.</h6>
             </div>
 
+            <input type="hidden" id="idOrder" name="idOrder" value="<?php echo $id;?>">
+            
             <h3>Datos de cliente</h3>
                 <div class="col-md-6">
                 <label for="nombre">Nombre y apellidos *</label>
@@ -505,11 +507,8 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                         // Manejar el ID del nuevo cliente
                         nuevoClienteID = response.idCliente;
 
-                         // Ahora puedes enviar los datos junto con el ID del nuevo cliente a guardar_datos_tabla2.php
-                        let numeroAleatorio = Math.floor(1000 + Math.random() * 9000);
-
                         // Almacenar el número aleatorio en la sesión del navegador
-                        sessionStorage.setItem('idReserva', numeroAleatorio);
+                        sessionStorage.setItem('idReserva', $("#idOrder").val());
 
                         // el correo electronico del cliente:
                         sessionStorage.setItem('email_cliente', $("#email").val());
@@ -528,7 +527,7 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                                 type: 'POST',
                                 data: {
                                     idClient: nuevoClienteID,
-                                    idReserva: numeroAleatorio,
+                                    idReserva: $("#idOrder").val(),
                                     tipo: "<?php echo $codigoTipoReserva; ?>",
                                     horaEntrada: $("#horaEntrada").val(),
                                     diaEntrada: "<?php echo $fechaEntrada2; ?>",

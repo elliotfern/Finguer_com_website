@@ -132,6 +132,7 @@ define("APP_DEV",$dev);
 // Route for paths containing 
 require_once(APP_ROOT . '/connection.php');
 require_once(APP_ROOT . '/apiRedsys.php');
+require_once(APP_ROOT . '/public/inc/funcions.php');
 
 session_start();
 
@@ -162,5 +163,8 @@ $route->add("/api/pago-ok-reserva","process-data/modificar-reserva-pago-ok.php")
         // 04. Legal
         $route->add("/politica-de-privacidad-finguer","public/politica-privacidad.php");
         $route->add("/terminos-y-condiciones","public/terminos-condiciones.php");
+
+        // CRON RESERVES
+        $route->add("/cron/reserves","public/cron/cron-reserves.php");
 
 ?>
