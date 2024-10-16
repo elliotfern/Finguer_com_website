@@ -453,7 +453,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
 
             <!-- Botón de pagar dentro de un div oculto -->
             <div id="div_pagar">
-                <button id="pagar" style="margin-top:25px">
+                <button id="pagar_tarjeta" style="margin-top:25px">
                     <strong>PAGO SEGURO CON TARJETA <?php echo number_format($importe_total, 2, ',', '.'); ?> €</strong>
                 </button>
 
@@ -490,7 +490,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
 
 
         // funciones principales al clicar en el boton de pagar
-        $('#pagar').click(function(event) {
+        $('#pagar_tarjeta').click(function(event) {
             // Evitar que el formulario se envíe de forma tradicional
             event.preventDefault();
 

@@ -111,7 +111,7 @@ input[type="text"] {
     margin-top: 20px;
 }
 
-#pagar {
+#pagar, #pagar_tarjeta {
     width: 100%;
     padding: 10px;
     background-color: #007bff;
@@ -122,7 +122,7 @@ input[type="text"] {
     cursor: pointer;
 }
 
-#pagar:hover {
+#pagar:hover, #pagar_tarjeta:hover {
     background-color: #0056b3;
 }
 
