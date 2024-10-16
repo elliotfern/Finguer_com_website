@@ -1,0 +1,31 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^9.11.1",
+    "@types/eslint__js": "^8.42.3",
+    "@types/flatpickr": "^3.0.2",
+    "@types/jquery": "^3.5.31",
+    "@types/moment": "^2.11.29",
+    "eslint": "^9.11.1",
+    "globals": "^15.10.0",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.0"
+  },
+  "name": "memoria_intranet",
+  "version": "1.0.0",
+  "description": "Intranet PHP",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/daterangepicker": "^3.1.8",
+    "bootstrap-daterangepicker": "^3.1.0",
+    "dayjs": "^1.11.13",
+    "flatpickr": "^4.6.13",
+    "jquery": "^3.7.1",
+    "moment": "^2.30.1"
+  }
+}

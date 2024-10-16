@@ -1,5 +1,4 @@
 <?php
-
 $token = $_ENV['MERCHANTCODE'];
 $token2 = $_ENV['KEY'];
 $token3 = $_ENV['TERMINAL'];
@@ -14,6 +13,8 @@ $fechaEntrada = isset($_POST['fechaEntrada']) ? $_POST['fechaEntrada'] : '';
 $fechaSalida = isset($_POST['fechaSalida']) ? $_POST['fechaSalida'] : '';
 $tipoLimpieza = isset($_POST['limpieza']) ? $_POST['limpieza'] : 0;
 $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
+$seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelacion'] : 0;
+$costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
 
 // Obtener el precio total de la reserva desde la URL
     if ($tipoReserva === "finguer_class") {
@@ -42,6 +43,12 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
         $codigoLimpieza = 3;
     }
 
+    if ($seguroCancelacion === "1") {
+        $cancelacion = "Sí";
+    } else {
+        $cancelacion = "No";
+    }
+
     // Transformar la fecha al formato UNIX
     $fechaUnix1 = strtotime($fechaEntrada);
     $fechaUnix2 = strtotime($fechaSalida);
@@ -54,34 +61,38 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
     $porcentaje_iva = 21;
     
     // 1 - Calcula el precio de la reserva sin IVA
-    $reserva_sin_iva = $precio_reserva_sin_limpieza /1.21;
+    $reserva_sin_iva = $precio_reserva_sin_limpieza / 1.21;
 
     // 2- Calcula el precio de la limpieza sin IVA
     $limpieza_sin_iva = $precioLimpieza / 1.21;
 
+    // 3 - Calcula el precio del seguro cancelacion sin IVA
+    $costeSeguro_sin_iva = $costeSeguro / 1.21;
+
     // 3 - Calcula el subtotal
-    $subtotal = $reserva_sin_iva + $limpieza_sin_iva;
+    $subtotal = $reserva_sin_iva + $limpieza_sin_iva + $costeSeguro_sin_iva;
 
     // 4 - Calcula el IVA total 21%
     $coste_iva = $subtotal * 0.21;
     
     // 5 - Calcula el Importe total iva incluido
     $importe_total = $subtotal + $coste_iva;
+
     
     // OBJECTE REDSYS
         $miObj = new RedsysAPI;
 
         // Valores de entrada que no hemos cmbiado para ningun ejemplo
-        $fuc=$token;
-        $terminal="1";
-        $moneda="978";
-        $trans="0";
-        $url="";
-        $urlOK= $url_Ok;
-        $urlKO= $url_Ko;
-        $id=date("mdHis");
-        $amount=$importe_total * 100;
-        $payment="C";
+        $fuc = $token;
+        $terminal = $token3;
+        $moneda = "978";
+        $trans = "0";
+        $url = "";
+        $urlOK = $url_Ok;
+        $urlKO = $url_Ko;
+        $id = date("mdHis");
+        $amount = $importe_total * 100;
+        $payment = "C";
 
         // Se Rellenan los campos
         $miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
@@ -384,6 +395,11 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
             </td>
             </tr>
 
+            <tr>
+                <td><strong>Seguro de Cancelación: </strong> <?php echo $cancelacion; ?></td>
+                <td><?php echo number_format($costeSeguro_sin_iva, 2, ',', '.'); ?> € (sin IVA)</td>
+            </tr>
+
                 <?php
                 if ($precioLimpieza !== 0) {
                     ?> 
@@ -416,6 +432,8 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
         <!-- Formulario para ingresar la información del pago -->
         <form name="frm" action="" method="POST">
         <input type="hidden" id="importe" name="importe" value="<?php echo $importe_total; ?>">
+
+        <input type="hidden" id="cancelacion" name="cancelacion" value="<?php echo $seguroCancelacion; ?>">
 
             <!-- Un contenedor donde se mostrarán mensajes de error o éxito de Stripe -->
             <div id="card-errors" role="alert"></div>
@@ -539,6 +557,7 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0",
                                     importe: $("#importe").val(),
+                                    cancelacion: "<?php echo $seguroCancelacion; ?>"
                                 },
                                 success: function(response) {
                                     // Manejar la respuesta si es necesario
@@ -638,6 +657,8 @@ $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
                                     vuelo: $("#vuelo").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0", // quité la coma extra al final
+                                    importe: $("#importe").val(),
+                                    cancelacion: "<?php echo $seguroCancelacion; ?>"
                                 },
                                 success: function(response) {
                                     // Manejar la respuesta si es necesario

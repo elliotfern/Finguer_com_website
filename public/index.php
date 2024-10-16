@@ -5,7 +5,7 @@
         <h1 class="wp-block-heading has-text-align-center"><strong>Finguer,<br>la forma más rápida y segura de aparcar<br>tu coche y llegar al aeropuerto de Barcelona</strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
-        <img class="img-responsive" src="/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
+        <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
         </div>
 
         <p>Finguer, park your problems and fly away</p>
@@ -14,7 +14,7 @@
 <div class="container" style="margin-top:25px">
     <div class="row">
         <div class="col-12 col-md-6 mb-4 text-end">
-        <img class="img-responsive" src="/img/tarifas-esp.jpg" alt="Tarifas del parking">
+        <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/tarifas-esp.jpg" alt="Tarifas del parking">
         </div>
     
         <div class="col-12 col-md-6 mb-4 text-start quadre_reserves">
@@ -41,6 +41,19 @@
                 <option value="55">Lavado PRO. Lo dejamos como nuevo - 55 euros</option>
             </select>
 
+             <!-- Opciones de limpieza -->
+             <label for="cancelacion">¿Deseas añadir un seguro de cancelación en caso de querer anular la reserva? (opcional)</label>
+
+             <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="seguroSi" name="seguroCancelacion" value="1">
+                <label class="form-check-label" for="seguroSi">Sí</label>
+            </div>
+            
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="seguroNo" name="seguroCancelacion" value="2" checked>
+                <label class="form-check-label" for="seguroNo">No</label>
+            </div>
+
             <!-- Espacio para mostrar el precio total y el número de días -->
             <p id="total" style="display: none;">Precio Total: <span id="precio_total"></span> € IVA incluido</p>
             <p id="dias" style="display: none;">Número de días: <span id="num_dias"></span></p>
@@ -64,7 +77,7 @@
 
 <p >Pues ahora, esa sensación de que te ha tocado finguer, la puedes tener cuando piensas en qué hacer con tu coche cuando vas a viajar en avión. Porque cuando contratas Finguer, aparcas tus problemas y disfrutas más del viaje.</p>
 
-<img class="img-responsive" src="/img/finguer-park.jpg" alt="Finguer">
+<img class="img-responsive" src="<?php APP_ROOT;?>/public/img/finguer-park.jpg" alt="Finguer">
 </div>
 
 <div class="container text-center" id="servicios" style="margin-top:50px">
@@ -84,7 +97,7 @@
 
         <div class="col-12 col-md-3 mx-3 finguer2 mb-4" style="background-color:red">
             <h3><strong>Gold Finguer Class</strong></h3>
-            <img class="img-responsive" src="/img/keys.svg" alt="Gold finguer class">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/keys.svg" alt="Gold finguer class">
             <hr>
             <p>Este servicio es el que escogería el mismísimo James Bond.</p>
             <p>Con la Gold Finguer Class solo tienes que llegar con tu coche a la terminal que te haya tocado (muy importante que nos avises 20 minutos antes de llegar), darnos las llaves del coche y disfrutar de tu viaje. Y a tu vuelta, pues lo mismo. Llegas, sales de la terminal y allí te estaremos esperando con tu coche.</p>
@@ -93,7 +106,7 @@
 
         <div class="col-12 col-md-3 mx-3 finguer3 mb-4" style="background-color:red">
             <h3><strong>Anual Finguer Class</strong></h3>
-            <img class="img-responsive" src="/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
             <hr>
             <p>Este es el servicio anual de Finguer.</p>
             <p>Con Annual Finguer Class podrás disfrutar de un servicio y una atención completamente personalizada. Aparca tu coche el tiempo y las veces que quieras.</p>
@@ -115,27 +128,27 @@
 
 <div class="row text-center justify-content-center servicios" style="margin-top:20px">
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="/img/icons-pago-online.svg" alt="Servicios">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-pago-online.svg" alt="Servicios">
             <p><strong>Pago online</strong><br><strong>seguro</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
             <p><strong>Servicio</strong><br><strong>personalizado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
             <p><strong>Máxima seguridad</strong><br><strong>e higiene</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
             <p><strong>Servicio </strong><br><strong>de lavado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
             <p><strong>Parking</strong><br><strong>vigilado 24 h</strong></p>
         </div>
 </div>
@@ -160,164 +173,14 @@
         </div>
 
         <div class="col-12 col-md-10">
-            <img class="img-responsive" src="/img/mapa-finguer.jpg" alt="Mapa Finguer localizacion">
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/mapa-finguer.jpg" alt="Mapa Finguer localizacion">
         </div>
     </div>
 </div>
 
 </div>
 </div>
-<script>
-$(document).ready(function() {
-    $('#fecha_reserva').daterangepicker({
-        autoApply: true,
-        startDate: moment().add(2, 'days'),
-        endDate: moment().add(2, 'days'),
-        minDate: moment().startOf('day').add(2, 'days'), // No permitir seleccionar fechas anteriores a la fecha actual
-        locale: {
-            format: 'DD-MM-YYYY',
-            firstDay: 1, // Configura el primer día de la semana como lunes (0 para domingo, 1 para lunes, 2 para martes, etc.)
-            cancelLabel: 'Cancelar',
-            applyLabel: 'Aplicar', // Etiqueta del botón Aplicar
-            daysOfWeek: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"], // Nombres de los días de la semana
-            monthNames: [ // Nombres de los meses
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
-                "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-            ]
-        }
-    });
 
-    // Actualizar el estado del botón de pagar y calcular el precio total al cambiar el rango de fechas
-    $('#fecha_reserva').on('change', function() {
-        var fechas = $(this).val().split(" - ");
-        if (fechas.length === 2) {
-            // Calcular el costo total cuando se selecciona un rango de fechas
-            calcularTotal();
-
-            // Actualizar el estado del botón de pagar
-            actualizarBotonPagar();
-        }
-    });
-
-    // Función para verificar si las fechas seleccionadas son válidas
-    function validarFechas() {
-        var fechaReserva = $('#fecha_reserva').val();
-        var fechas = fechaReserva.split(" - ");
-        var fechaInicio = moment(fechas[0], 'DD-MM-YYYY');
-        var fechaFin = moment(fechas[1], 'DD-MM-YYYY');
-        var fechaActual = moment();
-        
-        // Calcular la diferencia en horas considerando tanto la fecha como la hora actual
-        var horasDiferencia = fechaInicio.diff(fechaActual, 'hours', true);
-
-        // Si la fecha de inicio es anterior a la fecha actual o dentro de las 12 horas
-        if (fechaInicio.isBefore(fechaActual) || horasDiferencia < 12) {
-            $('#mensaje_error').text('Tu fecha de llegada al parking debe ser al menos 12 horas después de la hora actual.');
-            return false;
-        }
-
-        // Si la fecha de fin es anterior o igual a la fecha de inicio
-        if (fechaFin.isSameOrBefore(fechaInicio)) {
-            $('#mensaje_error').text('La fecha de fin debe ser posterior a la fecha de inicio.');
-            return false;
-        }
-
-        $('#mensaje_error').text(''); // Limpiar mensaje de error si las fechas son válidas
-        return true;
-    }
-
-    // Función para actualizar el estado del botón de pagar
-    function actualizarBotonPagar() {
-        if (validarFechas()) {
-            $('#pagar').show(); // Mostrar el botón de pagar si las fechas son válidas
-        } else {
-            $('#pagar').hide(); // Ocultar el botón de pagar si hay errores en las fechas
-        }
-    }
-
-    // Calcular y mostrar el precio total y el número de días al cambiar cualquier elemento de selección o campo de fecha
-    function calcularTotal() {
-        // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
-        if (!validarFechas()) {
-            return;
-        }
-
-        // Cálculo del precio total y número de días
-        var tipoReserva = $('#tipo_reserva').val();
-        var costoReserva = 0;
-
-        if (tipoReserva === 'finguer_class') {
-            costoReserva += 10;
-        } else if (tipoReserva === 'gold_finguer') {
-            costoReserva += 25;
-        }
-
-        var fechas = $('#fecha_reserva').val().split(" - ");
-        var fechaInicio = moment(fechas[0], 'DD-MM-YYYY');
-        var fechaFin = moment(fechas[1], 'DD-MM-YYYY');
-        var diasReserva = fechaFin.diff(fechaInicio, 'days') + 1; // Sumar 1 para incluir el día de inicio
-        costoReserva += diasReserva * 5;
-
-        var costoLimpieza = parseInt($('#limpieza').val());
-
-        var precioTotal = costoReserva + costoLimpieza;
-        $('#precio_total').text(precioTotal);
-        $('#num_dias').text(diasReserva);
-        $('#total, #dias').show(); // Mostrar los mensajes de precio y número de días
-        return precioTotal;
-    }
-
-    // Calcular y mostrar el precio total y el número de días al cambiar cualquier elemento de selección o campo de fecha
-    $('#tipo_reserva, #limpieza').change(function() {
-        calcularTotal();
-    });
-
-    // Redirigir al usuario a la página de pago al hacer clic en el botón de pagar
-    $('#pagar').click(function() {
-        // Crear un formulario dinámicamente
-        let form = $('<form action="/pago/" method="post"></form>');
-
-        // Agregar las variables como campos ocultos al formulario
-        form.append('<input type="hidden" name="precioReservaSinLimpieza" value="' + calcularTotalSinLimpieza() + '">');
-        form.append('<input type="hidden" name="tipoReserva" value="' + $('#tipo_reserva').val() + '">');
-        form.append('<input type="hidden" name="fechaEntrada" value="' + $('#fecha_reserva').val().split(' - ')[0] + '">');
-        form.append('<input type="hidden" name="fechaSalida" value="' + $('#fecha_reserva').val().split(' - ')[1] + '">');
-        form.append('<input type="hidden" name="limpieza" value="' + $('#limpieza').val() + '">');
-        form.append('<input type="hidden" name="numDias" value="' + $('#num_dias').text() + '">');
-
-        // Adjuntar el formulario al cuerpo del documento y enviarlo
-        $('body').append(form);
-        form.submit();
-    });
-
-    // Función para calcular el precio total de la reserva sin incluir el costo de la limpieza
-    function calcularTotalSinLimpieza() {
-        // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
-        if (!validarFechas()) {
-            return;
-        }
-
-        // Cálculo del precio total sin incluir el costo de la limpieza
-        var tipoReserva = $('#tipo_reserva').val();
-        var costoReserva = 0;
-
-        if (tipoReserva === 'finguer_class') {
-            costoReserva += 10;
-        } else if (tipoReserva === 'gold_finguer') {
-            costoReserva += 25;
-        }
-
-        var fechas = $('#fecha_reserva').val().split(" - ");
-        var fechaInicio = moment(fechas[0], 'DD-MM-YYYY');
-        var fechaFin = moment(fechas[1], 'DD-MM-YYYY');
-        var diasReserva = fechaFin.diff(fechaInicio, 'days') + 1; // Sumar 1 para incluir el día de inicio
-        costoReserva += diasReserva * 5;
-
-        return costoReserva; // Retorna el precio total sin limpieza
-    }
-});
-
-</script>
 
     
 <?php

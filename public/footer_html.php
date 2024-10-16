@@ -3,7 +3,7 @@
         <div class="row justify-content-center">
 
         <div class="col-12 col-md-2">
-            <img class="img-responsive" src="/img/logo-header-sticky.png" alt="Finguer Parking Aeropuerto El Prat de Barcelona" >
+            <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/logo-header-sticky.png" alt="Finguer Parking Aeropuerto El Prat de Barcelona" >
         </div>
 
         <div class="col-12 col-md-2">
@@ -19,12 +19,12 @@
 
         <div class="col-12 col-md-2">
             <h6><strong>BCN PARKING SL</strong></h6>
-            <p>Carrer de Marisol 3<br>08860 Castelldefels<br>B65548919</p>
+            <p>Carrer de l'Alt Camp 9<br>08830 Sant Boi de Llobregat<br>CIF: B65548919</p>
         </div>
 
         <div class="col-12 col-md-2">
             <h6><strong>SÍGUENOS</strong></h6>
-            <a href="https://www.instagram.com/finguer_parking/" target="_blank"><img src="/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
+            <a href="https://www.instagram.com/finguer_parking/" target="_blank"><img src="<?php APP_ROOT;?>/public/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
         </div>
 
         </div>

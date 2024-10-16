@@ -75,10 +75,11 @@
     $diaSalida = $fecha_objeto2->format("Y-m-d");
     $checkIn = 5;
     $fechaReserva = date("Y-m-d H:i:s");
-
+    $seguroCancelacion = $_POST["cancelacion"];
+    
     if (!isset($hasError)) {
       global $conn;
-      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, importe=:importe";
+      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, importe=:importe, seguroCancelacion=:seguroCancelacion";
       $stmt= $conn->prepare($sql);
       $stmt->bindParam(":idClient", $idClient, PDO::PARAM_STR);
       $stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_STR);
@@ -95,6 +96,7 @@
       $stmt->bindParam(":checkIn", $checkIn, PDO::PARAM_STR);
       $stmt->bindParam(":fechaReserva", $fechaReserva, PDO::PARAM_STR);
       $stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
+      $stmt->bindParam(":seguroCancelacion", $seguroCancelacion, PDO::PARAM_INT);
 
       if ($stmt->execute()) {      
         // response output

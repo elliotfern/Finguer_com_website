@@ -123,28 +123,26 @@ $route = new Route();
 
 $url_root = $_SERVER['DOCUMENT_ROOT'];
 $url_server = $_SERVER['HTTP_HOST'];
-$dev = "";
 
 define("APP_SERVER", $url_server); 
 define("APP_ROOT", $url_root);
-define("APP_DEV",$dev);
 
 // Route for paths containing 
-require_once(APP_ROOT . '/connection.php');
-require_once(APP_ROOT . '/apiRedsys.php');
-require_once(APP_ROOT . '/public/inc/funcions.php');
+require(APP_ROOT . '/public/connection.php');
+require(APP_ROOT . '/public/apiRedsys.php');
+require(APP_ROOT . '/public/inc/funcions.php');
 
 session_start();
 
 // OPERACIONS SERVIDOR
-$route->add("/api/alta-client","process-data/crear-usuario.php");
-$route->add("/api/alta-reserva","process-data/crear-reserva.php");
-$route->add("/api/pago-ok-reserva","process-data/modificar-reserva-pago-ok.php");
+$route->add("/api/alta-client","api/crear-usuario.php");
+$route->add("/api/alta-reserva","api/crear-reserva.php");
+$route->add("/api/pago-ok-reserva","api/modificar-reserva-pago-ok.php");
 
 // aqui comença la lògica del sistema
 
         // CARREGAR HEADER
-        require_once(APP_ROOT . '/public/header_html.php');
+        require(APP_ROOT . '/public/header_html.php');
 
         // 01. Inici
         $route->add("/","public/index.php");

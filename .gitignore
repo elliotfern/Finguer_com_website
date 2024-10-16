@@ -1,7 +1,16 @@
-/vendor/
+# Ignorar archivos y directorios generados por el sistema operativo
+.DS_Store
+Thumbs.db
 /.vscode/
-/img/
-.env
-error_log
-finguer-web.code-workspace
 .gitignore
+error_log
+.env
+finguer-web.code-workspace
+
+# Ignorar logs y archivos temporales
+/logs/
+/temp/
+
+# Ignorar directorio de dependencias (ejemplo para PHP y Composer)
+/vendor/
+/node_modules/

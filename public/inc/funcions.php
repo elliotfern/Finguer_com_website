@@ -35,6 +35,7 @@ function verificarPagament($id) {
             $token3 = $_ENV['TERMINAL'];
             $url_Ok = $_ENV['URLOK'];
             $url_Ko = $_ENV['URLKO'];
+            $brevoApi = $_ENV['BREVO_API'];
             $url = 'https://finguer.com/compra-realizada';
     
             $url = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
@@ -179,15 +180,15 @@ function enviarConfirmacio($id) {
                 try {
                     // Configura el servidor SMTP
                     $mail->isSMTP();
-                    $mail->Host       = 'hl121.lucushost.org';
+                    $mail->Host       = 'smtp-relay.brevo.com'; // Servidor SMTP de Brevo
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = 'web@finguer.com';
-                    $mail->Password   = $email_pass;
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                    $mail->Port       = 465;
+                    $mail->Username   = '7a0605001@smtp-brevo.com'; // Tu dirección de correo de Brevo
+                    $mail->Password   = $brevoApi; // Tu contraseña de Brevo o API key
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Habilitar encriptación TLS
+                    $mail->Port       = 587; // Puerto SMTP para TLS
 
                     // Configura el remitente y el destinatario
-                    $mail->setFrom('web@finguer.com', 'Finguer.com');
+                    $mail->setFrom('hello@finguer.com', 'Finguer.com');
                     $mail->addAddress($email_old, $nombre_old);
 
                     // Añade destinatarios ocultos (BCC) si es necesario
@@ -432,9 +433,9 @@ if (is_numeric($id)) {
                         <th>
                         <strong>BCN PARKING S.L</strong><br>
                         CIF: B65548919<br>
-                        Rambla de Marisol 3<br>
-                        Barcelona, (Barcelona)<br>
-                        Código postal: 08860<br>
+                        Carrer de l\'Alt Camp, 9<br>
+                        Sant Boi de Llobregat (Barcelona)<br>
+                        Código postal: 08830<br>
                         ESPAÑA
                         </th>
                       </tr>
