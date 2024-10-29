@@ -61,7 +61,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
     $porcentaje_iva = 21;
     
     // 1 - Calcula el precio de la reserva sin IVA
-    $reserva_sin_iva = $precio_reserva_sin_limpieza / 1.21;
+    $reserva_sin_iva = $precio_reserva_sin_limpieza;
 
     // 2- Calcula el precio de la limpieza sin IVA
     $limpieza_sin_iva = $precioLimpieza / 1.21;
@@ -118,6 +118,8 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
         $miObj2 = new RedsysAPI;
 
         // Se Rellenan los campos
+        $payment = "z";
+
         $miObj2->setParameter("DS_MERCHANT_PAYMETHODS",$payment);
         $miObj2->setParameter("DS_MERCHANT_AMOUNT",$amount);
         $miObj2->setParameter("DS_MERCHANT_ORDER",$id);

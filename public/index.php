@@ -36,9 +36,9 @@
             <label for="limpieza">¿Quieres añadir un servicio de limpieza a tu reserva?</label>
             <select id="limpieza" name="limpieza">
                 <option value="0">Sin limpieza</option>
-                <option value="15">Servicio de limpieza exterior - 15 euros</option>
-                <option value="25">Servicio de lavado exterior + aspirado tapicería interior - 25 euros</option>
-                <option value="55">Lavado PRO. Lo dejamos como nuevo - 55 euros</option>
+                <option value="15">Servicio de limpieza exterior (15€ IVA incluido)</option>
+                <option value="25">Servicio de lavado exterior + aspirado tapicería interior (25€ IVA incluido)</option>
+                <option value="55">Lavado PRO. Lo dejamos como nuevo (55€ IVA incluido)</option>
             </select>
 
              <!-- Opciones de limpieza -->
@@ -55,12 +55,14 @@
             </div>
 
             <!-- Espacio para mostrar el precio total y el número de días -->
-            <p id="total" style="display: none;">Precio Total: <span id="precio_total"></span> € IVA incluido</p>
+            <p id="subTotal" style="display:none;"></p>
+            <p id="precio_iva" style="display:none;"></p>
+            <p id="total" style="display:none;"></p>
             <p id="dias" style="display: none;">Número de días: <span id="num_dias"></span></p>
 
             <!-- Espacio para mostrar mensajes de error -->
             <div id="mensaje_error" style="color: red;"></div>
-            
+
             <!-- Botón de pagar -->
             <button type="button" id="pagar" style="display: none;">Pagar</button>
         </form>

@@ -45,13 +45,13 @@ document.addEventListener("DOMContentLoaded", function() {
     function loadGoogleAnalytics() {
         const script = document.createElement('script');
         script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-4Z7Y4VQ4QL';
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-NH541ZSG2V';
         document.head.appendChild(script);
 
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        gtag('config', 'G-4Z7Y4VQ4QL');
+        gtag('config', 'G-NH541ZSG2V');
     }
 });

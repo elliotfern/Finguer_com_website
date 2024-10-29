@@ -101,7 +101,6 @@ function verificarPagament($id) {
     }
 }
 
-
 function enviarConfirmacio($id) {
     global $conn;
 

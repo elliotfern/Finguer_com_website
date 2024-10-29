@@ -1,5 +1,4 @@
 import { calcularTotalReserva } from "./CalcularTotalReserva.js";
-import { calcularTotalSinLimpieza } from "./CalcularTotalReservaSinLimpieza.js";
 
 export const sendForm = () => {
   // Redirigir al usuario a la página de pago al hacer clic en el botón de pagar
@@ -12,7 +11,7 @@ export const sendForm = () => {
       event.preventDefault(); //
 
       // Llamar a calcularTotal y desestructurar el resultado
-      const { costeSeguro } = calcularTotalReserva();
+      const { costeSeguro, precioSinLimpieza } = calcularTotalReserva();
 
       // Crear el formulario
       const form = document.createElement('form');
@@ -30,7 +29,7 @@ export const sendForm = () => {
 
       // Crear un objeto con los datos del formulario
       const formData: Record<string, string> = {
-        precioReservaSinLimpieza: String(calcularTotalSinLimpieza()), // Convertir a string
+        precioReservaSinLimpieza: String(precioSinLimpieza), 
         tipoReserva: (document.getElementById('tipo_reserva') as HTMLInputElement | null)?.value || '',
         fechaEntrada: '',
         fechaSalida: '',

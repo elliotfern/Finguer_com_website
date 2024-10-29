@@ -1,15 +1,28 @@
-import { validarFechas } from "./ValidarFechas.js";
-import { calcularTotalDiasReserva } from "./CalcularTotalDiasReserva.js";
+import { validarFechas } from './ValidarFechas.js';
+import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva.js';
+import { calcularPrecioSinIva } from './CalcularPrecioSinIva.js';
+import { calcularPrecioConIva } from './CalcularPrecioConIva.js';
 
-export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number } => {
+export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioSinLimpieza: number } => {
   let precioTotal = 0;
+  let precioSubtotal = 0;
+  let costeIva = 0;
   let costeSeguro = 0;
   let diasReserva = 0;
   let costoReserva = 0;
+  const costoDia = 5;
+  const porcentajeIva = 0.21;
+  const costeReservaFinguerClass = 10.01;
+  const costeReservaGoldClass = 25;
+
+  const costeReservaFinguerClassSinIva = calcularPrecioSinIva(costeReservaFinguerClass, porcentajeIva).precioSinIva;
+  const costeReservaGoldClassSinIva = calcularPrecioSinIva(costeReservaGoldClass, porcentajeIva).precioSinIva;
+
+  const costoDiaSinIva = calcularPrecioSinIva(costoDia, porcentajeIva).precioSinIva;
 
   // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
   if (!validarFechas()) {
-    return { precioTotal: 0, costeSeguro: 0 };
+    return { precioTotal: 0, costeSeguro: 0, precioSinLimpieza: 0 };
   }
 
   // Cálculo del precio total y número de días
@@ -19,13 +32,13 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
     const tipoReserva = tipoReservaElement.value;
 
     if (tipoReserva === 'finguer_class') {
-      costoReserva += 10;
+      costoReserva += costeReservaFinguerClassSinIva;
     } else if (tipoReserva === 'gold_finguer') {
-      costoReserva += 25;
+      costoReserva += costeReservaGoldClassSinIva;
     }
   }
 
-  precioTotal = costoReserva; // Empezamos con el costo de reserva
+  precioSubtotal = costoReserva;
 
   const fechaReserva = document.getElementById('fecha_reserva') as HTMLInputElement | null;
 
@@ -33,13 +46,23 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
     diasReserva = calcularTotalDiasReserva(fechaReserva);
   }
 
-  precioTotal += diasReserva * 5; // Añadir costo por día
+  precioSubtotal += diasReserva * costoDiaSinIva; // Añadir costo por día
+  const precioSinLimpieza = precioSubtotal;
 
   const limpiezaElement = document.getElementById('limpieza') as HTMLInputElement | null;
 
   if (limpiezaElement) {
     const costoLimpieza = parseInt(limpiezaElement.value, 10) || 0; // Asegúrate de que sea un número
-    precioTotal += costoLimpieza; // Añadir costo de limpieza al precio total
+    let costoLimpiezaSinIva = 0;
+    if (costoLimpieza === 15) {
+      costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
+    } else if (costoLimpieza === 25) {
+      costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
+    } else if (costoLimpieza === 55) {
+      costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
+    }
+
+    precioSubtotal += costoLimpiezaSinIva; // Añadir costo de limpieza al precio total
   }
 
   // Verificar si el cliente ha seleccionado el seguro de cancelación
@@ -47,29 +70,44 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
 
   // Si el cliente ha seleccionado 'Sí' en el seguro de cancelación
   if (seguroCancelacion === '1') {
-    costeSeguro = precioTotal * 0.3; // Calcular el 30% del precio total
+    costeSeguro = precioSubtotal * 0.3; // Calcular el 30% del precio total
 
     if (costeSeguro < 12) {
       costeSeguro = 12; // Si el 30% es menor a 12, el coste del seguro es 12 euros
     }
 
-    precioTotal += costeSeguro; // Añadir el coste del seguro al precio total
+    precioSubtotal += costeSeguro; // Añadir el coste del seguro al precio total
   }
+
+  // Calcular IVA (+21%)
+  costeIva = calcularPrecioConIva(precioSubtotal, porcentajeIva).iva;
+
+  // 5 - Calcula el Importe total iva incluido
+  precioTotal = calcularPrecioConIva(precioSubtotal, porcentajeIva).precioConIva;
 
   // Actualización de los elementos DOM para mostrar el precio total y número de días
-  const precioTotalElement = document.getElementById('precio_total');
-  const numDiasElement = document.getElementById('num_dias');
   const totalElement = document.getElementById('total');
+
+  const precioSubTotalElement = document.getElementById('subTotal');
+
+  const ivaElement = document.getElementById('precio_iva');
+
+  const numDiasElement = document.getElementById('num_dias');
   const diasElement = document.getElementById('dias');
 
-  if (precioTotalElement && numDiasElement && totalElement && diasElement) {
-    precioTotalElement.textContent = precioTotal.toFixed(2); // Mostrar el precio total con 2 decimales
-    numDiasElement.textContent = diasReserva.toString(); // Mostrar el número de días de la reserva
+  if (numDiasElement && totalElement && diasElement && precioSubTotalElement && ivaElement) {
+    precioSubTotalElement.innerHTML = `Subtotal: ${precioSubtotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    ivaElement.innerHTML = `IVA (21%): ${costeIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+    totalElement.innerHTML = `Precio Total: ${precioTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € IVA incluido`;
+
+    numDiasElement.innerHTML = diasReserva.toString();
 
     // Mostrar los mensajes de precio y número de días
+    precioSubTotalElement.style.display = 'block';
     totalElement.style.display = 'block';
     diasElement.style.display = 'block';
+    ivaElement.style.display = 'block';
   }
 
-  return { precioTotal, costeSeguro }; // Retornar al final de la función
+  return { precioTotal, costeSeguro, precioSinLimpieza };
 };

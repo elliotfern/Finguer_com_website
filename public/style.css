@@ -105,7 +105,9 @@ input[type="text"] {
 }
 
 #total,
-#dias {
+#dias,
+#subTotal,
+#precio_iva {
     font-size: 16px;
     font-weight: bold;
     margin-top: 20px;

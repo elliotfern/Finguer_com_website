@@ -11,5 +11,5 @@ export const calcularTotalDiasReserva = (fechaReserva) => {
         diferenciaEnDias = Math.ceil(diferenciaEnMilisegundos / (1000 * 60 * 60 * 24));
     }
     // Sumar 1 para incluir el día de inicio
-    return diferenciaEnDias + 1;
+    return diferenciaEnDias;
 };
