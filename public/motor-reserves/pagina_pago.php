@@ -6,6 +6,7 @@ $token3 = $_ENV['TERMINAL'];
 $url_Ok = $_ENV['URLOK'];
 $url_Ko = $_ENV['URLKO'];
 
+
 // Recibir los datos enviados por POST
 $precio_reserva_sin_limpieza = isset($_POST['precioReservaSinLimpieza']) ? $_POST['precioReservaSinLimpieza'] : 0;
 $tipoReserva = isset($_POST['tipoReserva']) ? $_POST['tipoReserva'] : '';
@@ -91,8 +92,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
         $urlOK = $url_Ok;
         $urlKO = $url_Ko;
         $id = date("mdHis");
-        $amount = $importe_total * 100;
-        $payment = "C";
+        $amount = round($importe_total * 100);
 
         // Se Rellenan los campos
         $miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
@@ -104,6 +104,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
         $miObj->setParameter("DS_MERCHANT_MERCHANTURL",$url);
         $miObj->setParameter("DS_MERCHANT_URLOK",$urlOK);
         $miObj->setParameter("DS_MERCHANT_URLKO",$urlKO);
+
 
         //Datos de configuración
         $version="HMAC_SHA256_V1";

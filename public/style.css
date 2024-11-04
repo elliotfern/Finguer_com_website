@@ -223,7 +223,7 @@ input[type="text"] {
 }
 
 /* COOKIE BANNER */
-.cookie-banner {
+#cookie-banner {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -236,17 +236,17 @@ input[type="text"] {
     /* Asegura que esté por encima de todo lo demás */
 }
 
-.cookie-banner button {
+#cookie-banner button {
     margin: 5px;
     padding: 8px 20px;
     border: none;
     cursor: pointer;
 }
 
-.accept-cookies-btn {
+#accept-cookies-btn {
     background-color: #4CAF50;
 }
 
-.reject-cookies-btn {
+#reject-cookies-btn {
     background-color: #f44336;
 }
