@@ -6,6 +6,7 @@ Thumbs.db
 error_log
 .env
 finguer-web.code-workspace
+appPizza.ts
 
 # Ignorar logs y archivos temporales
 /logs/

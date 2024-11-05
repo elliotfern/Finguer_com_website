@@ -8,14 +8,19 @@ $url_Ko = $_ENV['URLKO'];
 
 
 // Recibir los datos enviados por POST
-$precio_reserva_sin_limpieza = isset($_POST['precioReservaSinLimpieza']) ? $_POST['precioReservaSinLimpieza'] : 0;
+$costeReserva = isset($_POST['costeReserva']) ? $_POST['costeReserva'] : 0;
+$costeLimpieza = isset($_POST['costeLimpieza']) ? $_POST['costeLimpieza'] : 0;
+$costeSubTotal = isset($_POST['costeSubTotal']) ? $_POST['costeSubTotal'] : 0;
+$costeIva = isset($_POST['costeIva']) ? $_POST['costeIva'] : 0;
+$costeTotal = isset($_POST['costeTotal']) ? $_POST['costeTotal'] : 0;
+$costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
+
 $tipoReserva = isset($_POST['tipoReserva']) ? $_POST['tipoReserva'] : '';
 $fechaEntrada = isset($_POST['fechaEntrada']) ? $_POST['fechaEntrada'] : '';
 $fechaSalida = isset($_POST['fechaSalida']) ? $_POST['fechaSalida'] : '';
 $tipoLimpieza = isset($_POST['limpieza']) ? $_POST['limpieza'] : 0;
 $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
 $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelacion'] : 0;
-$costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
 
 // Obtener el precio total de la reserva desde la URL
     if ($tipoReserva === "finguer_class") {
@@ -28,19 +33,15 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
 
     if ($tipoLimpieza == 0) {
         $tipoLimpieza2 = 0;
-        $precioLimpieza = 0;
         $codigoLimpieza = 0;
     } elseif ($tipoLimpieza === "15") {
         $tipoLimpieza2 = "Servicio de limpieza exterior";
-        $precioLimpieza = 15;
         $codigoLimpieza = 1;
     } elseif ($tipoLimpieza === "25") {
         $tipoLimpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-        $precioLimpieza = 25;
         $codigoLimpieza = 2;
     } elseif ($tipoLimpieza === "55") {
         $tipoLimpieza2 = "Lavado PRO. Lo dejamos como nuevo";
-        $precioLimpieza = 55;
         $codigoLimpieza = 3;
     }
 
@@ -57,29 +58,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
     // Crear la fecha en el formato deseado "YYYY-D-M"
     $fechaEntrada2 = date('Y-j-m', $fechaUnix1);
     $fechaSalida2 = date('Y-j-m', $fechaUnix2);
-
-    //  Calcula los precios -->
-    $porcentaje_iva = 21;
-    
-    // 1 - Calcula el precio de la reserva sin IVA
-    $reserva_sin_iva = $precio_reserva_sin_limpieza;
-
-    // 2- Calcula el precio de la limpieza sin IVA
-    $limpieza_sin_iva = $precioLimpieza / 1.21;
-
-    // 3 - Calcula el precio del seguro cancelacion sin IVA
-    $costeSeguro_sin_iva = $costeSeguro / 1.21;
-
-    // 3 - Calcula el subtotal
-    $subtotal = $reserva_sin_iva + $limpieza_sin_iva + $costeSeguro_sin_iva;
-
-    // 4 - Calcula el IVA total 21%
-    $coste_iva = $subtotal * 0.21;
-    
-    // 5 - Calcula el Importe total iva incluido
-    $importe_total = $subtotal + $coste_iva;
-
-    
+      
     // OBJECTE REDSYS
         $miObj = new RedsysAPI;
 
@@ -92,7 +71,7 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
         $urlOK = $url_Ok;
         $urlKO = $url_Ko;
         $id = date("mdHis");
-        $amount = round($importe_total * 100);
+        $amount = round($costeTotal * 100);
 
         // Se Rellenan los campos
         $miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
@@ -394,21 +373,21 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
                 </ul>
                 </td>
                 <td>
-                <p> <?php echo number_format($reserva_sin_iva , 2, ',', '.'); ?> € (sin IVA);
+                <p> <?php echo number_format($costeReserva , 2, ',', '.'); ?> € (sin IVA);
             </td>
             </tr>
 
             <tr>
                 <td><strong>Seguro de Cancelación: </strong> <?php echo $cancelacion; ?></td>
-                <td><?php echo number_format($costeSeguro_sin_iva, 2, ',', '.'); ?> € (sin IVA)</td>
+                <td><?php echo number_format($costeSeguro, 2, ',', '.'); ?> € (sin IVA)</td>
             </tr>
 
                 <?php
-                if ($precioLimpieza !== 0) {
+                if ($costeLimpieza !== 0) {
                     ?> 
                     <tr>
                     <td><strong>Limpieza: </strong> <?php echo $tipoLimpieza2 ?></td>
-                    <td><?php echo number_format($limpieza_sin_iva, 2, ',', '.'); ?> € (sin IVA)</td>
+                    <td><?php echo number_format($costeLimpieza, 2, ',', '.'); ?> € (sin IVA)</td>
                     </tr>
                     <?php
                 } else {
@@ -417,17 +396,17 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
                 ?> 
                     <tr>
                     <th scope="row">Subtotal</th>
-                    <td><strong><?php echo number_format($subtotal, 2, ',', '.'); ?> € (sin IVA)</strong></td>
+                    <td><strong><?php echo number_format($costeSubTotal, 2, ',', '.'); ?> € (sin IVA)</strong></td>
                     </tr>
 
                     <tr>
                     <th scope="row">IVA (21%)</th>
-                    <td><strong><?php echo number_format($coste_iva, 2, ',', '.'); ?> €</strong></td>
+                    <td><strong><?php echo number_format($costeIva, 2, ',', '.'); ?> €</strong></td>
                     </tr>
 
                     <tr>
                     <th scope="row">Total</th>
-                    <td><strong><?php echo number_format($importe_total, 2, ',', '.'); ?> €</strong></td>
+                    <td><strong><?php echo number_format($costeTotal, 2, ',', '.'); ?> €</strong></td>
                     </tr>
         </tbody>
         </table>
@@ -457,11 +436,11 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
             <!-- Botón de pagar dentro de un div oculto -->
             <div id="div_pagar">
                 <button id="pagar_tarjeta" style="margin-top:25px">
-                    <strong>PAGO SEGURO CON TARJETA <?php echo number_format($importe_total, 2, ',', '.'); ?> €</strong>
+                    <strong>PAGO SEGURO CON TARJETA <?php echo number_format($costeTotal, 2, ',', '.'); ?> €</strong>
                 </button>
 
                 <button id="pago_bizum" style="margin-top:25px">
-                    <strong>PAGO SEGURO CON BIZUM <?php echo number_format($importe_total, 2, ',', '.'); ?> €</strong>
+                    <strong>PAGO SEGURO CON BIZUM <?php echo number_format($costeTotal, 2, ',', '.'); ?> €</strong>
                 </button>
             </div>
         </form>
@@ -559,8 +538,13 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
                                     vuelo: $("#vuelo").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0",
-                                    importe: $("#importe").val(),
-                                    cancelacion: "<?php echo $seguroCancelacion; ?>"
+                                    cancelacion: "<?php echo $seguroCancelacion; ?>",
+                                    costeSeguro: "<?php echo $costeSeguro; ?>",
+                                    costeReserva: "<?php echo $costeReserva; ?>",
+                                    costeLimpieza: "<?php echo $costeLimpieza; ?>",
+                                    costeSubTotal: "<?php echo $costeSubTotal; ?>",
+                                    costeIva: "<?php echo $costeIva; ?>",
+                                    costeTotal: "<?php echo $costeTotal; ?>"
                                 },
                                 success: function(response) {
                                     // Manejar la respuesta si es necesario
@@ -660,8 +644,13 @@ $costeSeguro = isset($_POST['costeSeguro']) ? $_POST['costeSeguro'] : 0;
                                     vuelo: $("#vuelo").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0", // quité la coma extra al final
-                                    importe: $("#importe").val(),
-                                    cancelacion: "<?php echo $seguroCancelacion; ?>"
+                                    cancelacion: "<?php echo $seguroCancelacion; ?>",
+                                    costeSeguro: "<?php echo $costeSeguro; ?>",
+                                    costeReserva: "<?php echo $costeReserva; ?>",
+                                    costeLimpieza: "<?php echo $costeLimpieza; ?>",
+                                    costeSubTotal: "<?php echo $costeSubTotal; ?>",
+                                    costeIva: "<?php echo $costeIva; ?>",
+                                    costeTotal: "<?php echo $costeTotal; ?>"
                                 },
                                 success: function(response) {
                                     // Manejar la respuesta si es necesario

@@ -3,13 +3,15 @@ import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva.js';
 import { calcularPrecioSinIva } from './CalcularPrecioSinIva.js';
 import { calcularPrecioConIva } from './CalcularPrecioConIva.js';
 
-export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioSinLimpieza: number } => {
+export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioReserva: number; costeIva: number; precioSubtotal: number; costoLimpiezaSinIva: number, diasReserva: number } => {
   let precioTotal = 0;
   let precioSubtotal = 0;
   let costeIva = 0;
   let costeSeguro = 0;
   let diasReserva = 0;
   let costoReserva = 0;
+  let precioReserva = 0;
+  let costoLimpiezaSinIva = 0;
   const costoDia = 5;
   const porcentajeIva = 0.21;
   const costeReservaFinguerClass = 10.01;
@@ -22,7 +24,7 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
 
   // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
   if (!validarFechas()) {
-    return { precioTotal: 0, costeSeguro: 0, precioSinLimpieza: 0 };
+    return { precioTotal: 0, costeSeguro: 0, precioReserva: 0, costeIva: 0, precioSubtotal: 0, costoLimpiezaSinIva: 0, diasReserva: 0 };
   }
 
   // Cálculo del precio total y número de días
@@ -39,6 +41,7 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   }
 
   precioSubtotal = costoReserva;
+  precioReserva = costoReserva;
 
   const fechaReserva = document.getElementById('fecha_reserva') as HTMLInputElement | null;
 
@@ -46,14 +49,14 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
     diasReserva = calcularTotalDiasReserva(fechaReserva);
   }
 
+  precioReserva += diasReserva * costoDiaSinIva; // Añadir costo por día
   precioSubtotal += diasReserva * costoDiaSinIva; // Añadir costo por día
-  const precioSinLimpieza = precioSubtotal;
 
   const limpiezaElement = document.getElementById('limpieza') as HTMLInputElement | null;
 
   if (limpiezaElement) {
     const costoLimpieza = parseInt(limpiezaElement.value, 10) || 0; // Asegúrate de que sea un número
-    let costoLimpiezaSinIva = 0;
+
     if (costoLimpieza === 15) {
       costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
     } else if (costoLimpieza === 25) {
@@ -86,28 +89,40 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   precioTotal = calcularPrecioConIva(precioSubtotal, porcentajeIva).precioConIva;
 
   // Actualización de los elementos DOM para mostrar el precio total y número de días
+  const costeReservaElement = document.getElementById('costeReserva');
+  const costeSeguroElement = document.getElementById('costeSeguro');
+  const costeLimpiezaElement = document.getElementById('costeLimpieza');
   const totalElement = document.getElementById('total');
-
   const precioSubTotalElement = document.getElementById('subTotal');
-
   const ivaElement = document.getElementById('precio_iva');
-
-  const numDiasElement = document.getElementById('num_dias');
   const diasElement = document.getElementById('dias');
 
-  if (numDiasElement && totalElement && diasElement && precioSubTotalElement && ivaElement) {
+  if (totalElement && diasElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement) {
+    costeReservaElement.innerHTML = `Coste Reserva (${diasReserva} ${diasReserva > 1 ? 'días' : 'día'}): ${precioReserva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    if (costeSeguro !== 0) {
+      costeSeguroElement.innerHTML = `Coste Seguro: ${costeSeguro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    } else {
+      costeSeguroElement.innerHTML = ''; // Opcional: vacía el contenido si no quieres mostrar nada cuando es 0
+    }
+
+    if (costoLimpiezaSinIva !== 0) {
+      costeLimpiezaElement.innerHTML = `Coste Limpieza: ${costoLimpiezaSinIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    } else {
+      costeLimpiezaElement.innerHTML = ``;
+    }
+
     precioSubTotalElement.innerHTML = `Subtotal: ${precioSubtotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
     ivaElement.innerHTML = `IVA (21%): ${costeIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
     totalElement.innerHTML = `Precio Total: ${precioTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € IVA incluido`;
 
-    numDiasElement.innerHTML = diasReserva.toString();
-
     // Mostrar los mensajes de precio y número de días
     precioSubTotalElement.style.display = 'block';
     totalElement.style.display = 'block';
-    diasElement.style.display = 'block';
     ivaElement.style.display = 'block';
+    costeReservaElement.style.display = 'block';
+    costeSeguroElement.style.display = 'block';
+    costeLimpiezaElement.style.display = 'block';
   }
 
-  return { precioTotal, costeSeguro, precioSinLimpieza };
+  return { precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, diasReserva };
 };

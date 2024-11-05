@@ -31,7 +31,6 @@
 </script>
             
 <?php
-require_once(APP_ROOT . '/apiRedsys.php');
 
 $token = $_ENV['MERCHANTCODE'];
 $token2 = $_ENV['KEY'];

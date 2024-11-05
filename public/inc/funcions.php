@@ -35,7 +35,6 @@ function verificarPagament($id) {
             $token3 = $_ENV['TERMINAL'];
             $url_Ok = $_ENV['URLOK'];
             $url_Ko = $_ENV['URLKO'];
-            $brevoApi = $_ENV['BREVO_API'];
             $url = 'https://finguer.com/compra-realizada';
     
             $url = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
@@ -56,42 +55,62 @@ function verificarPagament($id) {
                 $property->setAccessible(true);
                 return $property->getValue($object);
             }
-    
-            // Acceder al valor de Ds_Response
-            $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
-    
-            // Verificar el valor de Ds_Response
-            if ($ds_response === '9218') {
-                echo "<div class='alert alert-danger text-center' role='alert'></p>
-                <p><img src='https://control.finguer.com/inc/img/warning.png' alt='Pagament Error'></p>
-                <p><strong>Pagament fallit</strong>.
-                </div>";
-            } elseif ($ds_response === '0000') {
-                echo "<div class='alert alert-success text-center' role='alert'>
-                <p><img src='https://control.finguer.com/inc/img/correct.png' alt='Pagament OK'></p>
-                <p><strong>Pagament verificat correctament amb RedSys.</strong></p>
-                </div>";
-    
-                // Ara camviem l'estat del pagament a la base de dades
-    
-                $processed = 1;
-    
-                $sql = "UPDATE reserves_parking SET processed=:processed
-                WHERE id=:id";
-                $stmt = $conn->prepare($sql);
-                $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
-                $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
-                $stmt->execute();
 
-                enviarConfirmacio($id_old);
-                enviarFactura($id_old);
+            try {
+                $response = $client->getTransaction($order, $terminal, $merchant_code);
     
-            } else {
+                if (!$response) {
+                    throw new Exception("No s'ha obtingut cap resposta de la API de RedSys.");
+                }
+    
+                // Acceder a las propiedades
+                $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
+    
+                // Verificar el valor de Ds_Response
+                switch ($ds_response) {
+                    case '9218':
+                        echo "<div class='alert alert-danger text-center' role='alert'>
+                                <p><strong>Pagament fallit</strong>.</p>
+                              </div>";
+                        break;
+    
+                    case '0000':
+                        echo "<div class='alert alert-success text-center' role='alert'>
+                                <p><strong>Pagament verificat correctament amb RedSys.</strong></p>
+                              </div>";
+    
+                        // Ara camviem l'estat del pagament a la base de dades
+    
+                        $processed = 1;
+            
+                        $sql = "UPDATE reserves_parking SET processed=:processed
+                        WHERE id=:id";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
+                        $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
+                        $stmt->execute();
+
+                        enviarConfirmacio($id_old);
+                        enviarFactura($id_old);
+                        break;
+    
+                    default:
+                        echo "<div class='alert alert-danger text-center' role='alert'>
+                                <p><strong>No s'ha pogut verificar aquest pagament. Pagament fallit o denegat amb RedSys.</strong></p>
+                              </div>";
+                        break;
+                }
+            } catch (Exception $e) {
+                // Manejar el error de la API de Redsys
                 echo "<div class='alert alert-danger text-center' role='alert'>
-                <p><img src='https://control.finguer.com/inc/img/warning.png' alt='Pagament Error'></p>
-                <p><strong>No s'ha pogut verificar aquest pagament. Pagament fallit o denegat amb RedSys.</strong></p>
-                </div>";
+                        <p><strong>Error de pagament: " . htmlspecialchars($e->getMessage()) . "</strong></p>";
+                            if ($e->getMessage() === 'Error XML0024') {
+                                // Mostrar mensaje para el error específico
+                                echo "<p><strong>Missatge de Redsys: No existen operaciones para los datos solicitados.</strong></p>";
+                            }
+                        "</div>";    
             }
+    
     
         } else {
             echo "Error: aquest ID no és vàlid";
@@ -106,6 +125,7 @@ function enviarConfirmacio($id) {
 
     $id = $id;
     $email_pass = $_ENV['EMAIL_PASS'];
+    $brevoApi = $_ENV['BREVO_API'];
 
     // Incluye los archivos autoload de PHPMailer
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
@@ -120,7 +140,7 @@ function enviarConfirmacio($id) {
             $codi_resposta = 2;
 
             // consulta general reserves 
-            $sql = "SELECT r.idReserva, r.idClient, r.importe, r.processed, r.fechaReserva, r.tipo, u.email, u.nombre, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores
+            $sql = "SELECT r.idReserva, r.idClient, r.processed, r.fechaReserva, r.tipo, u.email, u.nombre, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores, r.importe, r.subTotal, r.importeIva, r.costeReserva, r.costeSeguro, r.costeLimpieza
             FROM reserves_parking AS r
             LEFT JOIN usuaris AS u ON r.idClient = u.id
             WHERE r.id = $id_old";
@@ -131,7 +151,6 @@ function enviarConfirmacio($id) {
             foreach($result as $row) {
                 $idReserva_old = $row['idReserva'];
                 $idClient_old = $row['idClient'];
-                $importe_old = $row['importe'];
                 $processed_old = $row['processed'];
                 $fechaReserva_old = $row['fechaReserva'];
                 $nombre_old = $row['nombre'];
@@ -145,6 +164,12 @@ function enviarConfirmacio($id) {
                 $vehiculo_old = $row['vehiculo'];
                 $matricula_old = $row['matricula'];
                 $vuelo_old = $row['vuelo'];
+                $importe_old = $row['importe'];
+                $subTotal_old = $row['subTotal'];
+                $importeIva_old = $row['importeIva'];
+                $costeReserva_old = $row['costeReserva'];
+                $costeSeguro_old = $row['costeSeguro'];
+                $costeLimpieza_old = $row['costeLimpieza'];
 
                 $tipo = $row['tipo'];
                 if ($tipo == 1) {
@@ -262,6 +287,7 @@ function enviarConfirmacio($id) {
 
 function enviarFactura($id) {
     global $conn;
+    $brevoApi = $_ENV['BREVO_API'];
 
 $id = $id;
 
@@ -284,7 +310,7 @@ if (is_numeric($id)) {
         $codi_resposta = 2;
 
         // consulta general reserves 
-        $sql = "SELECT r.idReserva, r.idClient, r.importe, r.processed, r.fechaReserva, r.tipo, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores,
+        $sql = "SELECT r.idReserva, r.idClient, r.processed, r.fechaReserva, r.tipo, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores,
         u.email, 
         u.nombre,
         u.email,
@@ -294,7 +320,7 @@ if (is_numeric($id)) {
         u.ciudad,
         u.codigo_postal,
         u.pais,
-        u.telefono
+        u.telefono, r.importe, r.subTotal, r.importeIva, r.costeReserva, r.costeSeguro, r.costeLimpieza, r.seguroCancelacion
         FROM reserves_parking AS r
         LEFT JOIN usuaris AS u ON r.idClient = u.id
         WHERE r.id = $id_old";
@@ -305,7 +331,6 @@ if (is_numeric($id)) {
         foreach($result as $row) {
             $idReserva_old = $row['idReserva'];
             $idClient_old = $row['idClient'];
-            $importe_old = $row['importe'];
             $processed_old = $row['processed'];
             $fechaReserva_old = $row['fechaReserva'];
             $fechaReserva = date('d-m-Y H:i:s', strtotime($fechaReserva_old));
@@ -319,7 +344,28 @@ if (is_numeric($id)) {
             $vehiculo_old = $row['vehiculo'];
             $matricula_old = $row['matricula'];
             $vuelo_old = $row['vuelo'];
+            $importe_old = $row['importe'];
+            $subTotal_old = $row['subTotal'];
+            $importeIva_old = $row['importeIva'];
+            $costeReserva_old = $row['costeReserva'];
+            $costeSeguro_old = $row['costeSeguro'];
+            $costeLimpieza_old = $row['costeLimpieza'];
+            $seguroCancelacion_old = $row['seguroCancelacion'];
+
             
+            if (is_numeric($costeSeguro_old)) {
+                $costeSeguro = number_format($costeLimpieza_old, 2, ',', '') . " €";
+            } else {
+                $costeSeguro = "-";
+            }
+
+            if (is_numeric($costeLimpieza_old)) {
+                $costeLimpieza = number_format($costeLimpieza_old, 2, ',', '') . " €";
+            } else {
+                $costeLimpieza = "-";
+            }
+
+
             $nombre_old = $row['nombre'];
             $email_old = $row['email'];
             $empresa_old = $row['empresa'];
@@ -346,35 +392,18 @@ if (is_numeric($id)) {
             } elseif ($limpieza == 3) {
                 $limpieza2 = "Limpieza PRO";
             } else {
-                $limpieza2 = "Sin servicio de limpieza";
+                $limpieza2 = "No Contratado";
+            }
+
+            if ($seguroCancelacion_old == 1 ) {
+                $seguro = "Contratado";
+            } else {
+                $seguro = "No Contratado";
             }
 
             $notes_old = $row['notes'];
             $buscadores_old = $row['buscadores'];
         }
-
-            // Calcula los precios -->
-            $porcentaje_iva = 21;
-
-            // Precio total con IVA
-            $importe_old;
-             
-            // 1 - Calcula el precio de la reserva sin IVA
-            $reserva_sin_iva = $importe_old / 1.21;
-
-            // 3 - Calcula el subtotal
-            $subtotal = $reserva_sin_iva;
-            $subtotal_redondeado = round($subtotal, 2);
-            $subtotal_redondeado2 = number_format($subtotal_redondeado, 2, ',', '');
-
-            // 4 - Calcula el IVA total 21%
-            $coste_iva = $subtotal * 0.21;
-            $coste_iva_redondeado = round($coste_iva, 2);
-            $coste_iva_redondeado2 = number_format($coste_iva_redondeado, 2, ',', '');
-
-            // 5 - Calcula el Importe total iva incluido
-            $importe_total = $subtotal + $coste_iva;
-            $importe_total2 = number_format($importe_total, 2, ',', '');
 
         echo "<div class='container'>
         <h2>Enviament de la factura PDF per correu electrònic (ID Reserva: ".$idReserva_old.") </h2>";
@@ -397,7 +426,7 @@ if (is_numeric($id)) {
             $htmlContent = '
             <div class="container">
             <div class="container">
-            <img alt="Finguer" src="https://finguer.com/img/logo-header.svg" width="150" height="70">
+            <img alt="Finguer" src="https://finguer.com/public/img/logo-header.svg" width="150" height="70">
             </div>
             <br>
             <strong>Número de factura: '.$id_old.'/'.$fechaAnoReserva.'</strong><br>
@@ -453,17 +482,34 @@ if (is_numeric($id)) {
                         </thead>
                         <tbody>
                         <tr>
-                                <td style="padding: 5px; border: 1px solid black;">
+                            <td style="padding: 5px; border: 1px solid black;">
                                 Tipo de servicio: '.$tipoReserva2.'<br>
-                                Limpieza: '.$limpieza2.'<br>
                                 Fecha de entrada: '.$fecha_formateada1.' - '.$horaEntrada_old.'<br>
                                 Fecha de salida: '.$fecha_formateada2.' - '.$horaSalida_old.'<br>
                                 Vehículo: '.$vehiculo_old.'<br>
                                 Matrícula: '.$matricula_old.'
+                            </td>
+
+                            <td style="padding: 5px; border: 1px solid black;">'.number_format($costeReserva_old, 2, ',', '').' €</td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid black;">
+                               <strong>Servicio de Limpieza:</strong><br>
+                                '.$limpieza2.'
+                            </td>
+
+                            <td style="padding: 5px; border: 1px solid black;">'.$costeLimpieza.'</td>
+                        </tr>   
+                        
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid black;">
+                               <strong>Seguro de Cancelación de la Reserva:</strong><br>
+                                '.$seguro.'
                                 </td>
 
-                                <td style="padding: 5px; border: 1px solid black;">'.$subtotal_redondeado2.' €</td>
-                           </tr>
+                            <td style="padding: 5px; border: 1px solid black;">'.$costeSeguro.'</td>
+                        </tr>
                            
                            </tbody>                       
                     </table>
@@ -481,23 +527,20 @@ if (is_numeric($id)) {
                 <tbody>
                     <tr>
                         <td style="width: 50%;">Subtotal</td>
-                        <td style="text-align: right; width: 50%;">'.$subtotal_redondeado2.' €</td>
+                        <td style="text-align: right; width: 50%;">'.number_format($subTotal_old, 2, ',', '').' €</td>
                     </tr>
                     <tr>
                         <td style="width: 50%;">IVA 21%</td>
-                        <td style="text-align: right;">'.$coste_iva_redondeado2.' €</td>
+                        <td style="text-align: right;">'.number_format($importeIva_old, 2, ',', '').' €</td>
                     </tr>
                     <tr>
                         <td style="width: 50%;">Total</td>
-                        <td style="text-align: right;"><strong>'.$importe_total2.' €</strong></td>
+                        <td style="text-align: right;"><strong>'.number_format($importe_old, 2, ',', '').' €</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
         
-        <hr>
-        <br>
-        <br>
         Muchas gracias por confiar en nuestros servicios. Esperamos que sea de su agrado.';
 
             // Escribir el contenido HTML en el PDF
@@ -510,13 +553,12 @@ if (is_numeric($id)) {
             $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
             $mail->CharSet = 'UTF-8';
             $mail->isSMTP();
-                $mail->Host       = 'hl121.lucushost.org';
-                $mail->SMTPAuth   = true;
-                $mail->Username   = 'web@finguer.com';
-                $mail->Password   = $email_pass;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port       = 465;
-
+                    $mail->Host       = 'smtp-relay.brevo.com'; // Servidor SMTP de Brevo
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = '7a0605001@smtp-brevo.com'; // Tu dirección de correo de Brevo
+                    $mail->Password   = $brevoApi; // Tu contraseña de Brevo o API key
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Habilitar encriptación TLS
+                    $mail->Port       = 587; // Puerto SMTP para TLS
 
         // Configurar remitente y destinatario
         $mail->setFrom('web@finguer.com', 'Finguer');

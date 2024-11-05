@@ -164,5 +164,6 @@ $route->add("/api/pago-ok-reserva","api/modificar-reserva-pago-ok.php");
 
         // CRON RESERVES
         $route->add("/cron/reserves","public/cron/cron-reserves.php");
+        $route->add("/cron/reserves2","public/cron/cron-reserves2.php");
 
 ?>

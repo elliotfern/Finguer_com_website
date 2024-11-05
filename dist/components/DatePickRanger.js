@@ -5,13 +5,13 @@ export const daterangepicker = () => {
     $('#fecha_reserva').daterangepicker({
         autoApply: true,
         endDate: formatDate(endDate),
-        minDate: formatDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())),
+        minDate: formatDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())), // Fecha mínima// No permitir seleccionar fechas anteriores a la fecha actual
         locale: {
             format: 'DD-MM-YYYY',
-            firstDay: 1,
+            firstDay: 1, // Configura el primer día de la semana como lunes (0 para domingo, 1 para lunes, 2 para martes, etc.)
             cancelLabel: 'Cancelar',
-            applyLabel: 'Aplicar',
-            daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
+            applyLabel: 'Aplicar', // Etiqueta del botón Aplicar
+            daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'], // Nombres de los días de la semana
             monthNames: [
                 // Nombres de los meses
                 'Enero',

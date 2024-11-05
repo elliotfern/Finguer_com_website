@@ -11,7 +11,7 @@ export const sendForm = () => {
       event.preventDefault(); //
 
       // Llamar a calcularTotal y desestructurar el resultado
-      const { costeSeguro, precioSinLimpieza } = calcularTotalReserva();
+      const { precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, diasReserva } = calcularTotalReserva();
 
       // Crear el formulario
       const form = document.createElement('form');
@@ -29,12 +29,10 @@ export const sendForm = () => {
 
       // Crear un objeto con los datos del formulario
       const formData: Record<string, string> = {
-        precioReservaSinLimpieza: String(precioSinLimpieza), 
         tipoReserva: (document.getElementById('tipo_reserva') as HTMLInputElement | null)?.value || '',
         fechaEntrada: '',
         fechaSalida: '',
         limpieza: (document.getElementById('limpieza') as HTMLInputElement | null)?.value || '',
-        numDias: (document.getElementById('num_dias') as HTMLElement | null)?.innerText || '',
       };
 
       // Obtener las fechas del elemento de reserva
@@ -53,7 +51,13 @@ export const sendForm = () => {
       formData.seguroCancelacion = seguroTexto;
 
       // Agregar el coste del seguro de cancelación al objeto formData
-      addHiddenInput('costeSeguro', costeSeguro.toFixed(2)); // Asegúrate de que se agrega correctamente
+      addHiddenInput('costeSeguro', costeSeguro.toFixed(2));
+      addHiddenInput('costeReserva', precioReserva.toFixed(2));
+      addHiddenInput('costeLimpieza', costoLimpiezaSinIva.toFixed(2));
+      addHiddenInput('costeSubTotal', precioSubtotal.toFixed(2));
+      addHiddenInput('costeIva', costeIva.toFixed(2));
+      addHiddenInput('costeTotal', precioTotal.toFixed(2));
+      addHiddenInput('numDias', diasReserva.toString());
 
       // Agregar los campos ocultos al formulario
       for (const [name, value] of Object.entries(formData)) {

@@ -55,10 +55,12 @@
             </div>
 
             <!-- Espacio para mostrar el precio total y el número de días -->
+            <p id="costeReserva" style="display:none;"></p>
+            <p id="costeSeguro" style="display:none;"></p>
+            <p id="costeLimpieza" style="display:none;"></p>
             <p id="subTotal" style="display:none;"></p>
             <p id="precio_iva" style="display:none;"></p>
             <p id="total" style="display:none;"></p>
-            <p id="dias" style="display: none;">Número de días: <span id="num_dias"></span></p>
 
             <!-- Espacio para mostrar mensajes de error -->
             <div id="mensaje_error" style="color: red;"></div>
