@@ -1,5 +1,5 @@
 <?php
-
+$id = $routeParams[0];
 if (isset($_GET['idReserva'])) {
     $idReserva_old = filter_input(INPUT_GET, 'idReserva', FILTER_SANITIZE_NUMBER_INT);
     
@@ -172,6 +172,5 @@ if (isset($_GET['idReserva'])) {
     echo "Error. No has seleccionat cap vehicle.";
 }
 
-require_once('inc/footer.php');
 ?>
 

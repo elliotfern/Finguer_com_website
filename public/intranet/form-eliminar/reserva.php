@@ -1,7 +1,7 @@
 <?php
 global $conn;
 
-$id = $params['id'];
+$id = $routeParams[0];
 
 if (is_numeric($id)) {
     $id_old = intval($id);
@@ -76,6 +76,4 @@ if (is_numeric($id)) {
 echo "</div>";
 echo '</div>';
 echo "</div>";
-
-require_once(APP_ROOT . '/public/inc/footer.php');
 ?>

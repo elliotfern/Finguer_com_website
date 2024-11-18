@@ -168,7 +168,3 @@ function fetch_data(){
 fetch_data();
 fetch_data2();
 </script>
-
-<?php 
-require_once(APP_ROOT . '/public/inc/footer.php');
-?>
