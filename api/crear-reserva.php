@@ -4,14 +4,8 @@
  * INSERIR NOU CLIENT
  * taula: usuaris
  */
-    function data_input($data) {
-      $data = trim($data);
-      $data = stripslashes($data);
-      $data = htmlspecialchars($data);
-      return $data;
-    }
-    
-    // insert data to db
+
+ // insert data to db
     if (empty($_POST["idClient"])) {
         $hasError = true;
     } else {

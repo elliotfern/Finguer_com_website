@@ -4,7 +4,7 @@ global $conn;
 // Paso 2: Consulta SQL para seleccionar reservas de los últimos 5 minutos
 $sql = "SELECT idReserva, fechaReserva, id
 FROM reserves_parking
-WHERE fechaReserva >= NOW() - INTERVAL 3 MINUTE";
+WHERE fechaReserva >= NOW() - INTERVAL 3 MINUTE AND idReserva != 1;";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 

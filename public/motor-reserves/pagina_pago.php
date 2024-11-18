@@ -692,8 +692,4 @@ $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelac
 
 </script>
 
-</div>
-
-<?php
-// Footer
-require_once(APP_ROOT . '/public/footer_html.php');
+    </div>

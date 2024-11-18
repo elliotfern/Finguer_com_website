@@ -14,7 +14,7 @@ export const calcularTotalReserva = () => {
     const costoDia = 5;
     const porcentajeIva = 0.21;
     const costeReservaFinguerClass = 10.01;
-    const costeReservaGoldClass = 25;
+    const costeReservaGoldClass = 20;
     const costeReservaFinguerClassSinIva = calcularPrecioSinIva(costeReservaFinguerClass, porcentajeIva).precioSinIva;
     const costeReservaGoldClassSinIva = calcularPrecioSinIva(costeReservaGoldClass, porcentajeIva).precioSinIva;
     const costoDiaSinIva = calcularPrecioSinIva(costoDia, porcentajeIva).precioSinIva;

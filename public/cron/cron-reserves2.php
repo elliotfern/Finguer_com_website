@@ -4,7 +4,7 @@ global $conn;
 // Paso 2: Consulta SQL para seleccionar reservas de los últimos 5 minutos
 $sql = "SELECT idReserva, fechaReserva, id
 FROM reserves_parking
-WHERE idReserva = 1105094611";
+WHERE idReserva = 1114210846";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 

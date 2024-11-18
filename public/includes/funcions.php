@@ -5,6 +5,61 @@ use RedsysConsultasPHP\Client\Client;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+use Dotenv\Dotenv;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+function sanitize_html($html) {
+    $config = HTMLPurifier_Config::createDefault();
+    $config->set('HTML.Allowed', 'p,b,a[href],i,em,strong,ul,ol,li,br'); // Define las etiquetas y atributos permitidos
+    $purifier = new HTMLPurifier($config);
+    return $purifier->purify($html);
+}
+
+function data_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    return $data;
+  }
+
+// Función que verifica si el usuario tiene un token válido
+function verificarSesion() {
+    // Inicia la sesión si no está ya iniciada
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Verifica si la cookie del token existe y es válida
+    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token'])) {
+        header('Location: /control/login'); // Redirige a login si no hay token válido
+        exit();
+    }
+}
+
+function validarToken($jwt) {
+   
+    $jwtSecret = $_ENV['TOKEN'];  // Tu clave secreta
+    $decoded = null;
+
+    try {
+
+        $decoded = JWT::decode($jwt, new key ($jwtSecret, 'HS256'));
+
+       // Verifica si el token ha expirado
+        if (isset($decoded->exp) && $decoded->exp < time()) {
+            return false;  // Token expirado
+        }
+
+    } catch (Exception $e) {
+        // Manejo del error
+        error_log('Error al validar el token: ' . $e->getMessage());  // Log del error para depuración
+        return false;
+    }
+
+    // Si la decodificación es exitosa y el token es válido, se devuelve el payload
+    return $decoded;
+}
+
 function verificarPagament($id) {
     
     global $conn;
@@ -49,11 +104,13 @@ function verificarPagament($id) {
             // Acceder a las propiedades protegidas mediante reflexión
     
             // Función para obtener el valor de una propiedad protegida de un objeto
-            function getProtectedPropertyValue($object, $propertyName) {
-                $reflection = new ReflectionClass($object);
-                $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
-                return $property->getValue($object);
+            if (!function_exists('getProtectedPropertyValue')) {
+                function getProtectedPropertyValue($object, $propertyName) {
+                    $reflection = new ReflectionClass($object);
+                    $property = $reflection->getProperty($propertyName);
+                    $property->setAccessible(true);
+                    return $property->getValue($object);
+                }
             }
 
             try {
@@ -67,7 +124,7 @@ function verificarPagament($id) {
                 $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
     
                 // Verificar el valor de Ds_Response
-                switch ($ds_response) {
+                switch ($ds_response) { 
                     case '9218':
                         echo "<div class='alert alert-danger text-center' role='alert'>
                                 <p><strong>Pagament fallit</strong>.</p>
@@ -103,14 +160,14 @@ function verificarPagament($id) {
             } catch (Exception $e) {
                 // Manejar el error de la API de Redsys
                 echo "<div class='alert alert-danger text-center' role='alert'>
+                        <p><img src='".APP_WEB."/inc/img/warning.png' alt='Pagament Error'></p>
                         <p><strong>Error de pagament: " . htmlspecialchars($e->getMessage()) . "</strong></p>";
                             if ($e->getMessage() === 'Error XML0024') {
                                 // Mostrar mensaje para el error específico
                                 echo "<p><strong>Missatge de Redsys: No existen operaciones para los datos solicitados.</strong></p>";
                             }
-                        "</div>";    
-            }
-    
+                        echo "</div>";    
+            }  
     
         } else {
             echo "Error: aquest ID no és vàlid";
@@ -353,8 +410,8 @@ if (is_numeric($id)) {
             $seguroCancelacion_old = $row['seguroCancelacion'];
 
             
-            if (is_numeric($costeSeguro_old)) {
-                $costeSeguro = number_format($costeLimpieza_old, 2, ',', '') . " €";
+            if (is_numeric($costeSeguro_old) && $costeSeguro_old > 0) {
+                $costeSeguro = number_format($costeSeguro_old, 2, ',', '') . " €";
             } else {
                 $costeSeguro = "-";
             }

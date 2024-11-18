@@ -184,9 +184,3 @@
 
 </div>
 </div>
-
-
-    
-<?php
-// Footer
-require_once(APP_ROOT . '/public/footer_html.php');
