@@ -6,8 +6,8 @@ error_reporting(E_ALL);
 
 // Incluir configuraciones y rutas
 require_once 'config.php';
-require_once 'routes.php';
 require_once 'public/includes/funcions.php';
+require_once 'routes.php';
 
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -47,6 +47,12 @@ if (!$routeFound) {
     $needsSession = $routeInfo['needs_session'] ?? false;
     if ($needsSession) {
         verificarSesion(); // Llamada a la función de verificación de sesión
+    }
+
+    // Verificar si la ruta necesita verificación adicional
+    $needsVerification = $routeInfo['needs_verification'] ?? false;
+    if ($needsVerification) {
+        verificarAcceso(); // Llamada al middleware para verificar la verificación
     }
 
     // Determinar si la vista necesita encabezado y pie de página

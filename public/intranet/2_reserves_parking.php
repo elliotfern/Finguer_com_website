@@ -1,3 +1,5 @@
+<?php require_once 'inc/header.php';?>
+
 <h2>Estat 2: Reserves al parking</h2>
 <h4>Ordenat segons data sortida vehicle</h4>
 

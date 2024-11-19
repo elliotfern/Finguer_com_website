@@ -30,8 +30,22 @@ function verificarSesion() {
     }
 
     // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token'])) {
+    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] != 1) {
         header('Location: /control/login'); // Redirige a login si no hay token válido
+        exit();
+    }
+}
+
+// Función que verifica si el usuario tiene acceso al area de cliente
+function verificarAcceso() {
+    // Inicia la sesión si no está ya iniciada
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Verifica si la cookie del token existe y es válida
+    if (!isset($_COOKIE['user_id']) || $_COOKIE['acceso'] != "si") {
+        header('Location: /area-cliente/login'); // Redirige a login si no hay token válido
         exit();
     }
 }

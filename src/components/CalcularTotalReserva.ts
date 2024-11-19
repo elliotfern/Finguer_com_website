@@ -95,10 +95,11 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   const totalElement = document.getElementById('total');
   const precioSubTotalElement = document.getElementById('subTotal');
   const ivaElement = document.getElementById('precio_iva');
-  const diasElement = document.getElementById('dias');
+ 
+  if (totalElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement) {
 
-  if (totalElement && diasElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement) {
     costeReservaElement.innerHTML = `Coste Reserva (${diasReserva} ${diasReserva > 1 ? 'días' : 'día'}): ${precioReserva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+
     if (costeSeguro !== 0) {
       costeSeguroElement.innerHTML = `Coste Seguro: ${costeSeguro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
     } else {

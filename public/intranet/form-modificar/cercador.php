@@ -1,3 +1,5 @@
+<?php require_once APP_ROOT . '/public/intranet/inc/header.php';?>
+
 <?php
 global $conn;
 

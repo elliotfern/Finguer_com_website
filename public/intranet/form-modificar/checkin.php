@@ -1,9 +1,11 @@
+<?php require_once APP_ROOT . '/public/intranet/inc/header.php';?>
+
 <?php
 global $conn;
 
 $id = $routeParams[0];
 
-echo "<div class='container'>";
+echo "<div class='container' style='margin-bottom:150px'>";
 
 if (is_numeric($id)) {
     $id_old = intval($id);

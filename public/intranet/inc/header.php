@@ -1,6 +1,19 @@
 <div class="container">
+<?php
+    // Genera o obtén tu clave secreta
 
-    <div class="container-fluid text-center">
+    if (isset($_COOKIE['user_id'])) {
+        $userId = $_COOKIE['user_id'];
+    }
+    $loggedInUser = $userId;
+    ?>
+      <span class="d-flex align-items-center text-decoration-none">
+        <strong><div id="userDiv" class="white" style="margin-top:20px"> </div></strong>
+    </span>     
+    <a href="#" class="links-sidebar link-sortir" onclick="logout()">Sortir de la intranet</a>
+  </div>
+
+    <div class="container text-center">
     <div class="row">
 
         <div class="col-sm">
@@ -41,3 +54,38 @@
     </div>
     </div>
     <hr>
+
+    <script>
+        nameUser('<?php echo $loggedInUser; ?>')
+
+       function nameUser(idUser) {
+        let urlAjax =  "https://" + window.location.hostname + "/api/intranet/users/get/?type=user&id=" + idUser;
+        $.ajax({
+            url: urlAjax,
+            type: 'GET',
+            success: function (data) {
+               let responseData = data;  // Parsea la respuesta JSON
+                let welcomeMessage = responseData.nombre ? `Benvingut, ${responseData.nombre}` : 'User not found';
+                $('#userDiv').html(welcomeMessage);
+            },
+            error: function (error) {
+                console.error('Error: ' + JSON.stringify(error));
+            }
+        });
+    }
+
+// Función de logout
+function logout() {
+    let urlAjax =  "https://" + window.location.hostname + "/api/intranet/users/get/?type=deleteCookies";
+        $.ajax({
+            url: urlAjax,
+            type: 'GET',
+            success: function (data) {
+                 window.location.href = '/control/login'
+            },
+            error: function (error) {
+                console.error('Error: ' + JSON.stringify(error));
+            }
+        });
+}
+</script>

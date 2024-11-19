@@ -20,12 +20,23 @@ $routes = [
     '/politica-de-privacidad-finguer' => ['view' => 'public/politica-privacidad.php', 'needs_session' => false],
     '/terminos-y-condiciones' => ['view' => 'public/terminos-condiciones.php', 'needs_session' => false],
 
-    // 05. API INTRANET
+    // 05. Area cliente - necesita verificacion
+    '/area-cliente/login' => ['view' => 'public/area-client/login.php', 'needs_session' => false, 'needs_verification' => false, 'no_header_footer' => false],
+    '/area-cliente' => ['view' => 'public/area-client/index.php', 'needs_session' => false, 'needs_verification' => true, 'no_header_footer' => false],
+    '/area-cliente/validar-token' => ['view' => 'public/area-client/validar-token.php', 'needs_session' => false, 'needs_verification' => false, 'no_header_footer' => true],
+    '/area-cliente/reservas' => ['view' => 'public/area-client/index.php', 'needs_session' => false, 'needs_verification' => true, 'no_header_footer' => false],
+
+    // API AREA CLIENT
+    '/api/area-client/login' => ['view' => 'api/area-client/authClient.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/area-client/reservas' => ['view' => 'api/area-client/reservas.php', 'needs_session' => false, 'no_header_footer' => true],
+
+    // API INTRANET
     '/api/intranet/auth/login' => ['view' => 'api/intranet/auth/login.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/intranet/reserves/get' => ['view' => 'api/intranet/get-reserves.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/intranet/reserves/post' => ['view' => 'api/intranet/post-login.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/intranet/users/get' => ['view' => 'api/intranet/get-users.php', 'needs_session' => false, 'no_header_footer' => true],
 
-    // 06. API WEB PUBLICA
+    // API WEB PUBLICA
     '/api/alta-client' => ['view' => 'api/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/alta-reserva' => ['view' => 'api/crear-reserva.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/pago-ok-reserva' => ['view' => 'api/cmodificar-reserva-pago-ok.php', 'needs_session' => false, 'no_header_footer' => true],

@@ -31,9 +31,9 @@
     <script src="<?php APP_ROOT;?>/public/js/cookies.js"></script>
 
 </head>
-<body>
+<body class="d-flex flex-column" style="height: 100vh; margin: 0;">
 
-<div class="container">
+<div class="container d-flex flex-column" style="flex: 1;"> 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
   <a href="/"><img alt="Finguer" class="img-responsive" src="<?php APP_ROOT;?>/public/img/logo-header.svg"></a>
@@ -45,23 +45,23 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/">Inicio</a>
+          <a class="nav-link" aria-current="page" href="<?php APP_ROOT;?>/">Inicio</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#servicios">Servicios</a>
+          <a class="nav-link" href="<?php APP_ROOT;?>/#servicios">Servicios</a>
         </li>
        
         <li class="nav-item">
-          <a class="nav-link" href="#donde-estamos">Dónde estamos</a>
+          <a class="nav-link" href="<?php APP_ROOT;?>/#donde-estamos">Dónde estamos</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#contacto">Contacto</a>
+          <a class="nav-link" href="<?php APP_ROOT;?>/#contacto">Contacto</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Mi cuenta</a>
+          <a class="nav-link" href="<?php APP_ROOT;?>/area-cliente/">Mi cuenta</a>
         </li>
       </ul>
      

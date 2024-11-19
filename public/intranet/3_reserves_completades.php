@@ -1,3 +1,5 @@
+<?php require_once 'inc/header.php';?>
+
 <h2>Estat 3: Reserves completades amb check-out del parking</h2>
 <h4>Ordenat segons data sortida vehicle</h4>
 
