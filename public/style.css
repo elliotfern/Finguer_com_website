@@ -22,7 +22,7 @@ body {
 /* Pagina de pagament */
 @media (min-width: 500px) {
     .quadre_reserves {
-        width: 500px;
+        width: 1000px;
     }
 }
 

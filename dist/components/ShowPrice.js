@@ -17,8 +17,11 @@ export const showPrice = () => {
     // Obtener los elementos del seguro de cancelación
     const seguroSiElement = document.getElementById('seguroSi');
     const seguroNoElement = document.getElementById('seguroNo');
+    // Obtener los elementos de la fecha de entrada y salida
+    const horaEntradaElement = document.getElementById('horaEntrada');
+    const horaSalidaElement = document.getElementById('horaSalida');
     // Verificar si los elementos existen
-    if (tipoReservaElement && limpiezaElement && seguroSiElement && seguroNoElement) {
+    if (tipoReservaElement && limpiezaElement && seguroSiElement && seguroNoElement && horaEntradaElement && horaSalidaElement) {
         // Agregar un event listener para cambios en el tipo de reserva
         tipoReservaElement.addEventListener('change', function () {
             calcularTotalReserva();
@@ -35,6 +38,14 @@ export const showPrice = () => {
             actualizarBotonPagar();
         });
         seguroNoElement.addEventListener('change', function () {
+            calcularTotalReserva();
+            actualizarBotonPagar();
+        });
+        horaEntradaElement.addEventListener('change', function () {
+            calcularTotalReserva();
+            actualizarBotonPagar();
+        });
+        horaSalidaElement.addEventListener('change', function () {
             calcularTotalReserva();
             actualizarBotonPagar();
         });

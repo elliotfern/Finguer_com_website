@@ -22,6 +22,9 @@ $tipoLimpieza = isset($_POST['limpieza']) ? $_POST['limpieza'] : 0;
 $numDias = isset($_POST['numDias']) ? $_POST['numDias'] : 0;
 $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelacion'] : 0;
 
+$horaEntrada = isset($_POST['horaEntrada']) ? $_POST['horaEntrada'] : 0;
+$horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
+
 // Obtener el precio total de la reserva desde la URL
     if ($tipoReserva === "finguer_class") {
         $tipoReserva2 = "Finguer Class";
@@ -164,104 +167,17 @@ $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelac
                 </div>
 
                 <div class="col-md-6">
-                <label for="vuelo_retorno">Número vuelo retorno (opcional)</label>
+                <label for="vuelo_retorno">Número vuelo retorno</label>
                 <input type="text" class="form-control" id="vuelo" name="vuelo">
                 </div>
 
+                <div class="col-md-6">
+                <label for="numero_personas">Número de acompañantes</label>
+                <input type="number" class="form-control" id="numero_personas" name="numero_personas" min="1" max="100" required>
+                <div id="numero_personasHelp" class="form-text">*Si vais a ser más de 8 personas, por favor, avisad antes al párking.</div>
                 </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                <label for="horario_entrada">Horario entrada párking * </label>
-                <select class="form-select" id="horaEntrada" name="horaEntrada">
-                <option selected>Selecciona una hora:</option>
-                    <option value="05:00">05:00</option>
-                    <option value="05:30">05:30</option>
-                    <option value="06:00">06:00</option>
-                    <option value="06:30">06:30</option>
-                    <option value="07:00">07:00</option>
-                    <option value="07:30">07:30</option>
-                    <option value="08:00">08:00</option>
-                    <option value="08:30">08:30</option>
-                    <option value="09:00">09:00</option>
-                    <option value="09:30">09:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="10:30">10:30</option>
-                    <option value="11:00">11:00</option>
-                    <option value="11:30">11:30</option>
-                    <option value="12:00">12:00</option>
-                    <option value="12:30">12:30</option>
-                    <option value="13:00">13:00</option>
-                    <option value="13:30">13:30</option>
-                    <option value="14:00">14:00</option>
-                    <option value="14:30">14:30</option>
-                    <option value="15:00">15:00</option>
-                    <option value="15:30">15:30</option>
-                    <option value="16:00">16:00</option>
-                    <option value="16:30">16:30</option>
-                    <option value="17:00">17:00</option>
-                    <option value="17:30">17:30</option>
-                    <option value="18:00">18:00</option>
-                    <option value="18:30">18:30</option>
-                    <option value="19:00">19:00</option>
-                    <option value="19:30">19:30</option>
-                    <option value="20:00">20:00</option>
-                    <option value="20:30">20:30</option>
-                    <option value="21:00">21:00</option>
-                    <option value="21:30">21:30</option>
-                    <option value="22:00">22:00</option>
-                    <option value="22:30">22:30</option>
-                    <option value="23:00">23:00</option>
-                    <option value="23:30">23:30</option>
-                </select>
                 </div>
-
-                <div class="col-md-6">
-                <label for="horaSalida">Horario salida párking * </label>
-                <select class="form-select" id="horaSalida" name="horaSalida">
-                <option selected>Selecciona una hora:</option>
-                    <option value="05:00">05:00</option>
-                    <option value="05:30">05:30</option>
-                    <option value="06:00">06:00</option>
-                    <option value="06:30">06:30</option>
-                    <option value="07:00">07:00</option>
-                    <option value="07:30">07:30</option>
-                    <option value="08:00">08:00</option>
-                    <option value="08:30">08:30</option>
-                    <option value="09:00">09:00</option>
-                    <option value="09:30">09:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="10:30">10:30</option>
-                    <option value="11:00">11:00</option>
-                    <option value="11:30">11:30</option>
-                    <option value="12:00">12:00</option>
-                    <option value="12:30">12:30</option>
-                    <option value="13:00">13:00</option>
-                    <option value="13:30">13:30</option>
-                    <option value="14:00">14:00</option>
-                    <option value="14:30">14:30</option>
-                    <option value="15:00">15:00</option>
-                    <option value="15:30">15:30</option>
-                    <option value="16:00">16:00</option>
-                    <option value="16:30">16:30</option>
-                    <option value="17:00">17:00</option>
-                    <option value="17:30">17:30</option>
-                    <option value="18:00">18:00</option>
-                    <option value="18:30">18:30</option>
-                    <option value="19:00">19:00</option>
-                    <option value="19:30">19:30</option>
-                    <option value="20:00">20:00</option>
-                    <option value="20:30">20:30</option>
-                    <option value="21:00">21:00</option>
-                    <option value="21:30">21:30</option>
-                    <option value="22:00">22:00</option>
-                    <option value="22:30">22:30</option>
-                    <option value="23:00">23:00</option>
-                    <option value="23:30">23:30</option>
-                </select>
-                </div>
-                
-            </div>
 
                 <h3>Datos de facturación (datos opcionales)</h3>
                 <div class="alert alert-dark" role="alert">
@@ -367,8 +283,8 @@ $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelac
                 Detalles de la Reserva:
                 <ul>
                     <li><strong>Tipo de Reserva:</strong> <?php echo $tipoReserva2; ?></li>
-                    <li><strong>Fecha de Entrada:</strong> <?php echo $fechaEntrada; ?></li>
-                    <li><strong>Fecha de Salida:</strong> <?php echo $fechaSalida; ?></li>
+                    <li><strong>Fecha de Entrada:</strong> <?php echo $fechaEntrada; ?> / <?php echo $horaEntrada; ?></li>
+                    <li><strong>Fecha de Salida:</strong> <?php echo $fechaSalida; ?> / <?php echo $horaSalida; ?></li>
                     <li><strong>Duración de la reserva:</strong> <?php echo $numDias; ?> días</li>
                 </ul>
                 </td>
@@ -529,13 +445,14 @@ $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelac
                                     idClient: nuevoClienteID,
                                     idReserva: $("#idOrder").val(),
                                     tipo: "<?php echo $codigoTipoReserva; ?>",
-                                    horaEntrada: $("#horaEntrada").val(),
+                                    horaEntrada: "<?php echo $horaEntrada; ?>",
                                     diaEntrada: "<?php echo $fechaEntrada2; ?>",
-                                    horaSalida: $("#horaSalida").val(),
+                                    horaSalida: "<?php echo $horaSalida; ?>",
                                     diaSalida: "<?php echo $fechaSalida2; ?>",
                                     vehiculo: $("#vehiculo").val(),
                                     matricula: $("#matricula").val(),
                                     vuelo: $("#vuelo").val(),
+                                    numeroPersonas: $("#numero_personas").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0",
                                     cancelacion: "<?php echo $seguroCancelacion; ?>",
@@ -635,13 +552,14 @@ $seguroCancelacion = isset($_POST['seguroCancelacion']) ? $_POST['seguroCancelac
                                     idClient: nuevoClienteID,
                                     idReserva: numeroAleatorio,
                                     tipo: "<?php echo $codigoTipoReserva; ?>",
-                                    horaEntrada: $("#horaEntrada").val(),
+                                    horaEntrada: "<?php echo $horaEntrada; ?>",
                                     diaEntrada: "<?php echo $fechaEntrada2; ?>",
-                                    horaSalida: $("#horaSalida").val(),
+                                    horaSalida: "<?php echo $horaSalida; ?>",
                                     diaSalida: "<?php echo $fechaSalida2; ?>",
                                     vehiculo: $("#vehiculo").val(),
                                     matricula: $("#matricula").val(),
                                     vuelo: $("#vuelo").val(),
+                                    numeroPersonas: $("#numero_personas").val(),
                                     limpieza: "<?php echo $codigoLimpieza; ?>",
                                     processed: "0", // quité la coma extra al final
                                     cancelacion: "<?php echo $seguroCancelacion; ?>",

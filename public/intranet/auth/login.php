@@ -47,6 +47,10 @@ $(function () {
           loginMessageOk.innerHTML = response.message;
           loginMessageOk.style.display = 'block';
           loginMessageErr.style.display = 'none';
+          
+          setTimeout(() => {
+            window.location.href = "https://" + window.location.hostname + "/control/home";
+          }, 3000); // Redirige después de 3 segundos
 
         } else {
           loginMessageErr.innerHTML = response.message;

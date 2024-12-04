@@ -6,7 +6,7 @@ export const sendForm = () => {
     // Verificar si el botón existe
     if (pagarButton) {
         pagarButton.addEventListener('click', function (event) {
-            var _a, _b;
+            var _a, _b, _c, _d;
             event.preventDefault(); //
             // Llamar a calcularTotal y desestructurar el resultado
             const { precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, diasReserva } = calcularTotalReserva();
@@ -28,6 +28,8 @@ export const sendForm = () => {
                 fechaEntrada: '',
                 fechaSalida: '',
                 limpieza: ((_b = document.getElementById('limpieza')) === null || _b === void 0 ? void 0 : _b.value) || '',
+                horaEntrada: ((_c = document.getElementById('horaEntrada')) === null || _c === void 0 ? void 0 : _c.value) || '',
+                horaSalida: ((_d = document.getElementById('horaSalida')) === null || _d === void 0 ? void 0 : _d.value) || '',
             };
             // Obtener las fechas del elemento de reserva
             const fechaReservaElement = document.getElementById('fecha_reserva');

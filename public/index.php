@@ -11,15 +11,16 @@
         <p>Finguer, park your problems and fly away</p>
     </div>
 
-<div class="container" style="margin-top:25px">
-    <div class="row">
-        <div class="col-12 col-md-6 mb-4 text-end">
-        <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/tarifas-esp.jpg" alt="Tarifas del parking">
+ <div class="col-12 text-center">
+        <img class="img-responsive" src="<?php APP_ROOT;?>/public/img/tarifes.svg" alt="Tarifas del parking">
         </div>
-    
-        <div class="col-12 col-md-6 mb-4 text-start quadre_reserves">
-        <h1>Configura tu reserva:</h1>
 
+<div class="container quadre_reserves" style="margin-top:25px">
+    <h1>Configura tu reserva:</h1>
+
+    <div class="row g-6">
+        <div class="col-12 col-md-6 mb-4 text-start">
+    
         <!-- Selección del tipo de reserva -->
         <label for="tipo_reserva">Tipo de Reserva:</label>
         <select id="tipo_reserva" name="tipo_reserva">
@@ -31,6 +32,22 @@
         <form id="reservation-form">
             <label for="fecha_reserva">Fechas de Reserva:</label>
             <input type="text" id="fecha_reserva" name="fecha_reserva" readonly placeholder="Clique aquí para abrir el calendario">
+
+            <div class="row g-3" id="horarios_div">
+                <div class="col-md-6">
+                    <label for="horaEntrada">Horario entrada párking * </label>
+                    <select class="form-select" id="horaEntrada" name="horaEntrada">
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="horaSalida">Horario salida párking * </label>
+                    <select class="form-select" id="horaSalida" name="horaSalida">
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
+                    </select>
+                </div>
+            </div>
 
             <!-- Opciones de limpieza -->
             <label for="limpieza">¿Quieres añadir un servicio de limpieza a tu reserva?</label>
@@ -53,8 +70,13 @@
                 <input class="form-check-input" type="radio" id="seguroNo" name="seguroCancelacion" value="2" checked>
                 <label class="form-check-label" for="seguroNo">No</label>
             </div>
+        </div>
 
+        <div class="col-12 col-md-6 mb-4 flex-column justify-content-center" id="importeReserva">
             <!-- Espacio para mostrar el precio total y el número de días -->
+            <h4 id="resumenReserva" style="display:none;"></h4>
+            <p id="diaEntrada" style="display:none;"></p>
+            <p id="diaSalida" style="display:none;"></p>
             <p id="costeReserva" style="display:none;"></p>
             <p id="costeSeguro" style="display:none;"></p>
             <p id="costeLimpieza" style="display:none;"></p>
@@ -68,6 +90,7 @@
             <!-- Botón de pagar -->
             <button type="button" id="pagar" style="display: none;">Pagar</button>
         </form>
+        </div>
    
         </div>
   </div>

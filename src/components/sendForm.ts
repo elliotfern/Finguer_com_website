@@ -33,6 +33,8 @@ export const sendForm = () => {
         fechaEntrada: '',
         fechaSalida: '',
         limpieza: (document.getElementById('limpieza') as HTMLInputElement | null)?.value || '',
+        horaEntrada: (document.getElementById('horaEntrada') as HTMLInputElement | null)?.value || '',
+        horaSalida: (document.getElementById('horaSalida') as HTMLInputElement | null)?.value || '',
       };
 
       // Obtener las fechas del elemento de reserva

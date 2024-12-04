@@ -2,6 +2,7 @@ import { calcularTotalReserva } from './CalcularTotalReserva.js';
 import { actualizarBotonPagar } from './ActualizarBotonPagar.js';
 
 export const showPrice = () => {
+   
   // Actualizar el estado del botón de pagar y calcular el precio total al cambiar el rango de fechas
   const fechaReserva = document.getElementById('fecha_reserva') as HTMLInputElement | null;
 
@@ -22,8 +23,12 @@ export const showPrice = () => {
   const seguroSiElement = document.getElementById('seguroSi') as HTMLInputElement | null;
   const seguroNoElement = document.getElementById('seguroNo') as HTMLInputElement | null;
 
+  // Obtener los elementos de la fecha de entrada y salida
+    const horaEntradaElement = document.getElementById('horaEntrada') as HTMLInputElement | null;
+    const horaSalidaElement = document.getElementById('horaSalida') as HTMLInputElement | null;
+
   // Verificar si los elementos existen
-  if (tipoReservaElement && limpiezaElement && seguroSiElement && seguroNoElement) {
+  if (tipoReservaElement && limpiezaElement && seguroSiElement && seguroNoElement && horaEntradaElement && horaSalidaElement) {
     // Agregar un event listener para cambios en el tipo de reserva
     tipoReservaElement.addEventListener('change', function () {
       calcularTotalReserva();
@@ -43,6 +48,16 @@ export const showPrice = () => {
     });
 
     seguroNoElement.addEventListener('change', function () {
+      calcularTotalReserva();
+      actualizarBotonPagar();
+    });
+
+    horaEntradaElement.addEventListener('change', function () {
+      calcularTotalReserva();
+      actualizarBotonPagar();
+    });
+
+    horaSalidaElement.addEventListener('change', function () {
       calcularTotalReserva();
       actualizarBotonPagar();
     });

@@ -50,9 +50,15 @@
     }
 
     if (empty($_POST["vuelo"])) {
-        $vuelo = NULL;
+        $hasError = true;
     } else {
         $vuelo = data_input($_POST["vuelo"], ENT_NOQUOTES);
+    }
+
+    if (empty($_POST["numeroPersonas"])) {
+        $hasError = true;
+    } else {
+        $numeroPersonas = data_input($_POST["numeroPersonas"], ENT_NOQUOTES);
     }
 
     $limpieza = $_POST["limpieza"];
@@ -78,7 +84,7 @@
     
     if (!isset($hasError)) {
       global $conn;
-      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, seguroCancelacion=:seguroCancelacion, importe=:importe, subTotal=:subTotal, importeIva=:importeIva, costeReserva=:costeReserva, costeSeguro=:costeSeguro, costeLimpieza=:costeLimpieza";
+      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, seguroCancelacion=:seguroCancelacion, importe=:importe, subTotal=:subTotal, importeIva=:importeIva, costeReserva=:costeReserva, costeSeguro=:costeSeguro, costeLimpieza=:costeLimpieza, numeroPersonas=:numeroPersonas";
       $stmt= $conn->prepare($sql);
       $stmt->bindParam(":idClient", $idClient, PDO::PARAM_STR);
       $stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_STR);
@@ -101,6 +107,7 @@
       $stmt->bindParam(":costeReserva", $costeReserva, PDO::PARAM_STR);
       $stmt->bindParam(":costeSeguro", $costeSeguro, PDO::PARAM_STR);
       $stmt->bindParam(":costeLimpieza", $costeLimpieza, PDO::PARAM_STR);
+      $stmt->bindParam(":numeroPersonas", $numeroPersonas, PDO::PARAM_INT);
 
       if ($stmt->execute()) {      
         // response output

@@ -76,8 +76,24 @@ export const calcularTotalReserva = () => {
     const totalElement = document.getElementById('total');
     const precioSubTotalElement = document.getElementById('subTotal');
     const ivaElement = document.getElementById('precio_iva');
-    if (totalElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement) {
-        costeReservaElement.innerHTML = `Coste Reserva (${diasReserva} ${diasReserva > 1 ? 'días' : 'día'}): ${precioReserva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    const reservaElement = document.getElementById('resumenReserva');
+    const diaEntradaElement = document.getElementById('diaEntrada');
+    const diaSalidaElement = document.getElementById('diaSalida');
+    const horaEntradaValue = $('#horaEntrada').val();
+    const horaSalidaValue = $('#horaSalida').val();
+    const fechaReservaElement = document.getElementById('fecha_reserva');
+    let fechaEntrada = "";
+    let fechaSalida = "";
+    if (fechaReservaElement) {
+        const fechas = fechaReservaElement.value.split(' - ');
+        fechaEntrada = fechas[0] || '';
+        fechaSalida = fechas[1] || '';
+    }
+    if (reservaElement && diaEntradaElement && diaSalidaElement && totalElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement && fechaEntrada && fechaSalida) {
+        reservaElement.innerHTML = `Detalles de la Reserva:`;
+        diaEntradaElement.innerHTML = `<strong>Día de entrada:</strong> ${fechaEntrada} // ${horaEntradaValue}h.`;
+        diaSalidaElement.innerHTML = `<strong>Día de salida:</strong> ${fechaSalida} // ${horaSalidaValue}h.`;
+        costeReservaElement.innerHTML = `<strong>Coste Reserva (${diasReserva} ${diasReserva > 1 ? 'días' : 'día'}):</strong> ${precioReserva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
         if (costeSeguro !== 0) {
             costeSeguroElement.innerHTML = `Coste Seguro: ${costeSeguro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
         }
@@ -100,6 +116,9 @@ export const calcularTotalReserva = () => {
         costeReservaElement.style.display = 'block';
         costeSeguroElement.style.display = 'block';
         costeLimpiezaElement.style.display = 'block';
+        reservaElement.style.display = 'block';
+        diaEntradaElement.style.display = 'block';
+        diaSalidaElement.style.display = 'block';
     }
     return { precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, diasReserva };
 };
