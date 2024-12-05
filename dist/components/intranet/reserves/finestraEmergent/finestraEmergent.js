@@ -1,12 +1,14 @@
+import { enviarConfirmacioReserva } from './enviarConfirmacioReserva.js';
 // Función para abrir la ventana emergente y posicionarla encima del botón
 export const obrirFinestra = (event, id) => {
+    var _a;
     const urlWeb = window.location.origin + "/control";
     const ventana = document.getElementById('ventanaEmergente');
     const boton = event.target; // Botón que dispara el evento
     const btnConfirmacio = document.getElementById('enlace1');
     //const btnFactura = document.getElementById('enlace2') as HTMLAnchorElement;
-    // Restaurar el texto original del botón
     if (btnConfirmacio) {
+        // Restaurar el texto original del botón
         btnConfirmacio.textContent = "Enviar confirmació email"; // Texto original
         btnConfirmacio.disabled = false; // Asegurarse de habilitar el botón
         // Eliminar estilos de desactivado
@@ -15,10 +17,13 @@ export const obrirFinestra = (event, id) => {
         // Cambiar las clases de los botones
         btnConfirmacio.classList.remove("btn-success");
         btnConfirmacio.classList.add("btn-secondary");
-        // Asociar el evento al enlace
-        btnConfirmacio.addEventListener('click', function (event) {
+        // Eliminar cualquier evento de clic previo
+        const nuevoBtnConfirmacio = btnConfirmacio.cloneNode(true);
+        (_a = btnConfirmacio.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(nuevoBtnConfirmacio, btnConfirmacio);
+        // Asociar el nuevo evento al botón
+        nuevoBtnConfirmacio.addEventListener('click', function (event) {
             event.preventDefault(); // Evitar que el enlace cambie la URL
-            btnEnviarConfirmacio(id); // Llamar a la función para ejecutar la acción
+            enviarConfirmacioReserva(id); // Llamar a la función para ejecutar la acción
         });
     }
     // Configurar enlaces con el ID recibido
@@ -65,8 +70,4 @@ export const tancarFinestra = () => {
     if (ventana) {
         ventana.style.display = 'none'; // Ocultar la ventana emergente
     }
-};
-// Función auxiliar para enviar confirmación (ejemplo)
-const btnEnviarConfirmacio = (id) => {
-    console.log(`Enviando confirmación para ID: ${id}`);
 };

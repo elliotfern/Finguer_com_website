@@ -103,22 +103,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             }
             // 3) Numero reserves pendents
             elseif (isset($_GET['type']) && $_GET['type'] == 'numReservesPendents') {
-                $data = array();
-                $stmt = $conn->prepare("SELECT COUNT(r.idReserva) AS numero
+                $query = "SELECT COUNT(r.idReserva) AS numero
                         FROM reserves_parking as r
-                        WHERE r.checkIn = 5");
+                        WHERE r.checkIn = 5";
+
+                // Preparar la consulta
+                $stmt = $conn->prepare($query);
+
+                // Ejecutar la consulta
                 $stmt->execute();
-                if ($stmt->rowCount() === 0) echo json_encode(['message' => 'No rows']);
-                else {
-                    while ($users = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        $data[] = $users;
-                    }
-                    // Establecer el encabezado de respuesta a JSON
-                    header('Content-Type: application/json');
-                    
-                    // Devolver los datos en formato JSON
-                    echo json_encode($data);
+
+                // Verificar si se encontraron resultados
+                if ($stmt->rowCount() === 0) {
+                    echo json_encode(['error' => 'No rows found']);
+                    exit();
                 }
+
+                // Recopilar los resultados
+                $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // Establecer el encabezado de respuesta a JSON
+                header('Content-Type: application/json');
+
+                // Devolver los datos en formato JSON
+                echo json_encode($data);
+                exit();
             }
             // 4) Reserves al parking
             elseif (isset($_GET['type']) && $_GET['type'] == 'parking') {
