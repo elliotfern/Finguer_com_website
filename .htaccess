@@ -4,6 +4,9 @@
 
      # Redireccionar "/" a "/inici"
     RewriteRule ^$ / [L,R=301]
+
+    RewriteCond %{REQUEST_URI} ^/control/$
+    RewriteRule ^(.*)$ /control/reserves-pendents [R=301,L]
       
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

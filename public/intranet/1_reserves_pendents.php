@@ -1,43 +1,103 @@
-<?php require_once 'inc/header.php';?>
+<?php require_once APP_ROOT . '/public/intranet/inc/header.php';?>
 
-<h2>Estat 1: Reserves pendents d'entrada al párking</h2>
-<h4>Ordenat segons data entrada vehicle</h4>
+<div class="container">
+    <h2>Estat 1: Reserves pendents d'entrada al párking</h2>
+    <h4>Ordenat segons data entrada vehicle</h4>
+</div>
 
-<div class="container-fluid">
-<div class='table-responsive'>
-<table class='table table-striped' id="pendents">
-<thead class="table-dark">
-    <tr>
-                <th>Núm. Comanda // data</th>
-                <th>Import</th>
-                <th>Pagat</th>
-                <th>Tipus</th>
-                <th>Neteja</th>
-                <th>Client // tel.</th>
-                <th>Entrada &darr;</th>
-                <th>Sortida</th>
-                <th>Vehicle</th>
-                <th>Vol tornada</th>
-                <th>Check-in</th>
-                <th>Notes</th>
-                <th>Cercadors</th>
-                <th>Email confirmació</th>
-                <th>Factura</th>
-                <th>Modificar</th>
-                <th>Eliminar</th>
+<div class="container">
+    <div class='table-responsive'>
+        <table class='table table-striped' id="pendents">
+            <thead class="table-dark">
+                <tr>
+                    <th>Núm. Comanda // data</th>
+                    <th>Import</th>
+                    <th>Pagat</th>
+                    <th>Tipus</th>
+                    <th>Neteja</th>
+                    <th>Client // tel.</th>
+                    <th>Entrada &darr;</th>
+                    <th>Sortida</th>
+                    <th>Dades Vehicle</th>
+                    <th>Vol tornada</th>
+                    <th>Check-in</th>
+                    <th>Notes</th>
+                    <th>Cercadors</th>
+                    <th>Opcions</th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-           </tbody>
-           </table>
-         
-    
-<h5 id="numReservesPendents"></h5>
+<!-- Ventana emergente -->
+<div id="ventanaEmergente" class="ventana" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+        <div class="contenidoVentana">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-12 d-flex flex-column justify-content-between gap-3">
+                            <button id="enlace1" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
+                
+                            <button id="enlace2" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
+
+                            <a href="#" id="enlace3" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
+
+                            <button id="enlace4" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</button>
+
+                            <a href="#" id="cerrarVentana" class="btn btn-danger  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+<div class="container" style="margin-bottom:50px">
+    <h5 id="numReservesPendents"></h5>
 </div>
-</div>
+
 <script>
+
+
+
+function btnEnviarConfirmacio(id) {
+    let urlAjax = window.location.origin + "/api/intranet/email/get/?type=emailConfirmacioReserva&id=" + id;
+    $.ajax({
+        url:urlAjax,
+        method:"GET",
+        dataType:"json",
+        success: function(data) {
+            // Verificamos si la respuesta es "success"
+            if (data.message === "success") {
+                const boton = document.getElementById('enlace1');
+                boton.textContent = "Email enviat!"; 
+
+                // Cambiar el estilo del botón (puedes agregar una clase CSS como ejemplo)
+                boton.classList.add("btn-success"); // Cambiar el color del botón
+                boton.classList.remove("btn-secondary"); // Eliminar el estilo original
+
+                // Desactivar el botón
+                boton.disabled = true;
+
+                // Desactivar el cursor para reflejar el estado desactivado visualmente
+                boton.style.cursor = "not-allowed";
+                boton.style.opacity = "0.5";
+
+            } else {
+                // Aquí podrías manejar otros casos si la respuesta no es "success"
+                console.log("Error al enviar el email");
+            }
+        },
+        error: function(xhr, status, error) {
+            // Manejar el caso de error en la solicitud Ajax
+            console.error("Error en la solicitud AJAX:", error);
+        }
+    });
+}
+
 function fetch_data(){
+
     let urlAjax = window.location.origin + "/api/intranet/reserves/get/?type=pendents";
     $.ajax({
         url:urlAjax,
@@ -89,7 +149,17 @@ function fetch_data(){
                     limpieza2 = "-";
                 }
 
-                const urlWeb = window.location.origin + "/control"
+                const urlWeb = window.location.origin + "/control";
+
+                function formatImporte(importe) {
+                    const numero = parseFloat(importe);
+                    if (isNaN(numero)) {
+                        const numero = 0.0;
+                        const [entero, decimal] = numero.toFixed(2).split('.'); return `${entero},${decimal}`; 
+                    } else {
+                       const [entero, decimal] = numero.toFixed(2).split('.'); return `${entero},${decimal}`; 
+                    }
+                }
 
                 // 0 - Inicio construccion body tabla
                 html += '<tr>';
@@ -104,7 +174,7 @@ function fetch_data(){
                 html += '</td>';
 
                 // 2 - Import
-                html += '<td><strong>' + data[i].importe + ' €</strong></td>';
+                html += '<td><strong>' + formatImporte(data[i].importe) + ' €</strong></td>';
 
                 // 3 - Pagat
                 html += '<td>';
@@ -123,7 +193,7 @@ function fetch_data(){
                 html += '</td>';
 
                 // 4 - Tipus de reserva
-                html += '<td><a href="' + urlWeb + '/reserva/modificar/tipus/' + data[i].id + '"><strong>' + tipoReserva2 + '</a></strong></td>';
+                html += '<td><strong>' + tipoReserva2 + '</strong></td>';
 
                 // 5 - Neteja
                 html += '<td>' + limpieza2 + '</td>';
@@ -131,9 +201,9 @@ function fetch_data(){
                 // 6 - Client i telefon
                 html += '<td>';
                 if (data[i].nombre) {
-                    html += '<a href="' + urlWeb + '/reserva/modificar/nom/' + data[i].id + '">' + data[i].nombre + '</a> // <a href="' + urlWeb + '/reserva/modificar/telefon/' + data[i].id + '">' + data[i].tel + '</a>';
+                    html += data[i].nombre + ' // ' + data[i].tel;
                 } else {
-                    html += data[i].clientNom + ' ' + data[i].clientCognom + ' // ' + data[i].telefono + '</a>';
+                    html += data[i].clientNom + ' ' + data[i].clientCognom + ' // ' + data[i].telefono;
                 }
                 html += '</td>';
 
@@ -142,7 +212,7 @@ function fetch_data(){
                 if (dataEntradaAny == 1970) {
                     html += 'Pendent';
                 } else {
-                    html += '<strong><a href="' + urlWeb + '/reserva/modificar/entrada/' + data[i].id + '">' + dataEntrada2 + '//' + data[i].HoraEntrada + '</a></strong>';
+                    html += '<strong>' + dataEntrada2 + ' // ' + data[i].HoraEntrada + '</strong>';
                 }
                 html += '</td>';
 
@@ -151,16 +221,22 @@ function fetch_data(){
                 if (dataSortidaAny == 1970) {
                     html += 'Pendent';
                 } else {
-                    html += '<a href="' + urlWeb + '/reserva/modificar/sortida/' + data[i].id + '">' + dataSortida2 + '</a> // <a href="' + urlWeb + '/reserva/modificar/sortida/' + data[i].id + '">' + data[i].HoraSortida + '</a>';
+                    html += dataSortida2 + ' // ' + data[i].HoraSortida;
                 }
                 html += '</td>';
 
                 // 9 - Vehicle i matricula
-                html += '<td><a href="' + urlWeb + '/reserva/modificar/vehicle/' + data[i].id + '">' + data[i].modelo + '</a>';
+                html += '<td>' + data[i].modelo;
                 if (data[i].matricula) {
-                    html += ' // <a href="' + urlWeb + '/reserva/modificar/vehicle/' + data[i].id + '">' + data[i].matricula + '</a>';
+                    html += ' // ' + data[i].matricula;
                 } else {
                     html += '<p><a href="' + urlWeb + '/reserva/modificar/vehicle/' + data[i].id + '" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Afegir matrícula</a></p>';
+                }
+
+                if (data[i].numeroPersonas) {
+                    html += '<p> // ' + data[i].numeroPersonas + ' personas</p>';
+                } else {
+                    html += ' // -';
                 }
                 html += '</td>';
 
@@ -169,7 +245,7 @@ function fetch_data(){
                 if (!data[i].vuelo) {
                     html += '<a href="' + urlWeb + '/reserva/modificar/vol/' + data[i].id + '" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Afegir vol</a>';
                 } else {
-                    html += '<a href="' + urlWeb + '/reserva/modificar/vol/' + data[i].id + '">' + data[i].vuelo + '</a>';
+                    html +=  data[i].vuelo;
                 }
                 html += '</td>';
 
@@ -207,17 +283,8 @@ function fetch_data(){
                 html += '</td>';
 
                 // 14 - Email confirmacio
-                html += '<td><a href="' + urlWeb + '/reserva/email/confirmacio/' + data[i].id + '" class="btn btn-success btn-sm" role="button" aria-pressed="true"><i class="bi bi-envelope"></i></i></a></td>';
+                html += '<td><button id="obrirFinestraBtn" class="btn btn-success btn-sm" role="button" aria-pressed="true" data-id="' + data[i].id + '">Obrir</button></td>';
                 
-                // 15 - Enviar factura pdf
-                html += '<td><a href="' + urlWeb + '/reserva/email/factura/' + data[i].id + '" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="bi bi-file-earmark-pdf"></a></td>';
-
-                // 16 - Modificar reserva
-                html += '<td><a href="' + urlWeb + '/reserva/modificar/reserva/' + data[i].id + '" class="btn btn-warning btn-sm" role="button" aria-pressed="true"><i class="bi bi-pencil-square"></i></a></td>';
-
-                // 17 - Eliminar reserva
-                html += '<td><a href="' + urlWeb + '/reserva/eliminar/reserva/' + data[i].id + '" class="btn btn-danger btn-sm" role="button" aria-pressed="true"><i class="bi bi-trash"></i></a></td>';
-
                 html += '</tr>';
             }
             $('#pendents tbody').html(html);

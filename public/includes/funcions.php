@@ -263,11 +263,7 @@ function enviarConfirmacio($id) {
 
                 $notes_old = $row['notes'];
                 $buscadores_old = $row['buscadores'];
-            }
-
-            echo "<div class='container'>
-            <h2>Enviament correu electrònic de confirmació de reserva (ID Reserva: ".$idReserva_old.") </h2>";
-            
+            }           
                 // aqui comença l'enviament
                 // Crea una nueva instancia de PHPMailer
                 $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
@@ -327,7 +323,7 @@ function enviarConfirmacio($id) {
                                     <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.</p>
                                     <p>Gracias por elegir nuestro servicio de parking.</p>
                                     <p>Atentamente,</p>
-                                    <p>BCN Parking SL - Finguer-com</p>
+                                    <p>BCN Parking SL - Finguer.com</p>
                                 </td>
                             </tr>
                             <tr>
@@ -342,17 +338,48 @@ function enviarConfirmacio($id) {
 
                     // Envía el correo electrónico
                     $mail->send();
-                    echo 'El correu electrònic s\'ha enviat correctament';
+                    $data = array(
+                        "message" => "success"
+                    );
+
+                    // Establecer el encabezado de respuesta a JSON
+                    header('Content-Type: application/json');
+                    
+                    // Devolver los datos en formato JSON
+                    echo json_encode($data);
                 } catch (Exception $e) {
-                    echo "El correu electrònic no s\'ha pogut enviar. Error: {$mail->ErrorInfo}";
+                    $data = array(
+                        "message" => "error"
+                    );
+
+                    // Establecer el encabezado de respuesta a JSON
+                    header('Content-Type: application/json');
+                    
+                    // Devolver los datos en formato JSON
+                    echo json_encode($data);
                 }
-            echo "</div>";
 
         } else {
-            echo "Error: aquest ID no és vàlid";
+            $data = array(
+                "message" => "error"
+            );
+
+            // Establecer el encabezado de respuesta a JSON
+            header('Content-Type: application/json');
+            
+            // Devolver los datos en formato JSON
+            echo json_encode($data);
         }
     } else {
-        echo "Error. No has seleccionat cap vehicle.";
+        $data = array(
+            "message" => "error"
+        );
+
+        // Establecer el encabezado de respuesta a JSON
+        header('Content-Type: application/json');
+        
+        // Devolver los datos en formato JSON
+        echo json_encode($data);
     }
 }
 

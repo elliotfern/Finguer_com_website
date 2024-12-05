@@ -1,5 +1,7 @@
 <?php
 
+require_once APP_ROOT . '/public/intranet/inc/header.php';
+
 use RedsysConsultasPHP\Client\Client;
 
 global $conn;
@@ -66,14 +68,14 @@ if (is_numeric($id)) {
             switch ($ds_response) {
                 case '9218':
                     echo "<div class='alert alert-danger text-center' role='alert'>
-                            <p><img src='".APP_WEB."/inc/img/warning.png' alt='Pagament Error'></p>
+                            <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
                             <p><strong>Pagament fallit</strong>.</p>
                           </div>";
                     break;
 
                 case '0000':
                     echo "<div class='alert alert-success text-center' role='alert'>
-                            <p><img src='".APP_WEB."/inc/img/correct.png' alt='Pagament OK'></p>
+                            <p><img src='".APP_WEB."/public/img/correct.png' alt='Pagament OK'></p>
                             <p><strong>Pagament verificat correctament amb RedSys.</strong></p>
                           </div>";
 
@@ -88,7 +90,7 @@ if (is_numeric($id)) {
 
                 default:
                     echo "<div class='alert alert-danger text-center' role='alert'>
-                            <p><img src='".APP_WEB."/inc/img/warning.png' alt='Pagament Error'></p>
+                            <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
                             <p><strong>No s'ha pogut verificar aquest pagament. Pagament fallit o denegat amb RedSys.</strong></p>
                           </div>";
                     break;
@@ -96,7 +98,7 @@ if (is_numeric($id)) {
         } catch (Exception $e) {
             // Manejar el error de la API de Redsys
             echo "<div class='alert alert-danger text-center' role='alert'>
-                    <p><img src='".APP_WEB."/inc/img/warning.png' alt='Pagament Error'></p>
+                    <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
                     <p><strong>Error de pagament: " . htmlspecialchars($e->getMessage()) . "</strong></p>";
                         if ($e->getMessage() === 'Error XML0024') {
                             // Mostrar mensaje para el error específico

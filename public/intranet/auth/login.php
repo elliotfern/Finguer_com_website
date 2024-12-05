@@ -49,7 +49,7 @@ $(function () {
           loginMessageErr.style.display = 'none';
           
           setTimeout(() => {
-            window.location.href = "https://" + window.location.hostname + "/control/home";
+            window.location.href = "https://" + window.location.hostname + "/control/reserves-pendents";
           }, 3000); // Redirige después de 3 segundos
 
         } else {

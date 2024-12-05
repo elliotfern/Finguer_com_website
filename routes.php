@@ -32,9 +32,11 @@ $routes = [
 
     // API INTRANET
     '/api/intranet/auth/login' => ['view' => 'api/intranet/auth/login.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/intranet/reserves/get' => ['view' => 'api/intranet/get-reserves.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/intranet/reserves/post' => ['view' => 'api/intranet/post-login.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/intranet/users/get' => ['view' => 'api/intranet/get-users.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/intranet/reserves/get' => ['view' => 'api/intranet/get-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
+    '/api/intranet/reserves/post' => ['view' => 'api/intranet/post-login.php', 'needs_session' => true, 'no_header_footer' => true],
+    '/api/intranet/users/get' => ['view' => 'api/intranet/get-users.php', 'needs_session' => true, 'no_header_footer' => true],
+
+    '/api/intranet/email/get' => ['view' => 'api/intranet/email/get-email.php', 'needs_session' => true, 'no_header_footer' => true],
 
     // API WEB PUBLICA
     '/api/alta-client' => ['view' => 'api/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
@@ -44,7 +46,7 @@ $routes = [
     // INTRANET - AREA PRIVADA REQUEREIX TOKEN DE AUTENTICACIO
     '/control/login' => ['view' => 'public/intranet/auth/login.php', 'needs_session' => false],
     '/control' => ['view' => 'public/intranet/1_reserves_pendents.php', 'needs_session' => true],
-    '/control/home' => ['view' => 'public/intranet/1_reserves_pendents.php', 'needs_session' => true],
+    '/control/reserves-pendents' => ['view' => 'public/intranet/1_reserves_pendents.php', 'needs_session' => true],
 
     '/control/reserves-parking' => ['view' => 'public/intranet/2_reserves_parking.php', 'needs_session' => true],
     '/control/reserves-completades' => ['view' => 'public/intranet/3_reserves_completades.php', 'needs_session' => true],
