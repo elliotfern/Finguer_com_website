@@ -1,4 +1,4 @@
-import { enviarConfirmacioReserva } from './enviarConfirmacioReserva.js';
+import { enviarConfirmacioReserva } from './enviarConfirmacioReserva';
 
 // Función para abrir la ventana emergente y posicionarla encima del botón
 export const obrirFinestra = (event: MouseEvent, id: string): void => {

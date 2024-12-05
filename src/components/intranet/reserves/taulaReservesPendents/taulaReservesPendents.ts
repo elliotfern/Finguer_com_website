@@ -1,4 +1,4 @@
-import { Reserva } from '../../../../types/interfaces.js';
+import { Reserva } from '../../../../types/interfaces';
 
 export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
   try {

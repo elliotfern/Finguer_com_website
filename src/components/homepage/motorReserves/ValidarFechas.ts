@@ -1,4 +1,4 @@
-import { resetContadores } from "./ResetContadores.js";
+import { resetContadores } from "./ResetContadores";
 
 export const parseDate = (dateString: string): Date => {
     const [day, month, year] = dateString.split('-').map(Number);

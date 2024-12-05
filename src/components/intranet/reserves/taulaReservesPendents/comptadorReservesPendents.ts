@@ -1,4 +1,4 @@
-import { Comptador } from '../../../../types/interfaces.js';
+import { Comptador } from '../../../../types/interfaces';
 
 export const compatadorReservesPendents = async (): Promise<void> => {
     try {

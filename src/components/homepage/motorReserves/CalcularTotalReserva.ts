@@ -1,7 +1,7 @@
-import { validarFechas } from './ValidarFechas.js';
-import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva.js';
-import { calcularPrecioSinIva } from './CalcularPrecioSinIva.js';
-import { calcularPrecioConIva } from './CalcularPrecioConIva.js';
+import { validarFechas } from './ValidarFechas';
+import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva';
+import { calcularPrecioSinIva } from './CalcularPrecioSinIva';
+import { calcularPrecioConIva } from './CalcularPrecioConIva';
 
 export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioReserva: number; costeIva: number; precioSubtotal: number; costoLimpiezaSinIva: number, diasReserva: number } => {
   let precioTotal = 0;

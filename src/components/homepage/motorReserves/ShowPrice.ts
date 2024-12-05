@@ -1,5 +1,5 @@
-import { calcularTotalReserva } from './CalcularTotalReserva.js';
-import { actualizarBotonPagar } from './ActualizarBotonPagar.js';
+import { calcularTotalReserva } from './CalcularTotalReserva';
+import { actualizarBotonPagar } from './ActualizarBotonPagar';
 
 export const showPrice = () => {
    

@@ -1,4 +1,4 @@
-import { parseDate } from './ValidarFechas.js';
+import { parseDate } from './ValidarFechas';
 
 export const calcularTotalDiasReserva = (fechaReserva: HTMLInputElement): number => {
   let diferenciaEnDias = 0;

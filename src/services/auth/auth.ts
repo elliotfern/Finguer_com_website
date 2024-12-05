@@ -1,4 +1,4 @@
-import { devDirectory } from '../../config.js';
+import { devDirectory } from '../../config';
 
 interface LoginResponse {
   status: string;

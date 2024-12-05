@@ -31,7 +31,7 @@
     </div>
 </div>
 
-<script type="module" src="<?php APP_ROOT;?>/dist/main.js"></script>
+<script type="module" src="<?php APP_ROOT;?>/dist/bundle.js"></script>
 <script src="<?php APP_ROOT;?>/public/js/cookies.js"></script>
 </body>
 </html>

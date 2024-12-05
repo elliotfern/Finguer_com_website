@@ -1,14 +1,14 @@
-import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent.js';
+import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent';
 
 export const reservesPendents = () => {
 
-    import('./taulaReservesPendents/taulaReservesPendents.js').then(module => {
+    import('./taulaReservesPendents/taulaReservesPendents').then(module => {
         module.carregarDadesTaulaReservesPendents();
     }).catch(error => {
         console.error('Error al cargar el módulo:', error);
     });
 
-    import('./taulaReservesPendents/comptadorReservesPendents.js').then(module => {
+    import('./taulaReservesPendents/comptadorReservesPendents').then(module => {
         module.compatadorReservesPendents();
     }).catch(error => {
         console.error('Error al cargar el módulo:', error);

@@ -1,4 +1,4 @@
-import { validarFechas } from "./ValidarFechas.js";
+import { validarFechas } from "./ValidarFechas";
 
 // Obtener los elementos del DOM
 const horaEntradaSelect = document.getElementById('horaEntrada') as HTMLSelectElement;

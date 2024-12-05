@@ -1,4 +1,4 @@
-import { devDirectory } from '../../config.js';
+import { devDirectory } from '../../config';
 
 export function deleteCookie(name: string, path?: string, domain?: string): void {
     if (getCookie(name)) {

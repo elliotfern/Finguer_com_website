@@ -1,4 +1,4 @@
-import { calcularTotalReserva } from "./CalcularTotalReserva.js";
+import { calcularTotalReserva } from "./CalcularTotalReserva";
 
 export const sendForm = () => {
   // Redirigir al usuario a la página de pago al hacer clic en el botón de pagar
