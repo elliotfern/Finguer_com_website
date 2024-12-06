@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import { calcularTotalReserva } from "./CalcularTotalReserva";
 
 export const sendForm = () => {

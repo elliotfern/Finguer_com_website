@@ -1,3 +1,7 @@
+import $ from 'jquery';
+import 'daterangepicker/daterangepicker.css';
+import 'daterangepicker';
+
 export const daterangepicker = () => {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() + 2); // Fecha de inicio + 2 días

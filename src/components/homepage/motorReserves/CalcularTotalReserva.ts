@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import { validarFechas } from './ValidarFechas';
 import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva';
 import { calcularPrecioSinIva } from './CalcularPrecioSinIva';

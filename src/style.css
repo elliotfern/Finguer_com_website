@@ -113,7 +113,7 @@ input[type="text"] {
     margin-top: 20px;
 }
 
-#pagar, #pagar_tarjeta {
+#pagamentTargeta {
     width: 100%;
     padding: 10px;
     background-color: #007bff;
@@ -124,7 +124,7 @@ input[type="text"] {
     cursor: pointer;
 }
 
-#pagar:hover, #pagar_tarjeta:hover {
+#pagamentTargeta:hover {
     background-color: #0056b3;
 }
 
@@ -166,7 +166,7 @@ input[type="text"] {
 }
 
 #pagar,
-#pago_bizum {
+#pagamentBizum {
     display: block;
     width: 100%;
     padding: 10px;
@@ -179,7 +179,7 @@ input[type="text"] {
 }
 
 #pagar:hover,
-#pago_bizum:hover {
+#pagamentBizum:hover {
     background-color: #0056b3;
 }
 

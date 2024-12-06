@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import { resetContadores } from "./ResetContadores";
 
 export const parseDate = (dateString: string): Date => {

@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import { validarFechas } from "./ValidarFechas";
 
 // Obtener los elementos del DOM

@@ -1,68 +1,89 @@
 <?php
-/*
- * BACKEND FINGUER
- * INSERIR NOU CLIENT
- * taula: usuaris
- */
+// Configuración de cabeceras para aceptar JSON y responder JSON
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
+header("Access-Control-Allow-Methods: POST");
 
-    // insert data to db
-    if (empty($_POST["nombre"])) {
-        $hasError = true;
-    } else {
-        $nombre = data_input($_POST["nombre"], ENT_NOQUOTES);
-    }
+// Leer el cuerpo de la solicitud JSON
+$data = json_decode(file_get_contents("php://input"), true);
 
-    if (empty($_POST["email"])) {
-        $hasError = true;
-    } else {
-        $email = data_input($_POST["email"], ENT_NOQUOTES);
-    }
+// Verificar que los datos se recibieron correctamente
+if (!$data) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "No se enviaron datos válidos.",
+        "errors" => []
+    ]);
+    exit;
+}
 
-    if (empty($_POST["empresa"])) {
-        $empresa = NULL;
-      } else {
-        $empresa = data_input($_POST["empresa"], ENT_NOQUOTES);
-      }
+$errors = [];
 
-    if (empty($_POST["nif"])) {
-        $nif = NULL;
-    } else {
-        $nif = data_input($_POST["nif"], ENT_NOQUOTES);
-    }
+// Validar y sanitizar datos recibidos
+$hasError = false;
 
-    if (empty($_POST["direccion"])) {
-        $direccion = NULL;
-    } else {
-        $direccion = data_input($_POST["direccion"], ENT_NOQUOTES);
-    }
+// validar camps obligatoris
+// Validar nombre
+if (empty($data["nombre"])) {
+    $errors["nombre"] = "El nombre es obligatorio.";
+    $hasError = true;
+} elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $data["nombre"])) {
+    $errors["nombre"] = "El nombre debe contener solo letras y espacios.";
+    $hasError = true;
+}
 
-    if (empty($_POST["ciudad"])) {
-        $ciudad = NULL;
-    } else {
-        $ciudad = data_input($_POST["ciudad"], ENT_NOQUOTES);
-    }
+// Validar email
+if (empty($data["email"])) {
+    $errors["email"] = "El correo electrónico es obligatorio.";
+    $hasError = true;
+} elseif (!filter_var($data["email"], FILTER_VALIDATE_EMAIL)) {
+    $errors["email"] = "El correo electrónico no es válido.";
+    $hasError = true;
+}
 
-    if (empty($_POST["codigo_postal"])) {
-        $codigo_postal = NULL;
-    } else {
-        $codigo_postal = data_input($_POST["codigo_postal"], ENT_NOQUOTES);
-    }
+// Validar teléfono
+if (empty($data["telefono"])) {
+    $errors["telefono"] = "El teléfono es obligatorio.";
+    $hasError = true;
+} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) { 
+    $errors["telefono"] = "El teléfono debe contener solo números y tener entre 9 y 15 dígitos.";
+    $hasError = true;
+}
 
-    if (empty($_POST["pais"])) {
-        $pais = NULL;
-    } else {
-        $pais = data_input($_POST["pais"], ENT_NOQUOTES);
-    }
+// Si hay errores, enviarlos al cliente
+if (!empty($errors)) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Errores en los datos enviados.",
+        "errors" => $errors
+    ]);
+    exit;
+}
 
-    if (empty($_POST["telefono"])) {
-        $telefono = NULL;
-    } else {
-        $telefono = data_input($_POST["telefono"], ENT_NOQUOTES);
-    }
-    
-    $tipoUsuario = 2;
+// si no hi ha errors, continuem amb la validacio de les dades
 
-    if (!isset($hasError)) {
+$nombre = data_input($data["nombre"]);
+$email = data_input($data["email"]);
+$telefono = data_input($data["telefono"]);
+
+$empresa = !empty($data["empresa"]) ? data_input($data["empresa"]) : null;
+$nif = !empty($data["nif"]) ? data_input($data["nif"]) : null;
+$direccion = !empty($data["direccion"]) ? data_input($data["direccion"]) : null;
+$ciudad = !empty($data["ciudad"]) ? data_input($data["ciudad"]) : null;
+$codigo_postal = !empty($data["codigo_postal"]) ? data_input($data["codigo_postal"]) : null;
+$pais = !empty($data["pais"]) ? data_input($data["pais"]) : null;
+
+$tipoUsuario = 2; // Asignar tipo de usuario por defecto
+
+// Si hay errores en los datos, devolver una respuesta de error
+if ($hasError) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Datos incompletos."
+    ]);
+    exit;
+}
+
       global $conn;
       $sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario";
       $stmt= $conn->prepare($sql);
@@ -79,25 +100,23 @@
 
       if ($stmt->execute()) {
         // Obtener el ID del nuevo cliente insertado
-        $id_cliente = $conn->lastInsertId();
+        $idCliente = $conn->lastInsertId();
         
         // response output
-        $response['status'] = "success";
-        $response['idCliente'] = $id_cliente;
-
+         // Devolver respuesta de éxito
         header( "Content-Type: application/json" );
-        echo json_encode($response);
+        echo json_encode([
+            "status" => "success",
+            "idCliente" => $idCliente,
+            "message" => "Cliente creado con exito."
+        ]);
 
       } else {
-        // response output - data error
-        $response['status'] = 'error';
-
-        header( "Content-Type: application/json" );
-        echo json_encode($response);
+          // response output - data error
+          header( "Content-Type: application/json" );
+          echo json_encode([
+            "status" => "error",
+            "message" => "Error en la base de datos."
+        ]);
       }
-    } else {
-      // response output - data error
-      $response['status'] = 'error';
-      header( "Content-Type: application/json" );
-      echo json_encode($response);
-    } 
+  

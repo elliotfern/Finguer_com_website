@@ -65,7 +65,7 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
     // OBJECTE REDSYS
         $miObj = new RedsysAPI;
 
-        // Valores de entrada que no hemos cmbiado para ningun ejemplo
+        // Valores de entrada
         $fuc = $token;
         $terminal = $token3;
         $moneda = "978";
@@ -73,12 +73,12 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
         $url = "";
         $urlOK = $url_Ok;
         $urlKO = $url_Ko;
-        $id = date("mdHis");
+        $idReserva = date("mdHis");
         $amount = round($costeTotal * 100);
 
         // Se Rellenan los campos
         $miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
-        $miObj->setParameter("DS_MERCHANT_ORDER",$id);
+        $miObj->setParameter("DS_MERCHANT_ORDER",$idReserva);
         $miObj->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
         $miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
         $miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
@@ -105,7 +105,7 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
 
         $miObj2->setParameter("DS_MERCHANT_PAYMETHODS",$payment);
         $miObj2->setParameter("DS_MERCHANT_AMOUNT",$amount);
-        $miObj2->setParameter("DS_MERCHANT_ORDER",$id);
+        $miObj2->setParameter("DS_MERCHANT_ORDER",$idReserva);
         $miObj2->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
         $miObj2->setParameter("DS_MERCHANT_CURRENCY",$moneda);
         $miObj2->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
@@ -141,16 +141,19 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
                 <div class="col-md-6">
                 <label for="nombre">Nombre y apellidos *</label>
                 <input type="text" class="form-control" id="nombre" name="nombre" required>
+                <div class="invalid-feedback" id="error-nombre"></div>
                 </div>
 
                 <div class="col-md-6">
                 <label for="email">Dirección de correo electrónico *</label>
                 <input type="text" class="form-control" id="email" name="email" required>
+                <div class="invalid-feedback" id="error-email"></div>
                 </div>
 
                 <div class="col-md-6">
                 <label for="telefono">Teléfono *</label>
                 <input type="text" class="form-control" id="telefono" name="telefono" required>
+                <div class="invalid-feedback" id="error-telefono"></div>
                 </div>
 
                 <div class="row g-3">
@@ -159,23 +162,27 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
                 <div class="col-md-6">
                 <label for="modelo_vehiculo">Modelo vehículo *</label>
                 <input type="text" class="form-control" id="vehiculo" name="vehiculo">
+                <div id="error-vehiculo" class="invalid-feedback"></div>
                 </div>
 
                 <div class="col-md-6">
                 <label for="matricula">Matrícula vehículo*</label>
                 <input type="text" class="form-control" id="matricula" name="matricula">
+                <div id="error-matricula" class="invalid-feedback"></div>
                 </div>
 
                 <div class="col-md-6">
                 <label for="vuelo_retorno">Número vuelo retorno</label>
                 <input type="text" class="form-control" id="vuelo" name="vuelo">
-                </div>
+                <div id="error-vuelo" class="invalid-feedback"></div>
+            </div>
 
                 <div class="col-md-6">
                 <label for="numero_personas">Número de acompañantes</label>
                 <input type="number" class="form-control" id="numero_personas" name="numero_personas" min="1" max="100" required>
                 <div id="numero_personasHelp" class="form-text">*Si vais a ser más de 8 personas, por favor, avisad antes al párking.</div>
-                </div>
+                <div id="error-numero_personas" class="invalid-feedback"></div>    
+            </div>
 
                 </div>
 
@@ -328,14 +335,31 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
         </table>
 
         <!-- Formulario para ingresar la información del pago -->
-        <form name="frm" action="" method="POST">
-        <input type="hidden" id="importe" name="importe" value="<?php echo $importe_total; ?>">
-
+        <form name="form" action="" method="POST">
+        <input type="hidden" id="importe" name="importe" value="<?php echo $costeTotal; ?>">
         <input type="hidden" id="cancelacion" name="cancelacion" value="<?php echo $seguroCancelacion; ?>">
+        <input type="hidden" id="tipo" name="tipo" value="<?php echo $codigoTipoReserva; ?>">
+        <input type="hidden" id="horaEntrada" name="horaEntrada" value="<?php echo $horaEntrada; ?>">
+        <input type="hidden" id="diaEntrada" name="diaEntrada" value="<?php echo $fechaEntrada2; ?>">
+        <input type="hidden" id="horaSalida" name="horaSalida" value="<?php echo $horaSalida; ?>">
+        <input type="hidden" id="diaSalida" name="diaSalida" value="<?php echo $fechaSalida2; ?>">
+        <input type="hidden" id="limpieza" name="limpieza" value="<?php echo $codigoLimpieza; ?>">
+        <input type="hidden" id="cancelacion" name="cancelacion" value="<?php echo $seguroCancelacion; ?>">
+        <input type="hidden" id="costeSeguro" name="costeSeguro" value="<?php echo $costeSeguro; ?>">
+        <input type="hidden" id="costeReserva" name="costeReserva" value="<?php echo $costeReserva; ?>">
+        <input type="hidden" id="costeLimpieza" name="costeLimpieza" value="<?php echo $costeLimpieza; ?>">
+        <input type="hidden" id="costeSubTotal" name="costeSubTotal" value="<?php echo $costeSubTotal; ?>">
+        <input type="hidden" id="costeIva" name="costeIva" value="<?php echo $costeIva; ?>">
+        <input type="hidden" id="costeTotal" name="costeTotal" value="<?php echo $costeTotal; ?>">
 
-            <!-- Un contenedor donde se mostrarán mensajes de error o éxito de Stripe -->
-            <div id="card-errors" role="alert"></div>
+        <input type="hidden" id="version" name="version" value="<?php echo $version; ?>">
+        <input type="hidden" id="params2" name="params2" value="<?php echo $params2; ?>">
+        <input type="hidden" id="signature2" name="signature2" value="<?php echo $signature2; ?>">
 
+        <input type="hidden" id="params" name="params" value="<?php echo $params; ?>">
+        <input type="hidden" id="signature" name="signature" value="<?php echo $signature; ?>">
+        <input type="hidden" id="idReserva" name="idReserva" value="<?php echo $idReserva; ?>">
+        
             <!-- Casilla de verificación de términos y condiciones -->
             <hr>
             <p>Tus datos personales se utilizarán para procesar tu reserva.</p>
@@ -351,11 +375,11 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
 
             <!-- Botón de pagar dentro de un div oculto -->
             <div id="div_pagar">
-                <button id="pagar_tarjeta" style="margin-top:25px">
+                <button type="button" id="pagamentTargeta" style="margin-top:25px">
                     <strong>PAGO SEGURO CON TARJETA <?php echo number_format($costeTotal, 2, ',', '.'); ?> €</strong>
                 </button>
 
-                <button id="pago_bizum" style="margin-top:25px">
+                <button type="button" id="pagamentBizum" style="margin-top:25px">
                     <strong>PAGO SEGURO CON BIZUM <?php echo number_format($costeTotal, 2, ',', '.'); ?> €</strong>
                 </button>
             </div>
@@ -364,250 +388,5 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
         </div>
     </div>
  </div>
-
- <script>
-    $(document).ready(function() {
-        // Función para actualizar el estado del botón de pagar y mostrar el aviso
-        function actualizarBotonPagar() {
-            if ($('#terminos_condiciones').is(':checked')) {
-                $('#div_pagar button').prop('disabled', false); // Habilitar el botón de pagar
-                $('#aviso_terminos').hide(); // Ocultar el aviso
-            } else {
-                $('#div_pagar button').prop('disabled', true); // Deshabilitar el botón de pagar
-                $('#aviso_terminos').show(); // Mostrar el aviso
-            }
-        }
-
-        // Llamar a la función cuando se carga la página
-        actualizarBotonPagar();
-
-        // Llamar a la función cada vez que se cambie el estado de la casilla de verificación
-        $('#terminos_condiciones').change(function() {
-            actualizarBotonPagar();
-        });
-
-
-        // funciones principales al clicar en el boton de pagar
-        $('#pagar_tarjeta').click(function(event) {
-            // Evitar que el formulario se envíe de forma tradicional
-            event.preventDefault();
-
-            // Declarar la variable nuevoClienteID fuera de la función success
-            let nuevoClienteID;
-
-            // Obtener los datos del formulario cliente
-            let formData = {
-                nombre: $("#nombre").val(),
-                telefono: $("#telefono").val(),
-                email: $("#email").val(),
-                empresa: $("#empresa").val(),
-                nif: $("#nif").val(),
-                direccion: $("#direccion").val(),
-                ciudad: $("#ciudad").val(),
-                codigo_postal: $("#codigo_postal").val(),
-                pais: $("#pais").val()
-            };
-
-            // Enviar los datos por AJAX para guardarlos en la tabla1
-            $.ajax({
-                url: '/api/alta-client',
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    if (response.status == "success") {
-
-                        // Add response in Modal body
-                        //$("#messageOk").show();
-                        $("#messageErr").hide();
-
-                        // Manejar el ID del nuevo cliente
-                        nuevoClienteID = response.idCliente;
-
-                        // Almacenar el número aleatorio en la sesión del navegador
-                        sessionStorage.setItem('idReserva', $("#idOrder").val());
-
-                        // el correo electronico del cliente:
-                        sessionStorage.setItem('email_cliente', $("#email").val());
-
-                        // importe total:
-                        sessionStorage.setItem('importe', $("#importe").val());
-
-                        // dia entrada:
-                        sessionStorage.setItem('diaEntrada', <?php echo $fechaEntrada2; ?>);
-
-                        // dias:
-                        sessionStorage.setItem('dias', <?php echo $numDias; ?>);
-
-                        $.ajax({
-                                url: '/api/alta-reserva',
-                                type: 'POST',
-                                data: {
-                                    idClient: nuevoClienteID,
-                                    idReserva: $("#idOrder").val(),
-                                    tipo: "<?php echo $codigoTipoReserva; ?>",
-                                    horaEntrada: "<?php echo $horaEntrada; ?>",
-                                    diaEntrada: "<?php echo $fechaEntrada2; ?>",
-                                    horaSalida: "<?php echo $horaSalida; ?>",
-                                    diaSalida: "<?php echo $fechaSalida2; ?>",
-                                    vehiculo: $("#vehiculo").val(),
-                                    matricula: $("#matricula").val(),
-                                    vuelo: $("#vuelo").val(),
-                                    numeroPersonas: $("#numero_personas").val(),
-                                    limpieza: "<?php echo $codigoLimpieza; ?>",
-                                    processed: "0",
-                                    cancelacion: "<?php echo $seguroCancelacion; ?>",
-                                    costeSeguro: "<?php echo $costeSeguro; ?>",
-                                    costeReserva: "<?php echo $costeReserva; ?>",
-                                    costeLimpieza: "<?php echo $costeLimpieza; ?>",
-                                    costeSubTotal: "<?php echo $costeSubTotal; ?>",
-                                    costeIva: "<?php echo $costeIva; ?>",
-                                    costeTotal: "<?php echo $costeTotal; ?>"
-                                },
-                                success: function(response) {
-                                    // Manejar la respuesta si es necesario
-                                    console.log(response);
-
-                                    if (response.status == "success") {
-
-                                    // Redireccionar a la pasarela de pago de Redsys
-                                    // Crear un formulario dinámicamente
-                                    let form = $('<form action="https://sis.redsys.es/sis/realizarPago" method="post"></form>');
-                                    
-                                    // Agregar las variables como campos ocultos al formulario
-                                    form.append('<input type="hidden" name="Ds_SignatureVersion" value="<?php echo $version; ?>">');
-                                    form.append('<input type="hidden" name="Ds_MerchantParameters" value="<?php echo $params; ?>">');
-                                    form.append('<input type="hidden" name="Ds_Signature" value="<?php echo $signature; ?>">');
-                                    
-                                    // Adjuntar el formulario al cuerpo del documento y enviarlo
-                                    $('body').append(form);
-                                    form.submit();
-                                    } else {
-                                        $("#messageOk").hide();
-                                        $("#messageErr").show();
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    // Manejar errores si es necesario
-                                    console.error(xhr, status, error);
-                                }
-                            });
-                    } else if (response.status == "error") {
-                        $("#messageOk").hide();
-                        $("#messageErr").show();
-                        // Manejar otro tipo de respuesta si es necesario
-                        console.log(response);
-                    }
-                }
-            });
-        });
-    });
-
-
-    // PAGO CON BIZUM
-    $('#pago_bizum').click(function(event) {
-            // Evitar que el formulario se envíe de forma tradicional
-            event.preventDefault();
-
-            // Declarar la variable nuevoClienteID fuera de la función success
-            let nuevoClienteID;
-
-            // Obtener los datos del formulario cliente
-            let formData = {
-                nombre: $("#nombre").val(),
-                telefono: $("#telefono").val(),
-                email: $("#email").val(),
-                empresa: $("#empresa").val(),
-                nif: $("#nif").val(),
-                direccion: $("#direccion").val(),
-                ciudad: $("#ciudad").val(),
-                codigo_postal: $("#codigo_postal").val(),
-                pais: $("#pais").val()
-            };
-
-            // Enviar los datos por AJAX para guardarlos en la tabla1
-            $.ajax({
-                url: '/api/alta-client',
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    if (response.status == "success") {
-
-                        // Add response in Modal body
-                        //$("#messageOk").show();
-                        $("#messageErr").hide();
-
-                        // Manejar el ID del nuevo cliente
-                        nuevoClienteID = response.idCliente;
-                        console.log("ID del nuevo cliente:", nuevoClienteID);
-
-                         // Ahora puedes enviar los datos junto con el ID del nuevo cliente a guardar_datos_tabla2.php
-                        let numeroAleatorio = Math.floor(1000 + Math.random() * 9000);
-
-                        // Almacenar el número aleatorio en la sesión del navegador
-                        sessionStorage.setItem('idReserva', numeroAleatorio);
-                        $.ajax({
-                                url: '/api/alta-reserva',
-                                type: 'POST',
-                                data: {
-                                    idClient: nuevoClienteID,
-                                    idReserva: numeroAleatorio,
-                                    tipo: "<?php echo $codigoTipoReserva; ?>",
-                                    horaEntrada: "<?php echo $horaEntrada; ?>",
-                                    diaEntrada: "<?php echo $fechaEntrada2; ?>",
-                                    horaSalida: "<?php echo $horaSalida; ?>",
-                                    diaSalida: "<?php echo $fechaSalida2; ?>",
-                                    vehiculo: $("#vehiculo").val(),
-                                    matricula: $("#matricula").val(),
-                                    vuelo: $("#vuelo").val(),
-                                    numeroPersonas: $("#numero_personas").val(),
-                                    limpieza: "<?php echo $codigoLimpieza; ?>",
-                                    processed: "0", // quité la coma extra al final
-                                    cancelacion: "<?php echo $seguroCancelacion; ?>",
-                                    costeSeguro: "<?php echo $costeSeguro; ?>",
-                                    costeReserva: "<?php echo $costeReserva; ?>",
-                                    costeLimpieza: "<?php echo $costeLimpieza; ?>",
-                                    costeSubTotal: "<?php echo $costeSubTotal; ?>",
-                                    costeIva: "<?php echo $costeIva; ?>",
-                                    costeTotal: "<?php echo $costeTotal; ?>"
-                                },
-                                success: function(response) {
-                                    // Manejar la respuesta si es necesario
-                                    console.log(response);
-
-                                    if (response.status == "success") {
-
-                                    // Redireccionar a la pasarela de pago de Redsys
-                                    // Crear un formulario dinámicamente
-                                    let form = $('<form action="https://sis.redsys.es/sis/realizarPago" method="post"></form>');
-                                    
-                                    // Agregar las variables como campos ocultos al formulario
-                                    form.append('<input type="hidden" name="Ds_SignatureVersion" value="<?php echo $version; ?>">');
-                                    form.append('<input type="hidden" name="Ds_MerchantParameters" value="<?php echo $params2; ?>">');
-                                    form.append('<input type="hidden" name="Ds_Signature" value="<?php echo $signature2; ?>">');
-
-                                    // Adjuntar el formulario al cuerpo del documento y enviarlo
-                                    $('body').append(form);
-                                    form.submit();
-                                    } else {
-                                        $("#messageOk").hide();
-                                        $("#messageErr").show();
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    // Manejar errores si es necesario
-                                    console.error(xhr, status, error);
-                                }
-                            });
-                    } else if (response.status == "error") {
-                        $("#messageOk").hide();
-                        $("#messageErr").show();
-                        // Manejar otro tipo de respuesta si es necesario
-                        console.log(response);
-                    }
-                }
-            });
-        });
-
-</script>
 
     </div>

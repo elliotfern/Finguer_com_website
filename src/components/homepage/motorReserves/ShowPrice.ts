@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import { calcularTotalReserva } from './CalcularTotalReserva';
 import { actualizarBotonPagar } from './ActualizarBotonPagar';
 
