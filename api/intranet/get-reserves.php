@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             if (isset($_GET['type']) && $_GET['type'] == 'pendents') {
                 $data = array();
                 global $conn;
+                /** @var PDO $conn */
                 $stmt = $conn->prepare("SELECT rc1.idReserva,
                         rc1.fechaReserva,
                         rc1.firstName AS 'clientNom',
@@ -53,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -96,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -169,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -188,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -218,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -237,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     }
                     // Establecer el encabezado de respuesta a JSON
                     header('Content-Type: application/json');
-                    
+
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
@@ -255,4 +256,3 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         exit();
     }
 }
-?>

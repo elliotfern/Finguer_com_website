@@ -35,7 +35,7 @@ $horaSalida = isset($_POST['horaSalida']) ? $_POST['horaSalida'] : 0;
     }
 
     if ($tipoLimpieza == 0) {
-        $tipoLimpieza2 = 0;
+        $tipoLimpieza2 = "No contratado";
         $codigoLimpieza = 0;
     } elseif ($tipoLimpieza === "15") {
         $tipoLimpieza2 = "Servicio de limpieza exterior";

@@ -6,7 +6,25 @@ use Firebase\JWT\JWT;
 
 $jwtSecret = $_ENV['TOKEN'];
 
-if (empty($_POST['email']) || empty($_POST['password'])) {
+// Configuración de cabeceras para aceptar JSON y responder JSON
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
+header("Access-Control-Allow-Methods: POST");
+
+// Leer el cuerpo de la solicitud JSON
+$data = json_decode(file_get_contents("php://input"), true);
+
+// Verificar que los datos se recibieron correctamente
+if (!$data) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "No se enviaron datos válidos.",
+    ]);
+    exit;
+}
+
+
+if (empty($data['email']) || empty($data['password'])) {
     // Si no se proporcionan el email o la contraseña
     $response = array(
         "status" => "error",
@@ -17,8 +35,8 @@ if (empty($_POST['email']) || empty($_POST['password'])) {
     exit;
 }
 
-$email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);  // Validamos el formato del email
-$password = $_POST['password'];
+$email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);  // Validamos el formato del email
+$password = $data['password'];
 
 if ($email === false) {
     // Si el email no es válido
@@ -31,11 +49,14 @@ if ($email === false) {
     exit;
 }
 
-$stmt = $conn->prepare(
-    "SELECT u.id, u.email, u.password, u.tipoUsuario
+$query = "SELECT u.id, u.email, u.password, u.tipoUsuario
     FROM usuaris AS u
-    WHERE u.email = :email"
-);
+    WHERE u.email = :email";
+
+// Preparar la consulta
+/** @var PDO $conn */
+$stmt = $conn->prepare($query);
+
 $stmt->execute(['email' => $email]);
 
 if ($stmt->rowCount() === 0) {
@@ -93,4 +114,3 @@ if ($stmt->rowCount() === 0) {
 
 header('Content-Type: application/json');
 echo json_encode($response);
-?>
