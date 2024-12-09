@@ -101,54 +101,61 @@ if (!$idClient || !$idReserva || !$tipo || !$horaEntrada || !$horaSalida || !$vu
 
 // Convertir las fechas si es necesario
 if ($diaEntrada2) {
-    $fecha_objeto = DateTime::createFromFormat("Y-d-m", $diaEntrada2);
+    $fecha_objeto = DateTime::createFromFormat("d-m-Y", $diaEntrada2);
     $diaEntrada = $fecha_objeto->format("Y-m-d");
 }
 
 if ($diaSalida2) {
-    $fecha_objeto2 = DateTime::createFromFormat("Y-d-m", $diaSalida2);
+    $fecha_objeto2 = DateTime::createFromFormat("d-m-Y", $diaSalida2);
     $diaSalida = $fecha_objeto2->format("Y-m-d");
 }
 
 $fechaReserva = date("Y-m-d H:i:s");
-    
-      global $conn;
-      $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, seguroCancelacion=:seguroCancelacion, importe=:importe, subTotal=:subTotal, importeIva=:importeIva, costeReserva=:costeReserva, costeSeguro=:costeSeguro, costeLimpieza=:costeLimpieza, numeroPersonas=:numeroPersonas";
-      $stmt= $conn->prepare($sql);
-      $stmt->bindParam(":idClient", $idClient, PDO::PARAM_STR);
-      $stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_STR);
-      $stmt->bindParam(":tipo", $tipo, PDO::PARAM_STR);
-      $stmt->bindParam(":horaEntrada", $horaEntrada, PDO::PARAM_STR);
-      $stmt->bindParam(":diaEntrada", $diaEntrada, PDO::PARAM_STR);
-      $stmt->bindParam(":horaSalida", $horaSalida, PDO::PARAM_STR);
-      $stmt->bindParam(":diaSalida", $diaSalida, PDO::PARAM_STR);
-      $stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
-      $stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
-      $stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
-      $stmt->bindParam(":limpieza", $limpieza, PDO::PARAM_STR);
-      $stmt->bindParam(":processed", $processed, PDO::PARAM_STR);
-      $stmt->bindParam(":checkIn", $checkIn, PDO::PARAM_STR);
-      $stmt->bindParam(":fechaReserva", $fechaReserva, PDO::PARAM_STR);
-      $stmt->bindParam(":seguroCancelacion", $seguroCancelacion, PDO::PARAM_INT);
-      $stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
-      $stmt->bindParam(":subTotal", $costeSubTotal, PDO::PARAM_STR);
-      $stmt->bindParam(":importeIva", $costeIva, PDO::PARAM_STR);
-      $stmt->bindParam(":costeReserva", $costeReserva, PDO::PARAM_STR);
-      $stmt->bindParam(":costeSeguro", $costeSeguro, PDO::PARAM_STR);
-      $stmt->bindParam(":costeLimpieza", $costeLimpieza, PDO::PARAM_STR);
-      $stmt->bindParam(":numeroPersonas", $numeroPersonas, PDO::PARAM_INT);
 
-      if ($stmt->execute()) {      
-        // response output
-        $response['status'] = "success";
+if ($tipo === "finguer_class") {
+    $tipoNumber = 1;
+} else {
+    $tipoNumber = 2;
+}
 
-        header( "Content-Type: application/json" );
-        echo json_encode($response);
+global $conn;
+$sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, processed=:processed, checkIn =:checkIn, fechaReserva=:fechaReserva, seguroCancelacion=:seguroCancelacion, importe=:importe, subTotal=:subTotal, importeIva=:importeIva, costeReserva=:costeReserva, costeSeguro=:costeSeguro, costeLimpieza=:costeLimpieza, numeroPersonas=:numeroPersonas";
 
-      } else {
-        // response output - data error
-        $response['status'] = 'error';
+/** @var PDO $conn */
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":idClient", $idClient, PDO::PARAM_STR);
+$stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_STR);
+$stmt->bindParam(":tipo", $tipoNumber, PDO::PARAM_INT);
+$stmt->bindParam(":horaEntrada", $horaEntrada, PDO::PARAM_STR);
+$stmt->bindParam(":diaEntrada", $diaEntrada, PDO::PARAM_STR);
+$stmt->bindParam(":horaSalida", $horaSalida, PDO::PARAM_STR);
+$stmt->bindParam(":diaSalida", $diaSalida, PDO::PARAM_STR);
+$stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
+$stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
+$stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
+$stmt->bindParam(":limpieza", $limpieza, PDO::PARAM_STR);
+$stmt->bindParam(":processed", $processed, PDO::PARAM_STR);
+$stmt->bindParam(":checkIn", $checkIn, PDO::PARAM_STR);
+$stmt->bindParam(":fechaReserva", $fechaReserva, PDO::PARAM_STR);
+$stmt->bindParam(":seguroCancelacion", $seguroCancelacion, PDO::PARAM_INT);
+$stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
+$stmt->bindParam(":subTotal", $costeSubTotal, PDO::PARAM_STR);
+$stmt->bindParam(":importeIva", $costeIva, PDO::PARAM_STR);
+$stmt->bindParam(":costeReserva", $costeReserva, PDO::PARAM_STR);
+$stmt->bindParam(":costeSeguro", $costeSeguro, PDO::PARAM_STR);
+$stmt->bindParam(":costeLimpieza", $costeLimpieza, PDO::PARAM_STR);
+$stmt->bindParam(":numeroPersonas", $numeroPersonas, PDO::PARAM_INT);
 
-        header( "Content-Type: application/json" );
-        echo json_encode($response);
-      }
+if ($stmt->execute()) {
+    // response output
+    $response['status'] = "success";
+
+    header("Content-Type: application/json");
+    echo json_encode($response);
+} else {
+    // response output - data error
+    $response['status'] = 'error';
+
+    header("Content-Type: application/json");
+    echo json_encode($response);
+}

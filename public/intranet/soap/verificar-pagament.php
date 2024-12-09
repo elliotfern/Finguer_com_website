@@ -6,7 +6,8 @@ use RedsysConsultasPHP\Client\Client;
 
 global $conn;
 
-function getProtectedPropertyValue($object, $propertyName) {
+function getProtectedPropertyValue($object, $propertyName)
+{
     $reflection = new ReflectionClass($object);
     $property = $reflection->getProperty($propertyName);
     $property->setAccessible(true);
@@ -17,7 +18,7 @@ $id = $routeParams[0];
 
 if (is_numeric($id)) {
     $id_old = intval($id);
-    
+
     if (filter_var($id_old, FILTER_VALIDATE_INT)) {
         $codi_resposta = 2;
 
@@ -25,7 +26,7 @@ if (is_numeric($id)) {
         $sql = "SELECT r.idReserva
                 FROM reserves_parking AS r
                 WHERE r.id = :id";
-        
+
         $pdo_statement = $conn->prepare($sql);
         $pdo_statement->bindParam(':id', $id_old, PDO::PARAM_INT);
         $pdo_statement->execute();
@@ -40,8 +41,8 @@ if (is_numeric($id)) {
 
         $idReserva = $result[0]['idReserva'];
 
-        echo "<div class='container'>
-                <h2>Verificar el pagament de la reserva: ".$idReserva."</h2>";
+        echo "<div class='container' style='margin-bottom:150px'>
+                <h2>Verificar el pagament de la reserva: " . $idReserva . "</h2>";
 
         $token = $_ENV['MERCHANTCODE'];
         $token2 = $_ENV['KEY'];
@@ -68,14 +69,14 @@ if (is_numeric($id)) {
             switch ($ds_response) {
                 case '9218':
                     echo "<div class='alert alert-danger text-center' role='alert'>
-                            <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
+                            <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Pagament Error'></p>
                             <p><strong>Pagament fallit</strong>.</p>
                           </div>";
                     break;
 
                 case '0000':
                     echo "<div class='alert alert-success text-center' role='alert'>
-                            <p><img src='".APP_WEB."/public/img/correct.png' alt='Pagament OK'></p>
+                            <p><img src='" . APP_WEB . "/public/img/correct.png' alt='Pagament OK'></p>
                             <p><strong>Pagament verificat correctament amb RedSys.</strong></p>
                           </div>";
 
@@ -90,7 +91,7 @@ if (is_numeric($id)) {
 
                 default:
                     echo "<div class='alert alert-danger text-center' role='alert'>
-                            <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
+                            <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Pagament Error'></p>
                             <p><strong>No s'ha pogut verificar aquest pagament. Pagament fallit o denegat amb RedSys.</strong></p>
                           </div>";
                     break;
@@ -98,15 +99,14 @@ if (is_numeric($id)) {
         } catch (Exception $e) {
             // Manejar el error de la API de Redsys
             echo "<div class='alert alert-danger text-center' role='alert'>
-                    <p><img src='".APP_WEB."/public/img/warning.png' alt='Pagament Error'></p>
+                    <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Pagament Error'></p>
                     <p><strong>Error de pagament: " . htmlspecialchars($e->getMessage()) . "</strong></p>";
-                        if ($e->getMessage() === 'Error XML0024') {
-                            // Mostrar mensaje para el error específico
-                            echo "<p><strong>Missatge de Redsys: No existen operaciones para los datos solicitados.</strong></p>";
-                        }
-                    "</div>";    
+            if ($e->getMessage() === 'Error XML0024') {
+                // Mostrar mensaje para el error específico
+                echo "<p><strong>Missatge de Redsys: No existen operaciones para los datos solicitados.</strong></p>";
+            }
+            "</div>";
         }
-
     } else {
         echo "Error: aquest ID no és vàlid";
     }
@@ -114,5 +114,5 @@ if (is_numeric($id)) {
     echo "Error. No has seleccionat cap reserva.";
 }
 
-echo '<a href="'.APP_WEB.'/inici" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+echo '<a href="' . APP_WEB . '/control/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
 echo "</div>";

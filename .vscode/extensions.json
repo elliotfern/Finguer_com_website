@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "katuak.vscode-language-pack-ca",
+        "wallabyjs.console-ninja",
+        "usernamehw.errorlens",
+        "dbaeumer.vscode-eslint",
+        "github.vscode-pull-request-github",
+        "bmewburn.vscode-intelephense-client",
+        "emallin.phpunit",
+        "esbenp.prettier-vscode",
+        "wallabyjs.quokka-vscode",
+        "natizyskunk.sftp"
+    ]
+}

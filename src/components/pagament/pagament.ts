@@ -1,9 +1,11 @@
 import { pagamentBizum } from './pagamentBizum';
 import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
+import { recuperarDadesLocalStorage } from './recuperarDadesLocalStorage';
 
 export const pagament = () => {
   document.addEventListener('DOMContentLoaded', () => {
+    recuperarDadesLocalStorage();
     botoPagament();
 
     // Seleccionar los botones directamente
@@ -17,7 +19,7 @@ export const pagament = () => {
         if (aviso) aviso.style.display = 'block';
         return;
       }
-    
+
       if (aviso) aviso.style.display = 'none';
       callback();
     };
@@ -35,4 +37,3 @@ export const pagament = () => {
     }
   });
 };
-

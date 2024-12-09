@@ -57,7 +57,7 @@ if (!headers_sent()) {
     setcookie('user_id', $userId, $validUntil, '/', '', true, true);
     setcookie('acceso', "si", $validUntil, '/', '', true, true);
     setcookie('token', $jwt, $validUntil, '/', '', true, true);
-    setcookie('email', $email, $validUntil, '/', '', true, true); 
+    setcookie('email', $email, $validUntil, '/', '', false, false);
 
     // Redirigir al área privada
     //header('Location: /area-cliente/reservas');
@@ -66,9 +66,7 @@ if (!headers_sent()) {
     echo '</form>';
     echo '<script>document.getElementById("redirectForm").submit();</script>';
     exit();
-
 } else {
     // En caso de que ya se hayan enviado cabeceras
     die('No se puede establecer la cookie. Las cabeceras ya han sido enviadas.');
 }
-?>

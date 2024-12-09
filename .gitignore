@@ -1,7 +1,7 @@
 # Ignorar archivos y directorios generados por el sistema operativo
 .DS_Store
 Thumbs.db
-/.vscode/
+/.vscode/sftp.json
 .gitignore
 error_log
 .env

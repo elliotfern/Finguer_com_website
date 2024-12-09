@@ -39,9 +39,10 @@ $routes = [
     '/api/intranet/email/get' => ['view' => 'api/intranet/email/get-email.php', 'needs_session' => true, 'no_header_footer' => true],
 
     // API WEB PUBLICA
-    '/api/alta-client' => ['view' => 'api/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/alta-reserva' => ['view' => 'api/crear-reserva.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/pago-ok-reserva' => ['view' => 'api/cmodificar-reserva-pago-ok.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/alta-client' => ['view' => 'api/web_publica/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/alta-reserva' => ['view' => 'api/web_publica/crear-reserva.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/pagamentRedsysTargeta' => ['view' => 'api/web_publica/pagament-redsys-targeta.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/pagamentRedsysBizum' => ['view' => 'api/web_publica/pagament-redsys-bizum.php', 'needs_session' => false, 'no_header_footer' => true],
 
     // INTRANET - AREA PRIVADA REQUEREIX TOKEN DE AUTENTICACIO
     '/control/login' => ['view' => 'public/intranet/auth/login.php', 'needs_session' => false],
@@ -102,5 +103,5 @@ $routes = [
     // TREBALLS CRON RESERVES - SENSE SESSIO PRIVADA
     '/cron/reserves' => ['view' => 'public/cron/cron-reserves.php', 'needs_session' => false],
     '/cron/pagats' => ['view' => 'public/cron/cron-pagats.php', 'needs_session' => false],
-    
+
 ];

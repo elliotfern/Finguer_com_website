@@ -29,10 +29,33 @@ if (path === '/pago') {
     });
 }
 
+// Area client
+// pàgina login
+if (window.location.pathname === '/area-cliente/login') {
+  import('./components/areaClient/areaClientLogin')
+    .then((module) => {
+      module.areaClientLogin();
+    })
+    .catch((error) => {
+      console.error('Error al cargar el módulo de la homepage:', error);
+    });
+}
+
+// pagina principal area client
+if (window.location.pathname === '/area-cliente/reservas') {
+  import('./components/areaClient/areaClientHistoricReserves')
+    .then((module) => {
+      module.areaClientHistoricReserves();
+    })
+    .catch((error) => {
+      console.error('Error al cargar el módulo de la homepage:', error);
+    });
+}
+
 // Intranet treballadors
 
 // TOTA LA INTRANET
-if (window.location.pathname.startsWith('/control/')) {
+if (window.location.pathname.startsWith('/control/') && !window.location.pathname.includes('/control/login')) {
   // Esto se ejecutará en cualquier página que contenga "/control/"
   import('./components/intranet/header/header')
     .then((module) => {

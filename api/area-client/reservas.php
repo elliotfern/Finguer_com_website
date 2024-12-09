@@ -2,7 +2,7 @@
 global $conn;
 
 // Verificar si el método de la solicitud es GET
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('HTTP/1.1 405 Method Not Allowed');
     echo json_encode(['error' => 'Method not allowed']);
     exit();
@@ -25,7 +25,7 @@ if (!function_exists('validarToken') || !validarToken($token)) {
 }
 
 // 1) Llistat reserves (pendientes)
-if ( isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'reservas' &&  $_GET['cliente']) {
+if (isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'reservas' &&  $_GET['cliente']) {
 
     $email = $_GET['cliente'];
 
@@ -88,8 +88,8 @@ if ( isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'reservas' &&  
     // Devolver los datos en formato JSON
     echo json_encode($data);
     exit();
-
-} if (isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'factura' && is_numeric($_GET['cliente']) ) {
+}
+if (isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'factura' && is_numeric($_GET['cliente'])) {
 
     $id = (int) $_GET['cliente'];
     require_once APP_ROOT . '/public/includes/funcions.php';
@@ -110,4 +110,3 @@ if ( isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'reservas' &&  
 header('HTTP/1.1 400 Bad Request');
 echo json_encode(['error' => 'Invalid request']);
 exit();
-?>

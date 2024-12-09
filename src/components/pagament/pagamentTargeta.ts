@@ -1,12 +1,41 @@
 // pagamentTargeta.ts
-
 import { creacioDadesUsuaris } from './creacioDadesUsuari';
+import { fetchData } from '../../services/api/api';
+import { PaymentData, ApiRespostaRedSys } from '../../types/interfaces';
+
+interface PostRequest {
+  costTotal: number | undefined;
+}
 
 export const pagamentTargeta = async (): Promise<void> => {
+  // trucada a la API de redsys per generar objecte
+  const dataString = localStorage.getItem('paymentData');
+  let costTotal: number | undefined;
+  if (dataString) {
+    const data: PaymentData[] = JSON.parse(dataString);
+    const dades = data[0];
+    costTotal = dades.precioTotal;
+  }
+
+  const postData: PostRequest = { costTotal: costTotal };
+
+  const response = await fetchData<ApiRespostaRedSys, PostRequest>(`https://${window.location.hostname}/api/pagamentRedsysTargeta`, 'POST', postData);
+
+  let params = '';
+  let signature = '';
+  let idReserva = '';
+
+  if (response) {
+    if (response.status === 'success') {
+      params = response.params;
+      signature = response.signature;
+      idReserva = response.idReserva;
+    }
+  }
 
   try {
     // Esperamos a que la función creacioDadesUsuaris termine
-    const response = await creacioDadesUsuaris();
+    const response = await creacioDadesUsuaris(idReserva);
 
     // Si la respuesta es exitosa, continuamos con el resto de la función
     if (response.status === 'success') {
@@ -15,9 +44,9 @@ export const pagamentTargeta = async (): Promise<void> => {
       // Si todo ha ido bien, entonces se envia al usuario a la pasarela de pago de Redsys, targeta:
 
       // capturar els valors del formulari amb javascript
-      const version = (document.getElementById('version') as HTMLInputElement)?.value || '';
-      const params = (document.getElementById('params') as HTMLInputElement)?.value || '';
-      const signature = (document.getElementById('signature') as HTMLInputElement)?.value || '';
+      const version = 'HMAC_SHA256_V1';
+      const params2 = params || '';
+      const signature2 = signature || '';
 
       // Crear el formulario de forma dinámica
       const form = document.createElement('form');
@@ -34,13 +63,13 @@ export const pagamentTargeta = async (): Promise<void> => {
       const merchantParametersInput = document.createElement('input');
       merchantParametersInput.type = 'hidden';
       merchantParametersInput.name = 'Ds_MerchantParameters';
-      merchantParametersInput.value = params;
+      merchantParametersInput.value = params2;
       form.appendChild(merchantParametersInput);
 
       const signatureInput = document.createElement('input');
       signatureInput.type = 'hidden';
       signatureInput.name = 'Ds_Signature';
-      signatureInput.value = signature;
+      signatureInput.value = signature2;
       form.appendChild(signatureInput);
 
       // Adjuntar el formulario al cuerpo del documento y enviarlo

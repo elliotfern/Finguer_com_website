@@ -6,18 +6,46 @@ use Firebase\JWT\JWT;
 
 $jwtSecret = $_ENV['TOKEN'];
 
-// Verifica si se ha enviado el email
-if (empty($_POST['email'])) {
-    $response = array(
+// Configuración de cabeceras para aceptar JSON y responder JSON
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
+header("Access-Control-Allow-Methods: POST");
+
+// Leer el cuerpo de la solicitud JSON
+$data = json_decode(file_get_contents("php://input"), true);
+
+// Verificar que los datos se recibieron correctamente
+if (!$data) {
+    echo json_encode([
         "status" => "error",
-        "message" => "El correo electrónico es requerido."
-    );
-    header('Content-Type: application/json');
-    echo json_encode($response);
+        "message" => "No se enviaron datos válidos.",
+        "errors" => []
+    ]);
     exit;
 }
 
-$email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);  // Validamos el formato del email
+$errors = [];
+
+// Validar y sanitizar datos recibidos
+$hasError = false;
+
+// Validación para 'vehiculo'
+if (empty($data["email"])) {
+    $errors["email"] = "El campo email es obligatorio.";
+    $hasError = true;
+}
+
+// Si hay errores, enviarlos al cliente
+if (!empty($errors)) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Errores en los datos enviados.",
+        "errors" => $errors
+    ]);
+    exit;
+}
+
+$email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);  // Validamos el formato del email
 
 if ($email === false) {
     // Si el email no es válido
@@ -31,6 +59,8 @@ if ($email === false) {
 }
 
 // Verifica si el correo electrónico existe en la base de datos
+
+/** @var PDO $conn */
 $stmt = $conn->prepare("SELECT id, email FROM epgylzqu_finguer.usuaris AS u WHERE email = :email");
 $stmt->execute(['email' => $email]);
 
@@ -84,4 +114,3 @@ if ($stmt->rowCount() === 0) {
     header('Content-Type: application/json');
     echo json_encode($response);
 }
-?>
