@@ -1,7 +1,7 @@
 import path from 'path';
 
 export default {
-  entry: './src/main.ts',
+  entry: './src/frontend/main.ts',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
@@ -16,9 +16,8 @@ export default {
 
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],  // Para manejar CSS
+        use: ['style-loader', 'css-loader'], // Para manejar CSS
       },
-      
     ],
   },
   resolve: {

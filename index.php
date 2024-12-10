@@ -5,9 +5,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Incluir configuraciones y rutas
-require_once 'config.php';
-require_once 'public/includes/funcions.php';
-require_once 'routes.php';
+require_once __DIR__ . '/src/backend/config/config.php';
+require_once __DIR__ . '/src/backend/config/funcions.php';
+require_once __DIR__ . '/src/backend/routes/routes.php';
 
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -26,12 +26,12 @@ $routeFound = false;
 foreach ($routes as $route => $routeInfo) {
     // Crear un patrón para la ruta dinámica reemplazando los parámetros {param} por expresiones regulares
     $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_-]+)', $route);
-    
+
     if (preg_match('#^' . $pattern . '$#', $requestUri, $matches)) {
         // Si encontramos la ruta, extraemos los parámetros
         $routeFound = true;
         $routeParams = array_slice($matches, 1);  // El primer elemento es la ruta misma, los parámetros son los siguientes
-        
+
         // Asignamos la vista asociada a la ruta
         $view = $routeInfo['view'];
         break;
