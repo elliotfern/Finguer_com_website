@@ -1,7 +1,15 @@
+<?php
+// Obtener el idioma actual desde la cookie
+$currentLanguage = $_COOKIE['language'] ?? 'es';  // Si no está establecido, por defecto 'es'
+
+// Obtener traducciones generales
+$reserva = $translations['reserva'] ?? [];
+?>
+
 <div class="container" style="margin-bottom:100px">
     <div class="container text-center">
 
-        <h1 class="wp-block-heading has-text-align-center"><strong>Finguer,<br>la forma más rápida y segura de aparcar<br>tu coche y llegar al aeropuerto de Barcelona</strong></h1>
+        <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva['finguer_title'] ?></strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
             <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
@@ -183,7 +191,7 @@
         <strong>Finguer es un parking para coches con servicio de traslado y recogida al aeropuerto de Barcelona. Pero nosotros nos consideramos más como un hotel para mascotas. Y es que en Finguer tratamos tu coche como si fuera tu perro o gato: lo vigilamos, lo lavamos, cuidamos que no se pelee con el resto de coches… Y si no tienes mascota, pero te lo estás pensando, los científicos que saben de esto aconsejan el <a href="https://hipertextual.com/2016/07/mascotas-exoticas" target="_blank" rel="noreferrer noopener">ciervo sika</a>, originario de Japón. ???</strong>
     </div>
 
-    <div class="container" style="margin-top:55px">
+    <div class="container" style="margin-top:55px;margin-bottom:100px">
         <div class="row">
             <div class="col-12 col-md-2" id="donde-estamos">
                 <h2><strong>¿Dónde estamos?</strong></h2>

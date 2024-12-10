@@ -1,14 +1,26 @@
 // main.ts
+import { detectAndRedirect } from './utils/selectorIdioma';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import 'bootstrap';
 
+detectAndRedirect();
+
 // Obtener la ruta actual sin barra final
-const path = window.location.pathname.replace(/\/$/, '');
+//const path = window.location.pathname.replace(/\/$/, '');
+
+const supportedLanguages = ['es', 'fr', 'en', 'ca']; // Idiomas soportados
+// Normalizamos la ruta, eliminando la barra final si está presente
+const normalizedPath = window.location.pathname.replace(/\/$/, '');
+
+// Verificamos si la ruta es "/reserva" o "/{idioma}/reserva"
+const isReservaPage = normalizedPath === '/reserva' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/reserva`));
+
+const isPagoPage = normalizedPath === '/pago' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/pago`));
 
 // Web Finguer.com
 // Importar mòduls per la homepage de Finguer.com
-if (window.location.pathname === '/') {
+if (isReservaPage) {
   import('./components/homepage/homepage')
     .then((module) => {
       module.homePage();
@@ -19,7 +31,7 @@ if (window.location.pathname === '/') {
 }
 
 // Solo importar finestraEmergent.ts si estamos en la página correcta
-if (path === '/pago') {
+if (isPagoPage) {
   import('./components/pagament/pagament')
     .then((module) => {
       module.pagament();

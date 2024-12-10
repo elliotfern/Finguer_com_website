@@ -2,18 +2,29 @@
     RewriteEngine On
     RewriteBase /
 
-     # Redireccionar "/" a "/inici"
-    RewriteRule ^$ / [L,R=301]
+    # Redirigir de www a la versión sin www
+    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    RewriteRule ^(.*)$ https://%1/$1 [L,R=301]
 
+    # Redirigir "/" a "/reserva"
+    RewriteRule ^$ /reserva [L,R=301]
+
+    # Redirección para /control/ a /control/reserves-pendents
     RewriteCond %{REQUEST_URI} ^/control/$
     RewriteRule ^(.*)$ /control/reserves-pendents [R=301,L]
-      
+
+    # Reescribir las rutas dinámicas, asegurándose de que no se trate de archivos o directorios existentes
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.+)$ index.php?uri=$1 [QSA,L]
+
+    # Redirección de rutas con idiomas (separar rutas por idioma)
+    RewriteCond %{REQUEST_URI} ^/(es|fr|en|ca)(.*)$
+    RewriteRule ^(es|fr|en|ca)(.*)$ index.php?lang=$1&uri=$2 [QSA,L]
 </IfModule>
 
 <IfModule mod_headers.c>
+    # Permitir solicitudes CORS
     Header set Access-Control-Allow-Origin "*"
     Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header set Access-Control-Allow-Headers "Content-Type"
