@@ -22,34 +22,34 @@ $reserva = $translations['reserva'] ?? [];
         <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/tarifes.svg" alt="Tarifas del parking">
     </div>
 
-    <div class="container quadre_reserves" style="margin-top:25px">
-        <h1>Configura tu reserva:</h1>
+    <div class="container quadre_reserves" style="margin-top:55px">
+        <h1><?php echo $reserva['configura_reserva']; ?>:</h1>
 
         <div class="row g-6">
             <div class="col-12 col-md-6 mb-4 text-start">
 
                 <!-- Selección del tipo de reserva -->
-                <label for="tipo_reserva">Tipo de Reserva:</label>
+                <label for="tipo_reserva"><?php echo $reserva['tipo_reserva']; ?>:</label>
                 <select id="tipo_reserva" name="tipo_reserva">
-                    <option value="finguer_class">FINGUER CLASS</option>
-                    <option value="gold_finguer">GOLD FINGUER</option>
+                    <option value="finguer_class"><?php echo $reserva['finguer_class']; ?></option>
+                    <option value="gold_finguer"><?php echo $reserva['gold_finguer']; ?></option>
                 </select>
 
                 <!-- Calendario para elegir fecha de entrada y salida -->
                 <form id="reservation-form">
-                    <label for="fecha_reserva">Fechas de Reserva:</label>
-                    <input type="text" id="fecha_reserva" name="fecha_reserva" readonly placeholder="Clique aquí para abrir el calendario">
+                    <label for="fecha_reserva"><?php echo $reserva['fechas_reserva']; ?>:</label>
+                    <input type="text" id="fecha_reserva" name="fecha_reserva" readonly placeholder="<?php echo $reserva['clic_abrir_calendario']; ?>">
 
                     <div class="row g-3" id="horarios_div">
                         <div class="col-md-6">
-                            <label for="horaEntrada">Horario entrada párking * </label>
+                            <label for="horaEntrada"><?php echo $reserva['hora_entrada']; ?> *</label>
                             <select class="form-select" id="horaEntrada" name="horaEntrada">
                                 <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="horaSalida">Horario salida párking * </label>
+                            <label for="horaSalida"><?php echo $reserva['hora_salida']; ?> *</label>
                             <select class="form-select" id="horaSalida" name="horaSalida">
                                 <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                             </select>
@@ -57,25 +57,25 @@ $reserva = $translations['reserva'] ?? [];
                     </div>
 
                     <!-- Opciones de limpieza -->
-                    <label for="limpieza">¿Quieres añadir un servicio de limpieza a tu reserva?</label>
+                    <label for="limpieza"><?php echo $reserva['opciones_limpieza']; ?></label>
                     <select id="limpieza" name="limpieza">
-                        <option value="0">Sin limpieza</option>
-                        <option value="15">Servicio de limpieza exterior (15€ IVA incluido)</option>
-                        <option value="25">Servicio de lavado exterior + aspirado tapicería interior (25€ IVA incluido)</option>
-                        <option value="55">Lavado PRO. Lo dejamos como nuevo (55€ IVA incluido)</option>
+                        <option value="0"><?php echo $reserva['sin_limpieza']; ?></option>
+                        <option value="15"><?php echo $reserva['limpieza_exterior']; ?></option>
+                        <option value="25"><?php echo $reserva['lavado_exterior']; ?></option>
+                        <option value="55"><?php echo $reserva['lavado_pro']; ?></option>
                     </select>
 
-                    <!-- Opciones de limpieza -->
-                    <label for="cancelacion">¿Deseas añadir un seguro de cancelación en caso de querer anular la reserva? (opcional)</label>
+                    <!-- Opciones de cancelación -->
+                    <label for="cancelacion"><?php echo $reserva['seguro_cancelacion']; ?> (<?php echo $reserva['opcional']; ?>)</label>
 
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" id="seguroSi" name="seguroCancelacion" value="1">
-                        <label class="form-check-label" for="seguroSi">Sí</label>
+                        <label class="form-check-label" for="seguroSi"><?php echo $reserva['si']; ?></label>
                     </div>
 
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" id="seguroNo" name="seguroCancelacion" value="2" checked>
-                        <label class="form-check-label" for="seguroNo">No</label>
+                        <label class="form-check-label" for="seguroNo"><?php echo $reserva['no']; ?></label>
                     </div>
             </div>
 
@@ -95,16 +95,15 @@ $reserva = $translations['reserva'] ?? [];
                 <div id="mensaje_error" style="color: red;"></div>
 
                 <!-- Botón de pagar -->
-                <button type="button" class="payButton" id="pagar" style="display: none;">Pagar</button>
+                <button type="button" class="payButton" id="pagar" style="display: none;"><?php echo $reserva['pagar']; ?></button>
                 </form>
             </div>
-
         </div>
     </div>
-
 </div>
 
-<div class="container text-center" style="margin-top:30px">
+
+<div class="container text-center" style="margin-top:55px">
     <h2>¿Te imaginas un finguer<br>desde tu parking<br>hasta el aeropuerto El Prat?</h2>
 
     <p>Llegas al aeropuerto de Barcelona - El Prat, embarcas la maleta, pasas todos los controles, llegas a tu puerta de embarque y rezas muy fuerte: “por favor, que me toque finguer…” Y justo la respuesta a esta plegaria es la diferencia entre que un viaje empiece muy bien o empiece regulín.</p>
@@ -191,7 +190,7 @@ $reserva = $translations['reserva'] ?? [];
         <strong>Finguer es un parking para coches con servicio de traslado y recogida al aeropuerto de Barcelona. Pero nosotros nos consideramos más como un hotel para mascotas. Y es que en Finguer tratamos tu coche como si fuera tu perro o gato: lo vigilamos, lo lavamos, cuidamos que no se pelee con el resto de coches… Y si no tienes mascota, pero te lo estás pensando, los científicos que saben de esto aconsejan el <a href="https://hipertextual.com/2016/07/mascotas-exoticas" target="_blank" rel="noreferrer noopener">ciervo sika</a>, originario de Japón. ???</strong>
     </div>
 
-    <div class="container" style="margin-top:55px;margin-bottom:100px">
+    <div class="container" style="margin-top:55px;margin-bottom:10px">
         <div class="row">
             <div class="col-12 col-md-2" id="donde-estamos">
                 <h2><strong>¿Dónde estamos?</strong></h2>
