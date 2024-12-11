@@ -6,7 +6,7 @@ $currentLanguage = $_COOKIE['language'] ?? 'es';  // Si no está establecido, po
 $reserva = $translations['reserva'] ?? [];
 ?>
 
-<div class="container" style="margin-bottom:100px">
+<div class="container" style="margin-bottom:30px">
     <div class="container text-center">
 
         <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva['finguer_title'] ?></strong></h1>

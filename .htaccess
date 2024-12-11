@@ -6,6 +6,10 @@
     RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
     RewriteRule ^(.*)$ https://%1/$1 [L,R=301]
 
+    # Si la solicitud es a una URL que no existe, redirigir a la página principal
+    RewriteCond %{REQUEST_URI} ^/es$
+    RewriteRule ^ / [L,R=301]
+
     # Redirigir "/" a "/reserva"
     RewriteRule ^$ /reserva [L,R=301]
 

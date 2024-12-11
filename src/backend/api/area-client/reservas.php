@@ -65,6 +65,7 @@ if (isset($_GET['type'], $_GET['cliente']) && $_GET['type'] === 'reservas' &&  $
     ";
 
     // Preparar la consulta
+    /** @var PDO $conn */
     $stmt = $conn->prepare($query);
 
     // Vincular los parámetros
