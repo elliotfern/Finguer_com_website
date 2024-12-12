@@ -4,8 +4,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import 'bootstrap';
 
-detectAndRedirect();
-
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
 
@@ -23,6 +21,7 @@ const isPagoPage = normalizedPath === '/pago' || supportedLanguages.some((lang) 
 if (isReservaPage) {
   import('./components/homepage/homepage')
     .then((module) => {
+      detectAndRedirect();
       module.homePage();
     })
     .catch((error) => {
@@ -34,6 +33,7 @@ if (isReservaPage) {
 if (isPagoPage) {
   import('./components/pagament/pagament')
     .then((module) => {
+      detectAndRedirect();
       module.pagament();
     })
     .catch((error) => {
@@ -46,6 +46,7 @@ if (isPagoPage) {
 if (window.location.pathname === '/area-cliente/login') {
   import('./components/areaClient/areaClientLogin')
     .then((module) => {
+      detectAndRedirect();
       module.areaClientLogin();
     })
     .catch((error) => {
@@ -57,6 +58,7 @@ if (window.location.pathname === '/area-cliente/login') {
 if (window.location.pathname === '/area-cliente/reservas') {
   import('./components/areaClient/areaClientHistoricReserves')
     .then((module) => {
+      detectAndRedirect();
       module.areaClientHistoricReserves();
     })
     .catch((error) => {

@@ -101,12 +101,12 @@ if (!$idClient || !$idReserva || !$tipo || !$horaEntrada || !$horaSalida || !$vu
 
 // Convertir las fechas si es necesario
 if ($diaEntrada2) {
-    $fecha_objeto = DateTime::createFromFormat("d-m-Y", $diaEntrada2);
+    $fecha_objeto = DateTime::createFromFormat("d/m/Y", $diaEntrada2);
     $diaEntrada = $fecha_objeto->format("Y-m-d");
 }
 
 if ($diaSalida2) {
-    $fecha_objeto2 = DateTime::createFromFormat("d-m-Y", $diaSalida2);
+    $fecha_objeto2 = DateTime::createFromFormat("d/m/Y", $diaSalida2);
     $diaSalida = $fecha_objeto2->format("Y-m-d");
 }
 

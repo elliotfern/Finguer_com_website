@@ -1,5 +1,4 @@
-import $ from 'jquery';
-import { validarFechas } from "./ValidarFechas";
+import { validarFechas } from './ValidarFechas';
 
 // Obtener los elementos del DOM
 const horaEntradaSelect = document.getElementById('horaEntrada') as HTMLSelectElement;
@@ -9,16 +8,23 @@ const tipoReservaSelect = document.getElementById('tipo_reserva') as HTMLSelectE
 
 // Función para verificar si ambos campos de hora están seleccionados
 const verificarSelecciones = (): boolean => {
-  const horaEntradaValue = $('#horaEntrada').val() as string | null;
-  const horaSalidaValue = $('#horaSalida').val() as string | null;
-  return (horaEntradaValue !== null && horaEntradaValue !== '') &&
-    (horaSalidaValue !== null && horaSalidaValue !== '');
+  const horaEntradaElement = document.querySelector('#horaEntrada') as HTMLInputElement | null;
+  const horaSalidaElement = document.querySelector('#horaSalida') as HTMLInputElement | null;
+
+  const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
+  const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
+
+  return horaEntradaValue !== null && horaEntradaValue !== '' && horaSalidaValue !== null && horaSalidaValue !== '';
 };
 
 // Función para validar las horas según el tipo de reserva
 const validarHorasPorTipoReserva = (): boolean => {
-  const horaEntradaValue = $('#horaEntrada').val() as string | null;
-  const horaSalidaValue = $('#horaSalida').val() as string | null;
+  const horaEntradaElement = document.getElementById('horaEntrada') as HTMLInputElement | null;
+  const horaSalidaElement = document.getElementById('horaSalida') as HTMLInputElement | null;
+
+  // Obtener el valor de los campos, asegurándose de que no sean nulos
+  const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
+  const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
   const tipoReserva = tipoReservaSelect?.value;
 
   if (!horaEntradaValue || !horaSalidaValue) return false;
@@ -30,7 +36,7 @@ const validarHorasPorTipoReserva = (): boolean => {
     // Validar horas para 'gold_finguer' (entre 07:00 y 21:30)
     return esHoraValida(horaEntradaValue, '08:00', '21:00') && esHoraValida(horaSalidaValue, '08:00', '21:00');
   }
-  
+
   // Si el tipo de reserva no coincide con ninguno de los anteriores, retornar false
   return false;
 };

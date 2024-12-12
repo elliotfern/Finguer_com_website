@@ -5,16 +5,22 @@ export const handleClickPagament = () => {
   // Llamar a calcularTotal y desestructurar el resultado
   const { precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, diasReserva } = calcularTotalReserva();
 
-  // Extreure les dades de les dates entrada i sortida
   const fechaReservaElement = document.getElementById('fecha_reserva') as HTMLInputElement | null;
 
-  let fechaEntradaElement = '';
-  let fechaSalidaElement = '';
+  let fechaEntrada = '';
+  let fechaSalida = '';
 
-  if (fechaReservaElement) {
-    const fechas = fechaReservaElement.value.split(' - ');
-    fechaEntradaElement = fechas[0] || '';
-    fechaSalidaElement = fechas[1] || '';
+  // Verificar si el input existe y tiene un valor
+  if (fechaReservaElement && fechaReservaElement.value) {
+    const fechas = fechaReservaElement.value.split(' to '); // Asegúrate de que el delimitador es 'to' si es lo que usas
+
+    // Convertir las fechas en objetos Date
+    const fechaInicio: Date = new Date(fechas[0]);
+    const fechaFin: Date = new Date(fechas[1]);
+
+    // Guardar las fechas de entrada y salida como cadenas legibles, si lo necesitas
+    fechaEntrada = fechaInicio.toLocaleDateString(); // Convertir a string en formato de fecha
+    fechaSalida = fechaFin.toLocaleDateString(); // Convertir a string en formato de fecha
   }
 
   const horaEntradaElement = (document.getElementById('horaEntrada') as HTMLInputElement | null)?.value || '';
@@ -26,14 +32,14 @@ export const handleClickPagament = () => {
   // Daades a guardar al LocalStorage
   const paymentData: PaymentData[] = [
     {
-      precioTotal: precioTotal,
-      costeSeguro: costeSeguro,
-      precioReserva: precioReserva,
-      costeIva: costeIva,
-      precioSubtotal: precioSubtotal,
-      costoLimpiezaSinIva: costoLimpiezaSinIva,
-      fechaEntrada: fechaEntradaElement,
-      fechaSalida: fechaSalidaElement,
+      precioTotal: parseFloat(precioTotal.toFixed(2)),
+      costeSeguro: parseFloat(costeSeguro.toFixed(2)),
+      precioReserva: parseFloat(precioReserva.toFixed(2)),
+      costeIva: parseFloat(costeIva.toFixed(2)),
+      precioSubtotal: parseFloat(precioSubtotal.toFixed(2)),
+      costoLimpiezaSinIva: parseFloat(costoLimpiezaSinIva.toFixed(2)),
+      fechaEntrada: fechaEntrada,
+      fechaSalida: fechaSalida,
       horaEntrada: horaEntradaElement,
       horaSalida: horaSalidaElement,
       limpieza: limpiezaElement,

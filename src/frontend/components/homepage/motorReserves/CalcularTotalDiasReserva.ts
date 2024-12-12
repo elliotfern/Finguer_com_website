@@ -1,11 +1,11 @@
-import { parseDate } from './ValidarFechas';
+//import { parseDate } from './ValidarFechas';
 
 export const calcularTotalDiasReserva = (fechaReserva: HTMLInputElement): number => {
   let diferenciaEnDias = 0;
   if (fechaReserva) {
-    const fechas = fechaReserva.value.split(' - ');
-    const fechaInicio = parseDate(fechas[0]); // Convierte la fecha de inicio
-    const fechaFin = parseDate(fechas[1]); // Convierte la fecha de fin
+    const fechas = fechaReserva.value.split(' to ');
+    const fechaInicio = new Date(fechas[0]);
+    const fechaFin = new Date(fechas[1]);
 
     // Obtener la diferencia en milisegundos
     const diferenciaEnMilisegundos = fechaFin.getTime() - fechaInicio.getTime();

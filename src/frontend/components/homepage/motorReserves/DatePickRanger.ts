@@ -1,45 +1,42 @@
-import $ from 'jquery';
-import 'daterangepicker/daterangepicker.css';
-import 'daterangepicker';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
+import { calcularTotalReserva } from './CalcularTotalReserva';
+import { actualizarBotonPagar } from './ActualizarBotonPagar';
+import { showPrice } from './ShowPrice';
 
 export const daterangepicker = () => {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() + 2); // Fecha de inicio + 2 días
-  const endDate = new Date(startDate); // Fecha de fin igual a la de inicio
+  //const endDate = new Date(startDate); // Fecha de fin igual a la de inicio
 
-  $('#fecha_reserva').daterangepicker({
-    autoApply: true,
-    endDate: formatDate(endDate),
-    minDate: formatDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())), // Fecha mínima// No permitir seleccionar fechas anteriores a la fecha actual
-    locale: {
-      format: 'DD-MM-YYYY',
-      firstDay: 1, // Configura el primer día de la semana como lunes (0 para domingo, 1 para lunes, 2 para martes, etc.)
-      cancelLabel: 'Cancelar',
-      applyLabel: 'Aplicar', // Etiqueta del botón Aplicar
-      daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'], // Nombres de los días de la semana
-      monthNames: [
-        // Nombres de los meses
-        'Enero',
-        'Febrero',
-        'Marzo',
-        'Abril',
-        'Mayo',
-        'Junio',
-        'Julio',
-        'Agosto',
-        'Septiembre',
-        'Octubre',
-        'Noviembre',
-        'Diciembre',
-      ],
-    },
-  });
-};
+  // Seleccionamos el input de fecha y aplicamos flatpickr
+  const fechaReservaElement = document.querySelector('#fecha_reserva') as HTMLElement; // Obtén el elemento como HTMLElement
 
-// Función para formatear una fecha como DD-MM-YYYY
-const formatDate = (date: Date): string => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
+  if (fechaReservaElement) {
+    flatpickr(fechaReservaElement, {
+      mode: 'range',
+      dateFormat: 'Y-m-d',
+      minDate: startDate,
+      locale: {
+        firstDayOfWeek: 1, // Primer día de la semana: lunes
+        weekdays: {
+          shorthand: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
+          longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        },
+        months: {
+          shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+          longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        },
+      },
+      onChange: (selectedDates: Date[]) => {
+        // Verificar que se han seleccionado al menos dos fechas
+        if (selectedDates.length === 2) {
+          // Calcular el costo total cuando se selecciona un rango de fechas
+          calcularTotalReserva();
+          actualizarBotonPagar();
+          showPrice();
+        }
+      },
+    });
+  }
 };

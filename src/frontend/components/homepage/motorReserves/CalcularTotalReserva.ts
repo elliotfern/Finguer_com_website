@@ -1,10 +1,9 @@
-import $ from 'jquery';
 import { validarFechas } from './ValidarFechas';
 import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva';
 import { calcularPrecioSinIva } from './CalcularPrecioSinIva';
 import { calcularPrecioConIva } from './CalcularPrecioConIva';
 
-export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioReserva: number; costeIva: number; precioSubtotal: number; costoLimpiezaSinIva: number, diasReserva: number } => {
+export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: number; precioReserva: number; costeIva: number; precioSubtotal: number; costoLimpiezaSinIva: number; diasReserva: number } => {
   let precioTotal = 0;
   let precioSubtotal = 0;
   let costeIva = 0;
@@ -70,7 +69,11 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   }
 
   // Verificar si el cliente ha seleccionado el seguro de cancelación
-  const seguroCancelacion = $('input[name="seguroCancelacion"]:checked').val();
+  // Obtener el elemento de la radio button seleccionada por su nombre
+  const seguroCancelacionElement = document.querySelector('input[name="seguroCancelacion"]:checked') as HTMLInputElement | null;
+
+  // Obtener el valor del radio button seleccionado, o null si ninguno está seleccionado
+  const seguroCancelacion = seguroCancelacionElement ? seguroCancelacionElement.value : null;
 
   // Si el cliente ha seleccionado 'Sí' en el seguro de cancelación
   if (seguroCancelacion === '1') {
@@ -96,27 +99,41 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   const totalElement = document.getElementById('total');
   const precioSubTotalElement = document.getElementById('subTotal');
   const ivaElement = document.getElementById('precio_iva');
- 
+
   const reservaElement = document.getElementById('resumenReserva');
+  //const diaEntradaElement = document.getElementById('diaEntrada');
+  //const diaSalidaElement = document.getElementById('diaSalida');
+
+  const horaEntradaElement = document.getElementById('horaEntrada') as HTMLInputElement | null;
+  const horaSalidaElement = document.getElementById('horaSalida') as HTMLInputElement | null;
+
+  // Obtener el valor de los campos, asegurándose de que no sean nulos
+  const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
+  const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
+
+  const fechaReservaElement = document.getElementById('fecha_reserva') as HTMLInputElement | null;
+
+  let fechaEntrada = '';
+  let fechaSalida = '';
+
+  // Verificar si el input existe y tiene un valor
+  if (fechaReservaElement && fechaReservaElement.value) {
+    const fechas = fechaReservaElement.value.split(' to '); // Asegúrate de que el delimitador es 'to' si es lo que usas
+
+    // Convertir las fechas en objetos Date
+    const fechaInicio: Date = new Date(fechas[0]);
+    const fechaFin: Date = new Date(fechas[1]);
+
+    // Guardar las fechas de entrada y salida como cadenas legibles, si lo necesitas
+    fechaEntrada = fechaInicio.toLocaleDateString(); // Convertir a string en formato de fecha
+    fechaSalida = fechaFin.toLocaleDateString(); // Convertir a string en formato de fecha
+  }
+
   const diaEntradaElement = document.getElementById('diaEntrada');
   const diaSalidaElement = document.getElementById('diaSalida');
 
-  const horaEntradaValue = $('#horaEntrada').val();
-  const horaSalidaValue = $('#horaSalida').val();
-  
-  const fechaReservaElement = document.getElementById('fecha_reserva') as HTMLInputElement | null;
-  let fechaEntrada = "";
-  let fechaSalida = "";
-      if (fechaReservaElement) {
-        const fechas = fechaReservaElement.value.split(' - ');
-         fechaEntrada = fechas[0] || '';
-         fechaSalida = fechas[1] || '';
-      }
-
-
+  console.log('calcular total reserva antes de leer elementos');
   if (reservaElement && diaEntradaElement && diaSalidaElement && totalElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement && fechaEntrada && fechaSalida) {
-
-
     reservaElement.innerHTML = `Detalles de la Reserva:`;
     diaEntradaElement.innerHTML = `<strong>Día de entrada:</strong> ${fechaEntrada} // ${horaEntradaValue}h.`;
     diaSalidaElement.innerHTML = `<strong>Día de salida:</strong> ${fechaSalida} // ${horaSalidaValue}h.`;
