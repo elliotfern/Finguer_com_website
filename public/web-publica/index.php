@@ -25,6 +25,8 @@ $reserva = $translations['reserva'] ?? [];
     <div class="container quadre_reserves" style="margin-top:55px">
         <h1><?php echo $reserva['configura_reserva']; ?>:</h1>
 
+        <div class="alert alert-danger" role="alert" id="avis_especial" style="padding:10px;display:none"> </div>
+
         <div class="row g-6">
             <div class="col-12 col-md-6 mb-4 text-start">
 

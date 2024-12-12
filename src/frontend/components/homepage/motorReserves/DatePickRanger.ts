@@ -3,6 +3,7 @@ import 'flatpickr/dist/flatpickr.css';
 import { calcularTotalReserva } from './CalcularTotalReserva';
 import { actualizarBotonPagar } from './ActualizarBotonPagar';
 import { showPrice } from './ShowPrice';
+import { resetContadores } from './ResetContadores';
 
 export const daterangepicker = () => {
   const startDate = new Date();
@@ -28,10 +29,51 @@ export const daterangepicker = () => {
           longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
         },
       },
-      onChange: (selectedDates: Date[]) => {
-        // Verificar que se han seleccionado al menos dos fechas
+      onChange: function (selectedDates: Date[], dateStr, instance) {
+        // Si el usuario selecciona 25 de diciembre como inicio o fin, desactívalo
+        // Verificar si se seleccionaron dos fechas
+        const avisoDiv = document.getElementById('avis_especial') as HTMLElement;
+        const detallesReserva = document.getElementById('importeReserva') as HTMLElement;
+
         if (selectedDates.length === 2) {
-          // Calcular el costo total cuando se selecciona un rango de fechas
+          const [startDate, endDate] = selectedDates;
+
+          // Fechas no permitidas
+          const fechasNoPermitidas = [
+            { day: 25, month: 11 }, // 25 de diciembre
+          ];
+
+          // Función para verificar si una fecha es no permitida
+          const esFechaNoPermitida = (fecha: Date) => fechasNoPermitidas.some((f) => fecha.getDate() === f.day && fecha.getMonth() === f.month);
+
+          if (esFechaNoPermitida(startDate) || esFechaNoPermitida(endDate)) {
+            instance.clear(); // Limpiar selección si la fecha es no permitida
+            resetContadores();
+            if (avisoDiv) {
+              avisoDiv.innerHTML = `<h4>Aviso especial Navidad</h4>
+              <p>El día 25 de diciembre no está disponible</p>`;
+              avisoDiv.style.display = 'block';
+              if (detallesReserva) {
+                detallesReserva.style.display = 'none';
+              }
+            }
+          } else if (avisoDiv) {
+            // Ocultar el aviso si las fechas seleccionadas son válidas
+            avisoDiv.style.display = 'none';
+            if (detallesReserva) {
+              detallesReserva.style.display = 'block';
+            }
+            // Llama a las funciones auxiliares
+            calcularTotalReserva();
+            actualizarBotonPagar();
+            showPrice();
+          }
+        } else if (avisoDiv) {
+          // Ocultar el aviso si la selección se borra o es incompleta
+          avisoDiv.style.display = 'none';
+          if (detallesReserva) {
+            detallesReserva.style.display = 'block';
+          }
           calcularTotalReserva();
           actualizarBotonPagar();
           showPrice();
