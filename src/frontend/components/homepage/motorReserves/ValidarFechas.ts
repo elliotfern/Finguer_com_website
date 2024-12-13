@@ -6,7 +6,6 @@ export const validarFechas = () => {
   if (fechaReservaElement && fechaReservaElement.value) {
     // Obtener las fechas desde el input como string
     const fechas = fechaReservaElement.value.split(' to '); // Cambié el separador a ' to '
-    console.log(fechas);
 
     // Obtener las fechas de inicio y fin
     const fechaInicio = new Date(fechas[0]);

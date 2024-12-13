@@ -8,6 +8,7 @@
     },
 
   "eslint.enable": true,
+  "editor.wordWrap": "on"
 
   }
   

@@ -4,6 +4,7 @@ import { calcularTotalReserva } from './CalcularTotalReserva';
 import { actualizarBotonPagar } from './ActualizarBotonPagar';
 import { showPrice } from './ShowPrice';
 import { resetContadores } from './ResetContadores';
+import { avisEspecialTancamentParking } from './avisEspecialTancamentParking';
 
 export const daterangepicker = () => {
   const startDate = new Date();
@@ -49,13 +50,9 @@ export const daterangepicker = () => {
           if (esFechaNoPermitida(startDate) || esFechaNoPermitida(endDate)) {
             instance.clear(); // Limpiar selección si la fecha es no permitida
             resetContadores();
-            if (avisoDiv) {
-              avisoDiv.innerHTML = `<h4>Aviso especial Navidad</h4>
-              <p>El día 25 de diciembre no está disponible</p>`;
-              avisoDiv.style.display = 'block';
-              if (detallesReserva) {
-                detallesReserva.style.display = 'none';
-              }
+            avisEspecialTancamentParking(true);
+            if (detallesReserva) {
+              detallesReserva.style.display = 'none';
             }
           } else if (avisoDiv) {
             // Ocultar el aviso si las fechas seleccionadas son válidas
