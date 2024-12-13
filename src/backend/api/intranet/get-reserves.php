@@ -59,49 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     echo json_encode($data);
                 }
             }
-            // 2) Llistat reserves totals
-            elseif (isset($_GET['type']) && $_GET['type'] == 'reserves') {
-                $data = array();
-                $stmt = $conn->prepare("SELECT rc1.idReserva,
-                        rc1.fechaReserva,
-                        rc1.firstName AS 'clientNom',
-                        rc1.lastName AS 'clientCognom',
-                        rc1.tel AS 'telefono',
-                        rc1.diaSalida AS 'dataSortida',
-                        rc1.horaEntrada AS 'HoraEntrada',
-                        rc1.horaSalida AS 'HoraSortida',
-                        rc1.diaEntrada AS 'dataEntrada',
-                        rc1.matricula,
-                        rc1.vehiculo AS 'modelo',
-                        rc1.vuelo,
-                        rc1.tipo,
-                        rc1.checkIn,
-                        rc1.checkOut,
-                        rc1.notes,
-                        rc1.buscadores,
-                        rc1.limpieza,
-                        rc1.importe,
-                        rc1.id,
-                        rc1.processed,
-                        u.nombre,
-                        u.telefono AS tel
-                        FROM reserves_parking AS rc1
-                        LEFT JOIN usuaris AS u ON rc1.idClient = u.id
-                        WHERE rc1.checkIn = 5 OR rc1.checkIn = 1
-                        ORDER BY rc1.id DESC");
-                $stmt->execute();
-                if ($stmt->rowCount() === 0) echo json_encode(['message' => 'No rows']);
-                else {
-                    while ($users = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        $data[] = $users;
-                    }
-                    // Establecer el encabezado de respuesta a JSON
-                    header('Content-Type: application/json');
-
-                    // Devolver los datos en formato JSON
-                    echo json_encode($data);
-                }
-            }
             // 3) Numero reserves pendents
             elseif (isset($_GET['type']) && $_GET['type'] == 'numReservesPendents') {
                 $query = "SELECT COUNT(r.idReserva) AS numero

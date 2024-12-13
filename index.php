@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/src/backend/config/config.php';
-require_once __DIR__ . '/src/backend/config/funcions.php';
+require_once __DIR__ . '/src/backend/utils/verificacioPagamentRedsys.php';
+require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
 
 // Obtener la ruta solicitada

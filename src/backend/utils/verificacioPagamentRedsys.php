@@ -6,84 +6,15 @@ use RedsysConsultasPHP\Client\Client;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-use Dotenv\Dotenv;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-
-function data_input($data)
+function verificarPagament($id, $ejecutarAcciones = false)
 {
-    $data = trim($data);
-    $data = stripslashes($data);
-    return $data;
-}
-
-// Función que verifica si el usuario tiene un token válido
-function verificarSesion()
-{
-    // Inicia la sesión si no está ya iniciada
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] != 1) {
-        header('Location: /control/login'); // Redirige a login si no hay token válido
-        exit();
-    }
-}
-
-// Función que verifica si el usuario tiene acceso al area de cliente
-function verificarAcceso()
-{
-    // Inicia la sesión si no está ya iniciada
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['user_id']) || $_COOKIE['acceso'] != "si") {
-        header('Location: /area-cliente/login'); // Redirige a login si no hay token válido
-        exit();
-    }
-}
-
-function validarToken($jwt)
-{
-
-    $jwtSecret = $_ENV['TOKEN'];  // Tu clave secreta
-    $decoded = null;
-
-    try {
-
-        $decoded = JWT::decode($jwt, new key($jwtSecret, 'HS256'));
-
-        // Verifica si el token ha expirado
-        if (isset($decoded->exp) && $decoded->exp < time()) {
-            return false;  // Token expirado
-        }
-    } catch (Exception $e) {
-        // Manejo del error
-        error_log('Error al validar el token: ' . $e->getMessage());  // Log del error para depuración
-        return false;
-    }
-
-    // Si la decodificación es exitosa y el token es válido, se devuelve el payload
-    return $decoded;
-}
-
-function verificarPagament($id)
-{
-
-    global $conn;
-
     $id = $id;
 
     if (is_numeric($id)) {
         $id_old = intval($id);
 
         if (filter_var($id_old, FILTER_VALIDATE_INT)) {
-            $codi_resposta = 2;
-
+            global $conn;
             // consulta general reserves 
             $sql = "SELECT r.idReserva
             FROM reserves_parking AS r
@@ -92,7 +23,16 @@ function verificarPagament($id)
             /** @var PDO $conn */
             $pdo_statement = $conn->prepare($sql);
             $pdo_statement->execute();
-            $result = $pdo_statement->fetchAll();
+            $result = $pdo_statement->fetchAll(PDO::FETCH_ASSOC);
+
+            // Verificar si la consulta no devolvió resultados
+            if (empty($result)) {
+                // Si no hay resultados, retornar o hacer algo para bloquear la ejecución
+                return [
+                    'status' => 'error',
+                    'message' => 'No se encontró la reserva con el ID proporcionado.'
+                ];
+            }
 
             foreach ($result as $row) {
                 $idReserva = $row['idReserva'];
@@ -100,11 +40,6 @@ function verificarPagament($id)
 
             $token = $_ENV['MERCHANTCODE'];
             $token2 = $_ENV['KEY'];
-            $token3 = $_ENV['TERMINAL'];
-            $url_Ok = $_ENV['URLOK'];
-            $url_Ko = $_ENV['URLKO'];
-            $url = 'https://finguer.com/compra-realizada';
-
             $url = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
             $client = new Client($url, $token2);
 
@@ -131,7 +66,10 @@ function verificarPagament($id)
                 $response = $client->getTransaction($order, $terminal, $merchant_code);
 
                 if (!$response) {
-                    throw new Exception("No s'ha obtingut cap resposta de la API de RedSys.");
+                    return [
+                        'status' => 'error',
+                        'message' => 'Error Redsys: Sin respuesta.',
+                    ];
                 }
 
                 // Acceder a las propiedades
@@ -140,53 +78,69 @@ function verificarPagament($id)
                 // Verificar el valor de Ds_Response
                 switch ($ds_response) {
                     case '9218':
-                        echo "<div class='alert alert-danger text-center' role='alert'>
-                                <p><strong>Pagament fallit</strong>.</p>
-                              </div>";
+                        return [
+                            'status' => 'error',
+                            'message' => 'Error 9218 Redsys: Pago no procesado.',
+                        ];
                         break;
-
                     case '0000':
-                        echo "<div class='alert alert-success text-center' role='alert'>
-                                <p><strong>Pagament verificat correctament amb RedSys.</strong></p>
-                              </div>";
+                        $data = [
+                            'status' => 'success',
+                            'message' => 'Redsys: Pago verificado correctamente.',
+                        ];
 
                         // Ara camviem l'estat del pagament a la base de dades
 
-                        $processed = 1;
+                        // Ejecutar acciones adicionales si el parámetro es true
+                        if ($ejecutarAcciones) {
 
-                        $sql = "UPDATE reserves_parking SET processed=:processed
+                            $processed = 1;
+
+                            $sql = "UPDATE reserves_parking SET processed=:processed
                         WHERE id=:id";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
-                        $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
-                        $stmt->execute();
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
+                            $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
+                            $stmt->execute();
 
-                        enviarConfirmacio($id_old);
-                        enviarFactura($id_old);
-                        break;
+                            enviarConfirmacio($id_old);
+                            enviarFactura($id_old);
+                            return $data;
+                        } else {
+                            return $data;
+                        }
 
                     default:
-                        echo "<div class='alert alert-danger text-center' role='alert'>
-                                <p><strong>No s'ha pogut verificar aquest pagament. Pagament fallit o denegat amb RedSys.</strong></p>
-                              </div>";
-                        break;
+                        return [
+                            'status' => 'error',
+                            'message' => 'Error Redsys: No se ha podido verificar el pago.',
+                        ];
                 }
             } catch (Exception $e) {
                 // Manejar el error de la API de Redsys
-                echo "<div class='alert alert-danger text-center' role='alert'>
-                        <p><img src='" . APP_WEB . "/inc/img/warning.png' alt='Pagament Error'></p>
-                        <p><strong>Error de pagament: " . htmlspecialchars($e->getMessage()) . "</strong></p>";
+                return [
+                    'status' => 'error',
+                    'message' => 'Error Redsys'
+                ];
+
                 if ($e->getMessage() === 'Error XML0024') {
-                    // Mostrar mensaje para el error específico
-                    echo "<p><strong>Missatge de Redsys: No existen operaciones para los datos solicitados.</strong></p>";
+                    return [
+                        'status' => 'error',
+                        'message' => 'Error XML0024 Redsys: No existen operaciones para los datos solicitados.'
+                    ];
                 }
-                echo "</div>";
             }
         } else {
-            echo "Error: aquest ID no és vàlid";
+            return [
+                'status' => 'error',
+                'message' => 'ID no valido.'
+            ];
         }
     } else {
-        echo "Error. No has seleccionat cap reserva.";
+        return [
+            'status' => 'error',
+            'message' => 'No se ha seleccionado ninguna reserva.'
+        ];
     }
 }
 
@@ -505,10 +459,7 @@ function enviarFactura($id)
                 $buscadores_old = $row['buscadores'];
             }
 
-            echo "<div class='container'>
-        <h2>Enviament de la factura PDF per correu electrònic (ID Reserva: " . $idReserva_old . ") </h2>";
-
-            // aqui comença l'enviament de la factura PDF
+            // aqui comença l'enviament de la factura PDF per email
             $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
             $pdf->AddPage();
 
@@ -676,16 +627,47 @@ function enviarFactura($id)
 
             // Enviar el correo electrónico
             if ($mail->send()) {
-                echo 'El correo electrónico se envió correctamente.';
-            } else {
-                echo 'Hubo un error al enviar el correo electrónico: ' . $mail->ErrorInfo;
-            }
+                $data = [
+                    'status' => 'success',
+                    'message' => 'Factura enviada correctamente por email al cliente.',
+                ];
+                // Establecer el encabezado de respuesta a JSON
+                header('Content-Type: application/json');
 
-            echo "</div>";
+                // Devolver los datos en formato JSON
+                echo json_encode($data);
+            } else {
+                $data = [
+                    'status' => 'error',
+                    'codigo' => $mail->ErrorInfo,
+                    'message' => 'Hubo un error al enviar la factura al cliente',
+                ];
+                // Establecer el encabezado de respuesta a JSON
+                header('Content-Type: application/json');
+
+                // Devolver los datos en formato JSON
+                echo json_encode($data);
+            }
         } else {
-            echo "Error: aquest ID no és vàlid";
+            $data = [
+                'status' => 'error',
+                'message' => 'ID no válido.',
+            ];
+            // Establecer el encabezado de respuesta a JSON
+            header('Content-Type: application/json');
+
+            // Devolver los datos en formato JSON
+            echo json_encode($data);
         }
     } else {
-        echo "Error. No has seleccionat cap vehicle.";
+        $data = [
+            'status' => 'error',
+            'message' => 'No se ha seleccionado ninguna reserva.',
+        ];
+        // Establecer el encabezado de respuesta a JSON
+        header('Content-Type: application/json');
+
+        // Devolver los datos en formato JSON
+        echo json_encode($data);
     }
 }
