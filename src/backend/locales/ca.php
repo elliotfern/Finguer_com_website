@@ -41,7 +41,7 @@ return [
         'vehiculo' => 'Model de vehicle *',
         'matricula' => 'Matrícula vehicle*',
         'vuelo' => 'Número de vol de retorn',
-        'acompanantes' => 'Nombre d\'acompanyants',
+        'acompanantes' => 'Nombre total de passatgers al vehicle',
         'facturacion' => 'Dades de facturació (dades opcionals)',
         'empresa' => 'Nom de l\'empresa (opcional)',
         'nif' => 'NIF/NIE/CIF (opcional):',
