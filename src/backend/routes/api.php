@@ -13,6 +13,8 @@ $base_routes = [
     '/api/intranet/email/get' => 'src/backend/api/intranet/email/get-email.php',
 
     // API WEB PUBLICA
+    '/api/carro-compra' => 'src/backend/api/web_publica/carro-compra.php',
+    '/api/carro-compra-session' => 'src/backend/api/web_publica/carro-compra-session.php',
     '/api/alta-client' => 'src/backend/api/web_publica/crear-usuario.php',
     '/api/alta-reserva' => 'src/backend/api/web_publica/crear-reserva.php',
     '/api/pagamentRedsysTargeta' => 'src/backend/api/web_publica/pagament-redsys-targeta.php',
@@ -37,6 +39,10 @@ $routes = [
     '/api/intranet/email/get' => ['view' => 'src/backend/api/intranet/email/get-email.php', 'needs_session' => true, 'no_header_footer' => true],
 
     // API WEB PUBLICA
+
+    '/api/carro-compra' => ['view' => 'src/backend/api/web_publica/carro-compra.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/carro-compra-session' => ['view' => 'src/backend/api/web_publica/carro-compra-session.php', 'needs_session' => false, 'no_header_footer' => true],
+
     '/api/alta-client' => ['view' => 'src/backend/api/web_publica/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
 
     '/api/alta-reserva' => ['view' => 'src/backend/api/web_publica/crear-reserva.php', 'needs_session' => false, 'no_header_footer' => true],

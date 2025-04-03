@@ -1,5 +1,5 @@
 import { calcularTotalReserva } from './CalcularTotalReserva';
-import { PaymentData } from '../../../types/interfaces';
+//import { PaymentData } from '../../../types/interfaces';
 
 export const handleClickPagament = () => {
   // Llamar a calcularTotal y desestructurar el resultado
@@ -30,6 +30,7 @@ export const handleClickPagament = () => {
   const seguroCancelacionElement = (document.querySelector('input[name="seguroCancelacion"]:checked') as HTMLInputElement | null)?.value || '';
 
   // Daades a guardar al LocalStorage
+  /*
   const paymentData: PaymentData[] = [
     {
       precioTotal: parseFloat(precioTotal.toFixed(2)),
@@ -48,14 +49,54 @@ export const handleClickPagament = () => {
       seguroCancelacion: seguroCancelacionElement,
     },
   ];
+  */
 
   try {
-    // Guardar los datos en localStorage
-    localStorage.setItem('paymentData', JSON.stringify(paymentData));
-
-    // Redirigir a la página de pago
-    window.location.href = '/pago';
+    // Guardar los datos en sessionStorage
+    // sessionStorage.setItem('paymentData', JSON.stringify(paymentData));
+    guardarEnBaseDeDatosServidor();
   } catch (error) {
     console.error('Error al guardar datos en localStorage:', error);
+  }
+
+  async function guardarEnBaseDeDatosServidor() {
+    const session = Math.random().toString(36).slice(2, 11);
+    const data = {
+      session,
+      precioTotal: parseFloat(precioTotal.toFixed(2)),
+      costeSeguro: parseFloat(costeSeguro.toFixed(2)),
+      precioReserva: parseFloat(precioReserva.toFixed(2)),
+      costeIva: parseFloat(costeIva.toFixed(2)),
+      precioSubtotal: parseFloat(precioSubtotal.toFixed(2)),
+      costoLimpiezaSinIva: parseFloat(costoLimpiezaSinIva.toFixed(2)),
+      fechaEntrada,
+      fechaSalida,
+      horaEntrada: horaEntradaElement,
+      horaSalida: horaSalidaElement,
+      limpieza: limpiezaElement,
+      tipoReserva: tipoReservaElement,
+      diasReserva,
+      seguroCancelacion: seguroCancelacionElement,
+    };
+
+    try {
+      const response = await fetch('/api/carro-compra', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        console.log('Datos guardados correctamente en la base de datos');
+        // Redirigir a la página de pago
+        window.location.href = `/pago/${session}`;
+      } else {
+        console.error('Error al guardar los datos en el servidor');
+      }
+    } catch (error) {
+      console.error('Error de conexión con el servidor:', error);
+    }
   }
 };

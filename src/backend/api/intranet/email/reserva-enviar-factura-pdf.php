@@ -1,4 +1,5 @@
 <?php
+// PENDENT D'ELIMINAR TOTA LA WEB. MIGRACIÓ CAP A GET-EMAIL.PHP I LES FUNCIONS ESPECIFIQUES
 global $conn;
 
 $id = $params['id'];
@@ -21,8 +22,8 @@ use PHPMailer\PHPMailer\Exception;
 
 if (is_numeric($id)) {
     $id_old = intval($id);
-    
-    if ( filter_var($id_old, FILTER_VALIDATE_INT) ) {
+
+    if (filter_var($id_old, FILTER_VALIDATE_INT)) {
         $codi_resposta = 2;
 
         // consulta general reserves 
@@ -44,7 +45,7 @@ if (is_numeric($id)) {
         $pdo_statement = $conn->prepare($sql);
         $pdo_statement->execute();
         $result = $pdo_statement->fetchAll();
-        foreach($result as $row) {
+        foreach ($result as $row) {
             $idReserva_old = $row['idReserva'];
             $idClient_old = $row['idClient'];
             $importe_old = $row['importe'];
@@ -61,7 +62,7 @@ if (is_numeric($id)) {
             $vehiculo_old = $row['vehiculo'];
             $matricula_old = $row['matricula'];
             $vuelo_old = $row['vuelo'];
-            
+
             $nombre_old = $row['nombre'];
             $email_old = $row['email'];
             $empresa_old = $row['empresa'];
@@ -76,7 +77,7 @@ if (is_numeric($id)) {
             if ($tipo == 1) {
                 $tipoReserva2 = "Finguer Class";
             } elseif ($tipo == 2) {
-                 $tipoReserva2 = "Gold Finguer Class";
+                $tipoReserva2 = "Gold Finguer Class";
             } else {
                 $tipoReserva2 = "Finguer Class";
             }
@@ -84,7 +85,7 @@ if (is_numeric($id)) {
             if ($limpieza == 1) {
                 $limpieza2 = "Servicio de limpieza exterior";
             } elseif ($limpieza == 2) {
-                 $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
+                $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
             } elseif ($limpieza == 3) {
                 $limpieza2 = "Limpieza PRO";
             } else {
@@ -95,55 +96,55 @@ if (is_numeric($id)) {
             $buscadores_old = $row['buscadores'];
         }
 
-            // Calcula los precios -->
-            $porcentaje_iva = 21;
+        // Calcula los precios -->
+        $porcentaje_iva = 21;
 
-            // Precio total con IVA
-            $importe_old;
-             
-            // 1 - Calcula el precio de la reserva sin IVA
-            $reserva_sin_iva = $importe_old / 1.21;
+        // Precio total con IVA
+        $importe_old;
 
-            // 3 - Calcula el subtotal
-            $subtotal = $reserva_sin_iva;
-            $subtotal_redondeado = round($subtotal, 2);
-            $subtotal_redondeado2 = number_format($subtotal_redondeado, 2, ',', '');
+        // 1 - Calcula el precio de la reserva sin IVA
+        $reserva_sin_iva = $importe_old / 1.21;
 
-            // 4 - Calcula el IVA total 21%
-            $coste_iva = $subtotal * 0.21;
-            $coste_iva_redondeado = round($coste_iva, 2);
-            $coste_iva_redondeado2 = number_format($coste_iva_redondeado, 2, ',', '');
+        // 3 - Calcula el subtotal
+        $subtotal = $reserva_sin_iva;
+        $subtotal_redondeado = round($subtotal, 2);
+        $subtotal_redondeado2 = number_format($subtotal_redondeado, 2, ',', '');
 
-            // 5 - Calcula el Importe total iva incluido
-            $importe_total = $subtotal + $coste_iva;
-            $importe_total2 = number_format($importe_total, 2, ',', '');
+        // 4 - Calcula el IVA total 21%
+        $coste_iva = $subtotal * 0.21;
+        $coste_iva_redondeado = round($coste_iva, 2);
+        $coste_iva_redondeado2 = number_format($coste_iva_redondeado, 2, ',', '');
+
+        // 5 - Calcula el Importe total iva incluido
+        $importe_total = $subtotal + $coste_iva;
+        $importe_total2 = number_format($importe_total, 2, ',', '');
 
         echo "<div class='container'>
-        <h2>Enviament de la factura PDF per correu electrònic (ID Reserva: ".$idReserva_old.") </h2>";
-        
-            // aqui comença l'enviament de la factura PDF
-            $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-            $pdf->AddPage();
+        <h2>Enviament de la factura PDF per correu electrònic (ID Reserva: " . $idReserva_old . ") </h2>";
 
-            // set header and footer fonts
-            $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-            $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+        // aqui comença l'enviament de la factura PDF
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
+        $pdf->AddPage();
 
-           // set margins
-           $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        // set header and footer fonts
+        $pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+        $pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
-            // set auto page breaks
-            $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+        // set margins
+        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
 
-            // Agregar elementos HTML al PDF
-            $htmlContent = '
+        // set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        // Agregar elementos HTML al PDF
+        $htmlContent = '
             <div class="container">
             <div class="container">
             <img alt="Finguer" src="https://finguer.com/img/logo-header.svg" width="150" height="70">
             </div>
             <br>
-            <strong>Número de factura: '.$id_old.'/'.$fechaAnoReserva.'</strong><br>
-            Fecha de la factura: '.$fechaReserva.'<br>
+            <strong>Número de factura: ' . $id_old . '/' . $fechaAnoReserva . '</strong><br>
+            Fecha de la factura: ' . $fechaReserva . '<br>
             </div>
             
             <div class="container">
@@ -152,25 +153,25 @@ if (is_numeric($id)) {
                       <tr>
                         <th>
                             <strong>Facturado a:</strong><br>
-                            '.$nombre_old.'<br>
-                            '.$email_old.'<br>';
+                            ' . $nombre_old . '<br>
+                            ' . $email_old . '<br>';
 
-                            if (isset($empresa_old)) {
-                                $htmlContent .= $empresa_old.'<br>';
-                            }
+        if (isset($empresa_old)) {
+            $htmlContent .= $empresa_old . '<br>';
+        }
 
-                            if (isset($nif_old)) {
-                                $htmlContent .= 'NIF/NIE/CIF: '.$nif_old.'<br>';
-                            }
+        if (isset($nif_old)) {
+            $htmlContent .= 'NIF/NIE/CIF: ' . $nif_old . '<br>';
+        }
 
-                            if (isset($direccion_old)) {
-                                $htmlContent .= $direccion_old.'<br>
-                                '.$ciudad_old.', '.$codigo_postal_old.'<br>
-                                '.$pais_old.'<br>
-                                Teléfono: '.$telefono_old.' ';
-                            }
-                            
-                        $htmlContent .= '</th>
+        if (isset($direccion_old)) {
+            $htmlContent .= $direccion_old . '<br>
+                                ' . $ciudad_old . ', ' . $codigo_postal_old . '<br>
+                                ' . $pais_old . '<br>
+                                Teléfono: ' . $telefono_old . ' ';
+        }
+
+        $htmlContent .= '</th>
                         <th>
                         <strong>BCN PARKING S.L</strong><br>
                         CIF: B65548919<br>
@@ -196,15 +197,15 @@ if (is_numeric($id)) {
                         <tbody>
                         <tr>
                                 <td style="padding: 5px; border: 1px solid black;">
-                                Tipo de servicio: '.$tipoReserva2.'<br>
-                                Limpieza: '.$limpieza2.'<br>
-                                Fecha de entrada: '.$fecha_formateada1.' - '.$horaEntrada_old.'<br>
-                                Fecha de salida: '.$fecha_formateada2.' - '.$horaSalida_old.'<br>
-                                Vehículo: '.$vehiculo_old.'<br>
-                                Matrícula: '.$matricula_old.'
+                                Tipo de servicio: ' . $tipoReserva2 . '<br>
+                                Limpieza: ' . $limpieza2 . '<br>
+                                Fecha de entrada: ' . $fecha_formateada1 . ' - ' . $horaEntrada_old . '<br>
+                                Fecha de salida: ' . $fecha_formateada2 . ' - ' . $horaSalida_old . '<br>
+                                Vehículo: ' . $vehiculo_old . '<br>
+                                Matrícula: ' . $matricula_old . '
                                 </td>
 
-                                <td style="padding: 5px; border: 1px solid black;">'.$subtotal_redondeado2.' €</td>
+                                <td style="padding: 5px; border: 1px solid black;">' . $subtotal_redondeado2 . ' €</td>
                            </tr>
                            
                            </tbody>                       
@@ -223,15 +224,15 @@ if (is_numeric($id)) {
                 <tbody>
                     <tr>
                         <td style="width: 50%;">Subtotal</td>
-                        <td style="text-align: right; width: 50%;">'.$subtotal_redondeado2.' €</td>
+                        <td style="text-align: right; width: 50%;">' . $subtotal_redondeado2 . ' €</td>
                     </tr>
                     <tr>
                         <td style="width: 50%;">IVA 21%</td>
-                        <td style="text-align: right;">'.$coste_iva_redondeado2.' €</td>
+                        <td style="text-align: right;">' . $coste_iva_redondeado2 . ' €</td>
                     </tr>
                     <tr>
                         <td style="width: 50%;">Total</td>
-                        <td style="text-align: right;"><strong>'.$importe_total2.' €</strong></td>
+                        <td style="text-align: right;"><strong>' . $importe_total2 . ' €</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -242,22 +243,22 @@ if (is_numeric($id)) {
         <br>
         Muchas gracias por confiar en nuestros servicios. Esperamos que sea de su agrado.';
 
-            // Escribir el contenido HTML en el PDF
-            $pdf->writeHTML($htmlContent, true, false, true, false, '');
+        // Escribir el contenido HTML en el PDF
+        $pdf->writeHTML($htmlContent, true, false, true, false, '');
 
-            $filename = APP_ROOT . '/pdf/documento.pdf'; // Nombre del archivo PDF generado
-            $pdf->Output($filename, 'F'); // Guardar el PDF en el servidor
+        $filename = APP_ROOT . '/pdf/documento.pdf'; // Nombre del archivo PDF generado
+        $pdf->Output($filename, 'F'); // Guardar el PDF en el servidor
 
-            // Configurar PHPMailer
-            $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
-            $mail->CharSet = 'UTF-8';
-            $mail->isSMTP();
-                $mail->Host       = 'hl121.lucushost.org';
-                $mail->SMTPAuth   = true;
-                $mail->Username   = 'web@finguer.com';
-                $mail->Password   = $email_pass;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port       = 465;
+        // Configurar PHPMailer
+        $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
+        $mail->CharSet = 'UTF-8';
+        $mail->isSMTP();
+        $mail->Host       = 'hl121.lucushost.org';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'web@finguer.com';
+        $mail->Password   = $email_pass;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = 465;
 
 
         // Configurar remitente y destinatario
@@ -282,7 +283,6 @@ if (is_numeric($id)) {
         }
 
         echo "</div>";
-
     } else {
         echo "Error: aquest ID no és vàlid";
     }
@@ -293,4 +293,3 @@ if (is_numeric($id)) {
 echo "</div>";
 
 require_once(APP_ROOT . '/public/inc/footer.php');
-?>

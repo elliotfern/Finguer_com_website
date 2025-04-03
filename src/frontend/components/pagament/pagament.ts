@@ -2,10 +2,16 @@ import { pagamentBizum } from './pagamentBizum';
 import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
 import { recuperarDadesLocalStorage } from './recuperarDadesLocalStorage';
+import { PaymentData } from '../../types/interfaces';
 
-export const pagament = () => {
-  document.addEventListener('DOMContentLoaded', () => {
-    recuperarDadesLocalStorage();
+export const pagament = async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    const dades = await recuperarDadesLocalStorage(); // Esperar a obtener los datos
+    if (!dades) {
+      console.error('No se pudo obtener los datos del carrito.');
+      return;
+    }
+
     botoPagament();
 
     // Seleccionar los botones directamente
@@ -14,14 +20,14 @@ export const pagament = () => {
     const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement;
     const aviso = document.getElementById('aviso_terminos');
 
-    const handlePayment = (callback: () => void) => {
+    const handlePayment = (callback: (dades: PaymentData) => void) => {
       if (!checkbox?.checked) {
         if (aviso) aviso.style.display = 'block';
         return;
       }
 
       if (aviso) aviso.style.display = 'none';
-      callback();
+      callback(dades); // Pasar dades a la función de pago
     };
 
     if (bizumButton) {

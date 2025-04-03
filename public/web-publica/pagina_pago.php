@@ -17,7 +17,7 @@ $pago = $translations['paginaPago'] ?? [];
     <a href="/" class="btn btn-primary"><?php echo $pago['volver']; ?></a>
 </div>
 
-<div class="container-fluid" id="pantallaPagament" style="display:none">
+<div class="container-fluid" id="pantallaPagament">
     <div class="container">
 
         <div class="row">

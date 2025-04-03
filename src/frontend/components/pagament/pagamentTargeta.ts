@@ -7,13 +7,11 @@ interface PostRequest {
   costTotal: number | undefined;
 }
 
-export const pagamentTargeta = async (): Promise<void> => {
+export const pagamentTargeta = async (dades: PaymentData): Promise<void> => {
   // trucada a la API de redsys per generar objecte
-  const dataString = localStorage.getItem('paymentData');
+  const dataString = dades;
   let costTotal: number | undefined;
   if (dataString) {
-    const data: PaymentData[] = JSON.parse(dataString);
-    const dades = data[0];
     costTotal = dades.precioTotal;
   }
 
@@ -35,7 +33,7 @@ export const pagamentTargeta = async (): Promise<void> => {
 
   try {
     // Esperamos a que la función creacioDadesUsuaris termine
-    const response = await creacioDadesUsuaris(idReserva);
+    const response = await creacioDadesUsuaris(dades, idReserva);
 
     // Si la respuesta es exitosa, continuamos con el resto de la función
     if (response.status === 'success') {

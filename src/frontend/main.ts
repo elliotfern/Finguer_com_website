@@ -14,7 +14,7 @@ const normalizedPath = window.location.pathname.replace(/\/$/, '');
 // Verificamos si la ruta es "/reserva" o "/{idioma}/reserva"
 const isReservaPage = normalizedPath === '/reserva' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/reserva`));
 
-const isPagoPage = normalizedPath === '/pago' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/pago`));
+const isPagoPage = normalizedPath === '/pago' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/pago`)) || /^\/pago\/[a-zA-Z0-9]+$/.test(normalizedPath);
 
 // Web Finguer.com
 // Importar mòduls per la homepage de Finguer.com

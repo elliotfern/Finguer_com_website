@@ -14,7 +14,7 @@ interface ReservaData {
   total: number;
 }
 
-export const creacioReserva = async (clientId: number, idReserva: string): Promise<{ status: string; message: string; data?: ReservaData } | undefined> => {
+export const creacioReserva = async (clientId: number, idReserva: string, dades: PaymentData): Promise<{ status: string; message: string; data?: ReservaData } | undefined> => {
   const url = `${window.location.origin}/api/alta-reserva`;
 
   // Obtener los valores de los campos del formulario
@@ -23,10 +23,9 @@ export const creacioReserva = async (clientId: number, idReserva: string): Promi
   const vuelo = (document.getElementById('vuelo') as HTMLInputElement).value;
   const numeroPersonas = (document.getElementById('numero_personas') as HTMLInputElement).value;
 
-  const dataString = localStorage.getItem('paymentData');
+  const dataString = dades;
   if (dataString) {
-    const data: PaymentData[] = JSON.parse(dataString);
-    const dades = data[0];
+    const dades = dataString;
 
     // Construir el objeto formData directamente desde dades
     const formData = {
