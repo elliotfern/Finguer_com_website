@@ -18,9 +18,15 @@ export const handleClickPagament = () => {
     const fechaInicio: Date = new Date(fechas[0]);
     const fechaFin: Date = new Date(fechas[1]);
 
-    // Guardar las fechas de entrada y salida como cadenas legibles, si lo necesitas
-    fechaEntrada = fechaInicio.toLocaleDateString(); // Convertir a string en formato de fecha
-    fechaSalida = fechaFin.toLocaleDateString(); // Convertir a string en formato de fecha
+    // Opciones para que el día, mes y año aparezcan en el formato que deseas
+    const opciones: Intl.DateTimeFormatOptions = {
+      day: '2-digit', // Día con 2 dígitos
+      month: '2-digit', // Mes con 2 dígitos
+      year: 'numeric', // Año en formato completo
+    };
+
+    fechaEntrada = fechaInicio.toLocaleDateString('es-ES', opciones); // Convertir a string en formato de fecha
+    fechaSalida = fechaFin.toLocaleDateString('es-ES', opciones); // Convertir a string en formato de fecha
   }
 
   const horaEntradaElement = (document.getElementById('horaEntrada') as HTMLInputElement | null)?.value || '';
