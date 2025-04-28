@@ -69,11 +69,11 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       const limpieza = data.limpieza;
       let limpieza2 = '';
-      if (limpieza === 1) {
+      if (limpieza === 15) {
         limpieza2 = 'Servicio de limpieza exterior';
-      } else if (limpieza === 2) {
+      } else if (limpieza === 25) {
         limpieza2 = 'Servicio de lavado exterior + aspirado tapicería interior';
-      } else if (limpieza === 3) {
+      } else if (limpieza === 55) {
         limpieza2 = 'Limpieza PRO';
       } else {
         limpieza2 = '-';

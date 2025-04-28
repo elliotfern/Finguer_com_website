@@ -35,14 +35,15 @@ export interface PaymentData {
   costeIva: number;
   precioSubtotal: number;
   costoLimpiezaSinIva: number;
-  fechaSalida: string;
   fechaEntrada: string;
+  fechaSalida: string;
   horaEntrada: string;
   horaSalida: string;
   limpieza: string;
   tipoReserva: string;
   diasReserva: number;
   seguroCancelacion: string;
+  tipoLimpieza: string;
 }
 
 export interface ApiRespostaRedSys {

@@ -1,6 +1,7 @@
 import { creacioReserva } from './creacioReserva';
+import { PaymentData } from '../../types/interfaces';
 
-export const creacioDadesUsuaris = async (idReserva: string): Promise<{ status: string; message: string }> => {
+export const creacioDadesUsuaris = async (dades: PaymentData, idReserva: string): Promise<{ status: string; message: string }> => {
   const url = `${window.location.origin}/api/alta-client`;
   const idReserva2 = idReserva;
 
@@ -56,7 +57,7 @@ export const creacioDadesUsuaris = async (idReserva: string): Promise<{ status: 
       const clientId = data.idCliente;
 
       // Llamar a la función creacioReserva
-      const reservaResponse = await creacioReserva(clientId, idReserva2);
+      const reservaResponse = await creacioReserva(clientId, idReserva2, dades);
       if (reservaResponse?.status === 'success') {
         return { status: 'success', message: 'Reserva creada correctamente' };
       } else {

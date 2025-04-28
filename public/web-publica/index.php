@@ -63,8 +63,8 @@ $reserva = $translations['reserva'] ?? [];
                     <select id="limpieza" name="limpieza">
                         <option value="0"><?php echo $reserva['sin_limpieza']; ?></option>
                         <option value="15"><?php echo $reserva['limpieza_exterior']; ?></option>
-                        <option value="25"><?php echo $reserva['lavado_exterior']; ?></option>
-                        <option value="55"><?php echo $reserva['lavado_pro']; ?></option>
+                        <option value="35"><?php echo $reserva['lavado_exterior']; ?></option>
+                        <option value="95"><?php echo $reserva['lavado_pro']; ?></option>
                     </select>
 
                     <!-- Opciones de cancelación -->

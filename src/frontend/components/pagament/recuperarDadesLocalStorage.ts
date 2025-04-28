@@ -1,26 +1,54 @@
 // recuperarDadesLocalStorage.ts
 import { PaymentData } from '../../types/interfaces';
-
 import { imprimirDadesReserva } from './imprimirDadesReserva';
 
-export const recuperarDadesLocalStorage = () => {
-  // Recuperar los datos almacenados
-  const dataString = localStorage.getItem('paymentData');
+export const recuperarDadesLocalStorage = async (): Promise<PaymentData | null> => {
+  console.log('hem arribat fins aqui?');
 
-  // Obtienes el elemento con el ID 'pantallaPagament'
-  const pantallaPagament = document.getElementById('pantallaPagament') as HTMLDivElement | null;
-  const pantallaPagamentError = document.getElementById('pantallaPagamentError') as HTMLDivElement | null;
+  // Obtener el código de sesión desde la URL
+  function getSessionCode(): string | null {
+    const path = window.location.pathname;
+    const segments = path.split('/');
+    return segments[segments.length - 1] || null; // La última parte de la URL
+  }
 
-  // Verificar si los datos existen
-  if (dataString && pantallaPagament) {
-    const data: PaymentData[] = JSON.parse(dataString);
-    imprimirDadesReserva(data);
+  const sessionCode = getSessionCode();
 
-    // cal mostrar el div pantallaPagament
-    pantallaPagament.style.display = 'block';
-  } else {
-    if (pantallaPagamentError) {
-      pantallaPagamentError.style.display = 'block';
+  // Función para obtener los datos del carrito
+  async function obtenerCarrito(sessionCode: string): Promise<PaymentData | null> {
+    try {
+      const response = await fetch(`/api/carro-compra-session/?session=${sessionCode}`);
+      if (!response.ok) {
+        throw new Error('No se pudo recuperar los datos del carrito');
+      }
+      const data: PaymentData = await response.json();
+      console.log('Datos del carrito:', data);
+      return data;
+    } catch (error) {
+      console.error('Error al obtener los datos del carrito:', error);
+      return null;
     }
+  }
+
+  // Realizar la consulta si el código de sesión está presente
+  if (sessionCode) {
+    try {
+      const data = await obtenerCarrito(sessionCode);
+      if (data) {
+        // Llamar a la función imprimirDadesReserva con los datos obtenidos
+        imprimirDadesReserva(data);
+        //console.log(data);
+        return data; // Devolver los datos del carrito
+      } else {
+        console.error('No se encontraron datos del carrito');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos del carrito:', error);
+      return null;
+    }
+  } else {
+    console.error('Código de sesión no encontrado en la URL');
+    return null;
   }
 };

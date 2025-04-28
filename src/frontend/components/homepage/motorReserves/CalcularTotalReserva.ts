@@ -59,9 +59,9 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
 
     if (costoLimpieza === 15) {
       costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
-    } else if (costoLimpieza === 25) {
+    } else if (costoLimpieza === 35) {
       costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
-    } else if (costoLimpieza === 55) {
+    } else if (costoLimpieza === 95) {
       costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
     }
 
