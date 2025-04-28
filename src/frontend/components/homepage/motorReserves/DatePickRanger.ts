@@ -17,8 +17,11 @@ export const daterangepicker = () => {
   if (fechaReservaElement) {
     flatpickr(fechaReservaElement, {
       mode: 'range',
+      altInput: true,
+      altFormat: 'd/m/Y',
       dateFormat: 'Y-m-d',
       minDate: startDate,
+      maxDate: '2025-12-31',
       locale: {
         firstDayOfWeek: 1, // Primer día de la semana: lunes
         weekdays: {

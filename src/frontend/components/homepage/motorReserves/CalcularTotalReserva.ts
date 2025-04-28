@@ -15,7 +15,7 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
   const costoDia = 5;
   const porcentajeIva = 0.21;
   const costeReservaFinguerClass = 10.01;
-  const costeReservaGoldClass = 20;
+  const costeReservaGoldClass = 30.01;
 
   const costeReservaFinguerClassSinIva = calcularPrecioSinIva(costeReservaFinguerClass, porcentajeIva).precioSinIva;
   const costeReservaGoldClassSinIva = calcularPrecioSinIva(costeReservaGoldClass, porcentajeIva).precioSinIva;
@@ -77,10 +77,10 @@ export const calcularTotalReserva = (): { precioTotal: number; costeSeguro: numb
 
   // Si el cliente ha seleccionado 'Sí' en el seguro de cancelación
   if (seguroCancelacion === '1') {
-    costeSeguro = precioSubtotal * 0.3; // Calcular el 30% del precio total
-
-    if (costeSeguro < 12) {
-      costeSeguro = 12; // Si el 30% es menor a 12, el coste del seguro es 12 euros
+    if (precioSubtotal <= 50) {
+      costeSeguro = 15; // Si es menor a 50, el coste del seguro es 15 euros
+    } else {
+      costeSeguro = precioSubtotal * 0.1; // Calcular el 10% del precio total
     }
 
     precioSubtotal += costeSeguro; // Añadir el coste del seguro al precio total
