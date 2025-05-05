@@ -82,11 +82,11 @@ if (is_numeric($id)) {
                 $tipoReserva2 = "Finguer Class";
             }
             $limpieza = $row['limpieza'];
-            if ($limpieza == 1) {
+            if (in_array($limpieza, [1, 15])) {
                 $limpieza2 = "Servicio de limpieza exterior";
-            } elseif ($limpieza == 2) {
+            } else if (in_array($limpieza, [2, 25, 35])) {
                 $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-            } elseif ($limpieza == 3) {
+            } else if (in_array($limpieza, [3, 55, 95])) {
                 $limpieza2 = "Limpieza PRO";
             } else {
                 $limpieza2 = "Sin servicio de limpieza";
