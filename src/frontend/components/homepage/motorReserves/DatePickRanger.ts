@@ -21,7 +21,7 @@ export const daterangepicker = () => {
       altFormat: 'd/m/Y',
       dateFormat: 'Y-m-d',
       minDate: startDate,
-      maxDate: '2025-12-31',
+      maxDate: '2026-12-31',
       locale: {
         firstDayOfWeek: 1, // Primer día de la semana: lunes
         weekdays: {

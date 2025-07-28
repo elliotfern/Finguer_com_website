@@ -20,10 +20,10 @@ $reserva = $translations['reserva'] ?? [];
 
     <div class="row g-0 container-imatge">
         <div class="col-12 col-md-6 ms-auto">
-            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_finguer.svg" alt="Tarifas del parking">
+            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_finguer2.svg" alt="Tarifas del parking">
         </div>
         <div class="col-12 col-md-6">
-            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_gold.svg" alt="Tarifas del parking">
+            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_gold2.svg" alt="Tarifas del parking">
         </div>
     </div>
 
@@ -221,7 +221,7 @@ $reserva = $translations['reserva'] ?? [];
             <div class="col-12 col-md-2" id="donde-estamos">
                 <h2><strong>¿Dónde estamos?</strong></h2>
 
-                <p><strong>Nuestro horario de servicio es de</strong><br><strong>5 de la madrugada a 23:30 de la noche</strong></p>
+                <p><strong>Nuestro horario de servicio es de</strong><br><strong>5:00 de la mañana a 23:30 de la noche</strong></p>
 
                 <p id="contacto"><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Carrer de l'Alt Camp, 9, 08830</a><br><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Sant Boi de Llobregat, Barcelona</a></p>
 

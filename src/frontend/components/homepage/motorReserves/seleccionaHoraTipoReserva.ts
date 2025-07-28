@@ -24,7 +24,7 @@ export const seleccionaHoraTipoReserva = () => {
     let showAviso = false;
 
     // Definir las condiciones específicas para cada fecha y hora
-    if (año === 2024 || año === 2025) {
+    if (año === 2024 || año === 2026) {
       if (mes === 12 && dia === 24) {
         // Si es 24 de diciembre, mostrar aviso solo si la hora seleccionada es <= 18:00
         showAviso = horas.some((hora) => hora <= '18:00');
@@ -34,7 +34,7 @@ export const seleccionaHoraTipoReserva = () => {
       } else if (mes === 12 && dia === 31) {
         // Si es 31 de diciembre, mostrar aviso solo si la hora seleccionada es <= 18:00
         showAviso = horas.some((hora) => hora <= '18:00');
-      } else if (mes === 1 && dia === 1 && año === 2025) {
+      } else if (mes === 1 && dia === 1 && año === 2026) {
         // Si es 1 de enero de 2025, mostrar aviso solo si la hora seleccionada es >= 12:00
         showAviso = horas.some((hora) => hora >= '12:00');
       }

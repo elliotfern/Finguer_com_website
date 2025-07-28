@@ -32,7 +32,7 @@
     </div>
 </div>
 
-<script type="module" src="<?php APP_ROOT; ?>/dist/bundle.js?v=1.1.43"></script>
+<script type="module" src="<?php APP_ROOT; ?>/dist/bundle.js?v=1.1.44"></script>
 <script src="<?php APP_ROOT; ?>/public/js/cookies.js"></script>
 </body>
 
