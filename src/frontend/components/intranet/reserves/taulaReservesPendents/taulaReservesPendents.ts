@@ -212,8 +212,20 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
       }
       html += '</td>';
 
-      // 14 - Email confirmacio
-      html += '<td><button class="btn btn-success btn-sm obrir-finestra-btn" role="button" aria-pressed="true" data-id="' + data.id + '">Obrir</button></td>';
+      // 14 - Finestra emergent
+      html += `<td>
+     <button 
+          class="btn btn-success btn-sm obrir-finestra-btn" 
+          role="button" 
+          aria-pressed="true"
+          data-id="${data.id}"
+          data-dispositiu="${data.dispositiu || ''}"
+          data-navegador="${data.navegador || ''}"
+          data-sistema="${data.sistema_operatiu || ''}"
+          data-ip="${data.ip || ''}">
+          Obrir
+      </button>
+      </td>`;
 
       html += '</tr>';
 

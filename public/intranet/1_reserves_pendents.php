@@ -46,6 +46,13 @@
 
                     <button id="enlace4" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</button>
 
+                    <div style="font-size: 0.85rem; line-height: 1.4;">
+                        <div><span id="dispositiu"></span></div>
+                        <div><span id="navegador"></span></div>
+                        <div><span id="sistema_operatiu"></span></div>
+                        <div><span id="ip"></span></div>
+                    </div>
+
                     <button class="btn btn-danger tancar-finestra-btn w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
                 </div>
             </div>

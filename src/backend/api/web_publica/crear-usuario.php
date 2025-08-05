@@ -4,6 +4,54 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
 header("Access-Control-Allow-Methods: POST");
 
+function getUserInfo()
+{
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconegut';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'Desconegut';
+
+    // Determinar navegador
+    if (strpos($userAgent, 'Firefox') !== false) {
+        $navegador = 'Firefox';
+    } elseif (strpos($userAgent, 'Chrome') !== false) {
+        $navegador = 'Chrome';
+    } elseif (strpos($userAgent, 'Safari') !== false) {
+        $navegador = 'Safari';
+    } elseif (strpos($userAgent, 'Edge') !== false) {
+        $navegador = 'Edge';
+    } else {
+        $navegador = 'Desconegut';
+    }
+
+    // Determinar sistema operativo
+    if (preg_match('/Windows/i', $userAgent)) {
+        $so = 'Windows';
+    } elseif (preg_match('/Linux/i', $userAgent)) {
+        $so = 'Linux';
+    } elseif (preg_match('/Mac/i', $userAgent)) {
+        $so = 'MacOS';
+    } elseif (preg_match('/Android/i', $userAgent)) {
+        $so = 'Android';
+    } elseif (preg_match('/iPhone|iPad/i', $userAgent)) {
+        $so = 'iOS';
+    } else {
+        $so = 'Desconegut';
+    }
+
+    // Determinar tipo de dispositivo
+    if (preg_match('/Mobile|Android|iPhone|iPad/i', $userAgent)) {
+        $dispositivo = 'Mòbil';
+    } else {
+        $dispositivo = 'Escriptori';
+    }
+
+    return [
+        'ip' => $ip,
+        'navegador' => $navegador,
+        'sistema_operatiu' => $so,
+        'dispositiu' => $dispositivo
+    ];
+}
+
 // Leer el cuerpo de la solicitud JSON
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -45,7 +93,7 @@ if (empty($data["email"])) {
 if (empty($data["telefono"])) {
     $errors["telefono"] = "El teléfono es obligatorio.";
     $hasError = true;
-} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) { 
+} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) {
     $errors["telefono"] = "El teléfono debe contener solo números y tener entre 9 y 15 dígitos.";
     $hasError = true;
 }
@@ -75,6 +123,14 @@ $pais = !empty($data["pais"]) ? data_input($data["pais"]) : null;
 
 $tipoUsuario = 2; // Asignar tipo de usuario por defecto
 
+// informacion tecnica usuario
+$info = getUserInfo();
+
+$dispositiu = $info['dispositiu'];
+$navegador = $info['navegador'];
+$sistema_operatiu = $info['sistema_operatiu'];
+$ip = $info['ip'];
+
 // Si hay errores en los datos, devolver una respuesta de error
 if ($hasError) {
     echo json_encode([
@@ -84,39 +140,41 @@ if ($hasError) {
     exit;
 }
 
-      global $conn;
-      $sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario";
-      $stmt= $conn->prepare($sql);
-      $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
-      $stmt->bindParam(":email", $email, PDO::PARAM_STR);
-      $stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
-      $stmt->bindParam(":nif", $nif, PDO::PARAM_STR);
-      $stmt->bindParam(":direccion", $direccion, PDO::PARAM_STR);
-      $stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
-      $stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
-      $stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
-      $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
-      $stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+global $conn;
+$sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
+$stmt->bindParam(":email", $email, PDO::PARAM_STR);
+$stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
+$stmt->bindParam(":nif", $nif, PDO::PARAM_STR);
+$stmt->bindParam(":direccion", $direccion, PDO::PARAM_STR);
+$stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
+$stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
+$stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
+$stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
+$stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+$stmt->bindParam(":dispositiu", $dispositiu, PDO::PARAM_STR);
+$stmt->bindParam(":navegador", $navegador, PDO::PARAM_STR);
+$stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
+$stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
 
-      if ($stmt->execute()) {
-        // Obtener el ID del nuevo cliente insertado
-        $idCliente = $conn->lastInsertId();
-        
-        // response output
-         // Devolver respuesta de éxito
-        header( "Content-Type: application/json" );
-        echo json_encode([
-            "status" => "success",
-            "idCliente" => $idCliente,
-            "message" => "Cliente creado con exito."
-        ]);
+if ($stmt->execute()) {
+    // Obtener el ID del nuevo cliente insertado
+    $idCliente = $conn->lastInsertId();
 
-      } else {
-          // response output - data error
-          header( "Content-Type: application/json" );
-          echo json_encode([
-            "status" => "error",
-            "message" => "Error en la base de datos."
-        ]);
-      }
-  
+    // response output
+    // Devolver respuesta de éxito
+    header("Content-Type: application/json");
+    echo json_encode([
+        "status" => "success",
+        "idCliente" => $idCliente,
+        "message" => "Cliente creado con exito."
+    ]);
+} else {
+    // response output - data error
+    header("Content-Type: application/json");
+    echo json_encode([
+        "status" => "error",
+        "message" => "Error en la base de datos."
+    ]);
+}

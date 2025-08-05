@@ -40,7 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                         rc1.processed,
                         u.nombre,
                         u.telefono AS tel,
-                        rc1.numeroPersonas
+                        rc1.numeroPersonas,
+                        u.dispositiu,
+                        u.navegador,
+                        u.sistema_operatiu,
+                        u.ip
                         FROM reserves_parking AS rc1
                         LEFT JOIN reservas_buscadores AS b ON rc1.buscadores = b.id
                         LEFT JOIN usuaris AS u ON rc1.idClient = u.id

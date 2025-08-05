@@ -22,6 +22,10 @@ export interface Reserva {
   vuelo: string;
   checkIn: number;
   buscadores: number;
+  dispositiu: string;
+  navegador: string;
+  sistema_operatiu: string;
+  ip: string;
 }
 
 export interface Comptador {
