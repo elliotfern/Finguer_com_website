@@ -23,7 +23,7 @@ $reserva = $translations['reserva'] ?? [];
             <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_finguer2.svg" alt="Tarifas del parking">
         </div>
         <div class="col-12 col-md-6">
-            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_gold2.svg" alt="Tarifas del parking">
+            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_gold3.svg" alt="Tarifas del parking">
         </div>
     </div>
 

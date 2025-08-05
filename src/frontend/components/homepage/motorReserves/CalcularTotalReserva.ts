@@ -2,6 +2,7 @@ import { validarFechas } from './ValidarFechas';
 import { calcularTotalDiasReserva } from './CalcularTotalDiasReserva';
 import { calcularPrecioSinIva } from './CalcularPrecioSinIva';
 import { calcularPrecioConIva } from './CalcularPrecioConIva';
+import { parseData } from '../../../utils/parseData';
 
 export const calcularTotalReserva = (): {
   precioTotal: number;
@@ -23,7 +24,7 @@ export const calcularTotalReserva = (): {
   const costoDia = 5;
   const porcentajeIva = 0.21;
   const costeReservaFinguerClass = 30;
-  const costeReservaGoldClass = 50;
+  const costeReservaGoldClass = 70;
 
   // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
   if (!validarFechas()) {
@@ -102,10 +103,11 @@ export const calcularTotalReserva = (): {
 
   if (fechaReservaElement && fechaReservaElement.value) {
     const fechas = fechaReservaElement.value.split(' to ');
-    const fechaInicio: Date = new Date(fechas[0]);
-    const fechaFin: Date = new Date(fechas[1]);
-    fechaEntrada = fechaInicio.toLocaleDateString();
-    fechaSalida = fechaFin.toLocaleDateString();
+    const fechaInicio: Date = parseData(fechas[0].trim());
+    const fechaFin: Date = parseData(fechas[1].trim());
+
+    fechaEntrada = fechaInicio.toLocaleDateString('es-ES');
+    fechaSalida = fechaFin.toLocaleDateString('es-ES');
   }
 
   const diaEntradaElement = document.getElementById('diaEntrada');

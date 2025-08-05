@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserva con API</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 800px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Detalles de la Reserva</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Productos</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <ul>
+              <li><strong>Tipo de Reserva:</strong> <span id="tipoReserva"></span></li>
+              <li><strong>Fecha Entrada:</strong> <span id="fechaEntrada"></span> / <span id="horaEntrada"></span></li>
+              <li><strong>Fecha Salida:</strong> <span id="fechaSalida"></span> / <span id="horaSalida"></span></li>
+              <li><strong>Días de reserva:</strong> <span id="diasReserva"></span> días</li>
+            </ul>
+          </td>
+          <td><span id="precioReserva"></span> € (sin IVA)</td>
+        </tr>
+        <tr>
+          <td><strong>Seguro de cancelación:</strong> <span id="seguroCancelacion"></span></td>
+          <td><span id="costeSeguro2"></span></td>
+        </tr>
+        <tr>
+          <td><strong>Limpieza:</strong> <span id="tipoLimpieza2"></span></td>
+          <td><span id="costeLimpieza"></span></td>
+        </tr>
+        <tr>
+          <th>Subtotal</th>
+          <td><strong><span id="costeSubTotal"></span> € (sin IVA)</strong></td>
+        </tr>
+        <tr>
+          <th>IVA</th>
+          <td><strong><span id="costeIva"></span> €</strong></td>
+        </tr>
+        <tr>
+          <th>Total</th>
+          <td><strong><span id="costeTotal"></span> €</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr />
+
+    <button><strong>Pagar <span id="costeTotal2"></span> €</strong></button>
+    <button><strong>Bizum <span id="costeTotal3"></span> €</strong></button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Obtener session code de la URL (último segmento)
+      const path = window.location.pathname;
+      const segments = path.split('/');
+      const sessionCode = segments[segments.length - 1] || '';
+
+      if (!sessionCode) {
+        console.error('No se encontró código de sesión en la URL');
+        return;
+      }
+
+      // Llamada al API
+      fetch(`/api/carro-compra-session/?session=xuteztr38`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Error al obtener los datos del carrito');
+          return response.json();
+        })
+        .then((data) => {
+          console.log('Datos del carrito:', data);
+
+          // Pintar datos en DOM
+          document.getElementById('tipoReserva').textContent =
+            data.tipoReserva === 'finguer_class'
+              ? 'Finguer Class'
+              : data.tipoReserva === 'gold_finguer'
+              ? 'Gold Finguer Class'
+              : 'Desconocida';
+
+          document.getElementById('fechaEntrada').textContent = data.fechaEntrada;
+          document.getElementById('horaEntrada').textContent = data.horaEntrada;
+          document.getElementById('fechaSalida').textContent = data.fechaSalida;
+          document.getElementById('horaSalida').textContent = data.horaSalida;
+          document.getElementById('diasReserva').textContent = data.diasReserva;
+
+          document.getElementById('seguroCancelacion').textContent =
+            data.seguroCancelacion === '1'
+              ? 'Contratado'
+              : data.seguroCancelacion === '2'
+              ? 'No contratado'
+              : 'Desconocido';
+
+          document.getElementById('tipoLimpieza2').textContent =
+            data.limpieza === '0'
+              ? 'No contratado'
+              : data.limpieza === '15'
+              ? 'Servicio de limpieza exterior'
+              : data.limpieza === '35'
+              ? 'Servicio de lavado exterior + aspirado tapicería interior'
+              : data.limpieza === '95'
+              ? 'Lavado PRO. Lo dejamos como nuevo'
+              : 'Desconocido';
+
+          document.getElementById('costeSeguro2').textContent =
+            Number(data.costeSeguro).toFixed(2) + ' € (sin IVA)';
+          document.getElementById('precioReserva').textContent =
+            Number(data.precioReserva).toFixed(2);
+          document.getElementById('costeLimpieza').textContent =
+            Number(data.costoLimpiezaSinIva).toFixed(2) + ' € (sin IVA)';
+          document.getElementById('costeSubTotal').textContent =
+            Number(data.precioSubtotal).toFixed(2);
+          document.getElementById('costeIva').textContent =
+            Number(data.costeIva).toFixed(2);
+
+          const total = Number(data.precioTotal).toFixed(2);
+          document.getElementById('costeTotal').textContent = total;
+          document.getElementById('costeTotal2').textContent = total;
+          document.getElementById('costeTotal3').textContent = total;
+
+          console.log('Datos pintados en DOM');
+        })
+        .catch((error) => {
+          console.error('Error al cargar datos:', error);
+        });
+    });
+  </script>
+</body>
+</html>

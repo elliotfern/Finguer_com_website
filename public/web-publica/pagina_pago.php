@@ -173,6 +173,9 @@ $pago = $translations['paginaPago'] ?? [];
             </div>
 
             <div class="col-12 col-md-5 offset-md-1" style="background-color:#D8D6D6;padding:25px">
+
+                <div id="logDiv" style="white-space: pre-wrap; max-height: 300px; overflow-y: scroll; background: #fff; border: 1px solid #ccc;"></div>
+
                 <div class="container sticky-md-top">
                     <h3><?php echo $pago['detallesReserva']; ?></h3>
 

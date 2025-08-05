@@ -1,4 +1,6 @@
 // main.ts
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 import { detectAndRedirect } from './utils/selectorIdioma';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';

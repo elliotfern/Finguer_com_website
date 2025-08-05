@@ -1,19 +1,23 @@
-//import { parseDate } from './ValidarFechas';
+import { parseData } from '../../../utils/parseData';
 
 export const calcularTotalDiasReserva = (fechaReserva: HTMLInputElement): number => {
-  let diferenciaEnDias = 0;
-  if (fechaReserva) {
-    const fechas = fechaReserva.value.split(' to ');
-    const fechaInicio = new Date(fechas[0]);
-    const fechaFin = new Date(fechas[1]);
+  if (!fechaReserva || !fechaReserva.value) return 0;
 
-    // Obtener la diferencia en milisegundos
-    const diferenciaEnMilisegundos = fechaFin.getTime() - fechaInicio.getTime();
+  const fechas = fechaReserva.value.split(' to ');
+  const fechaInicio = parseData(fechas[0]);
+  const fechaFin = parseData(fechas[1]);
 
-    // Convertir milisegundos a días
-    diferenciaEnDias = Math.ceil(diferenciaEnMilisegundos / (1000 * 60 * 60 * 24));
+  if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+    console.error('Fecha inválida:', fechas);
+    return 0;
   }
 
-  // Sumar (+1) para incluir los 1 días de inicio
-  return diferenciaEnDias + 1; // antes + 1;
+  // Diferencia en milisegundos
+  const diferenciaEnMilisegundos = fechaFin.getTime() - fechaInicio.getTime();
+
+  // Convertir milisegundos a días
+  const diferenciaEnDias = Math.ceil(diferenciaEnMilisegundos / (1000 * 60 * 60 * 24));
+
+  // Sumar 1 día de inicio
+  return diferenciaEnDias + 1;
 };

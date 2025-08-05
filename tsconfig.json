@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",  // O "CommonJS" si prefieres módulos CommonJS
-    "target": "ES2020",
+    "target": "ES5",                // <- CAMBIAR
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -9,7 +9,8 @@
     "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./src/frontend/",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2015", "dom"],       // <- CAMBIAR
+    "downlevelIteration": true,     // <- NECESARIO para for..of y spread
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["./node_modules/@types", "src/frontend/types"]
       },

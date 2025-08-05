@@ -266,7 +266,7 @@ if (is_numeric($id)) {
         $mail->addAddress($email_old, $nombre_old);
 
         $mail->addBCC('hello@finguer.com');
-        $mail->addBCC('elliotfernandez87@gmail.com');
+        $mail->addBCC('elliot@hispantic.com');
 
         // Adjuntar el archivo PDF generado
         $mail->addAttachment($filename);

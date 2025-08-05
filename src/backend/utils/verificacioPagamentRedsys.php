@@ -239,7 +239,7 @@ function enviarConfirmacio($id)
 
                 // Añade destinatarios ocultos (BCC) si es necesario
                 $mail->addBCC('hello@finguer.com');
-                $mail->addBCC('elliotfernandez87@gmail.com');
+                $mail->addBCC('elliot@hispantic.com');
 
                 // Configura el asunto y el cuerpo del correo electrónico
                 $mail->isHTML(true);
@@ -616,7 +616,7 @@ function enviarFactura($id)
             $mail->addAddress($email_old, $nombre_old);
 
             $mail->addBCC('hello@finguer.com');
-            $mail->addBCC('elliotfernandez87@gmail.com');
+            $mail->addBCC('elliot@hispantic.com');
 
             // Adjuntar el archivo PDF generado
             $mail->addAttachment($filename);
