@@ -17,71 +17,72 @@ export const calcularTotalReserva = (): {
   let costeIva = 0;
   let costeSeguro = 0;
   let diasReserva = 0;
-  let costoReserva = 0;
   let precioReserva = 0;
   let costoLimpiezaSinIva = 0;
 
   const costoDia = 5;
   const porcentajeIva = 0.21;
-  const costeReservaFinguerClass = 30; // coste fijo con IVA
-  const costeReservaGoldClass = 50; // coste fijo con IVA
+  const costeReservaFinguerClass = 30;
+  const costeReservaGoldClass = 50;
 
-  const costeReservaFinguerClassSinIva = calcularPrecioSinIva(costeReservaFinguerClass, porcentajeIva).precioSinIva;
-  const costeReservaGoldClassSinIva = calcularPrecioSinIva(costeReservaGoldClass, porcentajeIva).precioSinIva;
-  const costoDiaSinIva = calcularPrecioSinIva(costoDia, porcentajeIva).precioSinIva;
-
+  // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
   if (!validarFechas()) {
     return { precioTotal: 0, costeSeguro: 0, precioReserva: 0, costeIva: 0, precioSubtotal: 0, costoLimpiezaSinIva: 0, diasReserva: 0 };
   }
 
-  const tipoReservaElement = document.getElementById('tipo_reserva') as HTMLSelectElement | null;
-  if (tipoReservaElement) {
-    const tipoReserva = tipoReservaElement.value;
-    if (tipoReserva === 'finguer_class') {
-      costoReserva = costeReservaFinguerClassSinIva;
-    } else if (tipoReserva === 'gold_finguer') {
-      costoReserva = costeReservaGoldClassSinIva;
-    }
-  }
-
+  // Cálculo de días
   const fechaReserva = document.getElementById('fecha_reserva') as HTMLInputElement | null;
   if (fechaReserva) {
     diasReserva = calcularTotalDiasReserva(fechaReserva);
   }
 
-  // ---- NUEVA LÓGICA DE COSTE POR DÍAS ----
-  let costeDiasExtra = 0;
-  if (diasReserva > 3) {
-    const diasExtra = diasReserva - 3;
-    costeDiasExtra = diasExtra * costoDiaSinIva;
+  // ----- COSTE BASE SIN IVA (sin redondear todavía) -----
+  const tipoReservaElement = document.getElementById('tipo_reserva') as HTMLSelectElement | null;
+  let costeBaseSinIva = 0;
+
+  if (tipoReservaElement) {
+    const tipoReserva = tipoReservaElement.value;
+    if (tipoReserva === 'finguer_class') {
+      costeBaseSinIva = costeReservaFinguerClass / (1 + porcentajeIva);
+    } else if (tipoReserva === 'gold_finguer') {
+      costeBaseSinIva = costeReservaGoldClass / (1 + porcentajeIva);
+    }
   }
 
-  precioReserva = costoReserva + costeDiasExtra;
-  precioSubtotal = precioReserva;
+  // ----- RECARGO POR DÍAS EXTRA (a partir del 4º día) -----
+  const recargoDiasSinIva = diasReserva > 3 ? (diasReserva - 3) * (costoDia / (1 + porcentajeIva)) : 0;
 
-  // ---- COSTE LIMPIEZA ----
+  precioReserva = costeBaseSinIva + recargoDiasSinIva;
+
+  // ----- LIMPIEZA -----
   const limpiezaElement = document.getElementById('limpieza') as HTMLInputElement | null;
   if (limpiezaElement) {
     const costoLimpieza = parseInt(limpiezaElement.value, 10) || 0;
     if ([15, 35, 95].includes(costoLimpieza)) {
       costoLimpiezaSinIva = calcularPrecioSinIva(costoLimpieza, porcentajeIva).precioSinIva;
-      precioSubtotal += costoLimpiezaSinIva;
     }
   }
 
-  // ---- COSTE SEGURO ----
+  precioSubtotal = precioReserva + costoLimpiezaSinIva;
+
+  // ----- SEGURO -----
   const seguroCancelacionElement = document.querySelector('input[name="seguroCancelacion"]:checked') as HTMLInputElement | null;
   const seguroCancelacion = seguroCancelacionElement ? seguroCancelacionElement.value : null;
   if (seguroCancelacion === '1') {
-    costeSeguro = precioSubtotal <= 50 ? 15 : precioSubtotal * 0.1;
+    if (precioSubtotal <= 50) {
+      costeSeguro = 15;
+    } else {
+      costeSeguro = precioSubtotal * 0.1;
+    }
     precioSubtotal += costeSeguro;
   }
 
   // ---- IVA Y TOTAL ----
-  costeIva = calcularPrecioConIva(precioSubtotal, porcentajeIva).iva;
-  precioTotal = calcularPrecioConIva(precioSubtotal, porcentajeIva).precioConIva;
+  const resultadoConIva = calcularPrecioConIva(precioSubtotal, porcentajeIva);
+  costeIva = resultadoConIva.iva;
+  precioTotal = +resultadoConIva.precioConIva.toFixed(2); // redondeo final exacto
 
-  // ---- DOM UPDATE (sin cambios) ----
+  // ---- DOM OUTPUT (igual que antes) ----
   const costeReservaElement = document.getElementById('costeReserva');
   const costeSeguroElement = document.getElementById('costeSeguro');
   const costeLimpiezaElement = document.getElementById('costeLimpieza');
@@ -91,12 +92,14 @@ export const calcularTotalReserva = (): {
   const reservaElement = document.getElementById('resumenReserva');
   const horaEntradaElement = document.getElementById('horaEntrada') as HTMLInputElement | null;
   const horaSalidaElement = document.getElementById('horaSalida') as HTMLInputElement | null;
+
   const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
   const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
-  const fechaReservaElement = document.getElementById('fecha_reserva') as HTMLInputElement | null;
 
+  const fechaReservaElement = document.getElementById('fecha_reserva') as HTMLInputElement | null;
   let fechaEntrada = '';
   let fechaSalida = '';
+
   if (fechaReservaElement && fechaReservaElement.value) {
     const fechas = fechaReservaElement.value.split(' to ');
     const fechaInicio: Date = new Date(fechas[0]);

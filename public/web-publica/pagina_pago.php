@@ -245,10 +245,11 @@ $pago = $translations['paginaPago'] ?? [];
                             <button type="button" id="pagamentTargeta" class="payButton" style="margin-top:25px">
                                 <strong><?php echo $pago['pagoTarjeta']; ?> <span id="costeTotal2"></span> €</strong>
                             </button>
-
+                            <!-- boto bizzum desactivat
                             <button type="button" id="pagamentBizum" class="payButton" style="margin-top:25px">
                                 <strong><?php echo $pago['pagoBizum']; ?> <span id="costeTotal3"></span> €</strong>
                             </button>
+                            -->
                         </div>
                     </form>
                 </div>

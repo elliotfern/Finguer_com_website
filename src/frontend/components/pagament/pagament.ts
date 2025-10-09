@@ -1,4 +1,4 @@
-import { pagamentBizum } from './pagamentBizum';
+//import { pagamentBizum } from './pagamentBizum';
 import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
 import { recuperarDadesLocalStorage } from './recuperarDadesLocalStorage';
@@ -15,7 +15,7 @@ export const pagament = async () => {
     botoPagament();
 
     // Seleccionar los botones directamente
-    const bizumButton = document.getElementById('pagamentBizum');
+    //const bizumButton = document.getElementById('pagamentBizum');
     const targetaButton = document.getElementById('pagamentTargeta');
     const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement;
     const aviso = document.getElementById('aviso_terminos');
@@ -30,9 +30,11 @@ export const pagament = async () => {
       callback(dades); // Pasar dades a la función de pago
     };
 
+    /*
     if (bizumButton) {
       bizumButton.addEventListener('click', () => handlePayment(pagamentBizum));
     }
+      */
 
     if (targetaButton) {
       targetaButton.addEventListener('click', () => handlePayment(pagamentTargeta));
