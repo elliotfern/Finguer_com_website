@@ -58,7 +58,68 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     // Devolver los datos en formato JSON
                     echo json_encode($data);
                 }
+            } else if (isset($_GET['type']) && $_GET['type'] == 'reservaId') {
+                header('Content-Type: application/json; charset=utf-8');
+
+                $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+                if ($id === false || $id === null) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Parámetro id inválido']);
+                    exit;
+                }
+
+                $data = array();
+                global $conn;
+                /** @var PDO $conn */
+                $query = "SELECT rc1.idReserva,
+                        rc1.fechaReserva,
+                        rc1.firstName AS 'clientNom',
+                        rc1.lastName AS 'clientCognom',
+                        rc1.tel AS 'telefono',
+                        rc1.diaSalida AS 'dataSortida',
+                        rc1.horaEntrada AS 'HoraEntrada',
+                        rc1.horaSalida AS 'HoraSortida',
+                        rc1.diaEntrada AS 'dataEntrada',
+                        rc1.matricula,
+                        rc1.vehiculo AS 'modelo',
+                        rc1.vuelo,
+                        rc1.tipo,
+                        rc1.checkIn,
+                        rc1.checkOut,
+                        rc1.notes,
+                        rc1.buscadores,
+                        rc1.limpieza,
+                        rc1.importe,
+                        rc1.id,
+                        rc1.processed,
+                        u.nombre,
+                        u.telefono AS tel,
+                        rc1.numeroPersonas,
+                        u.dispositiu,
+                        u.navegador,
+                        u.sistema_operatiu,
+                        u.ip
+                        FROM reserves_parking AS rc1
+                        LEFT JOIN usuaris AS u ON rc1.idClient = u.id
+                        WHERE rc1.id = :id";
+
+                $stmt = $conn->prepare($query);
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                $stmt->execute();
+
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!$rows) {
+                    // Puedes devolver [] o un objeto con mensaje; tu frontend ya tolera [].
+                    http_response_code(404);
+                    echo json_encode([]);
+                    exit;
+                }
+
+                echo json_encode($rows);
+                exit;
             }
+
             // 3) Numero reserves pendents
             elseif (isset($_GET['type']) && $_GET['type'] == 'numReservesPendents') {
                 $query = "SELECT COUNT(r.idReserva) AS numero

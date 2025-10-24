@@ -8,9 +8,9 @@ export const avisEspecialTancamentParking = (show: boolean) => {
           <ul>
           <li><strong>24 de diciembre:</strong> abierto hasta las 18:00h.</li>
           <li><strong>25 de diciembre:</strong> párking cerrado.</li>
-          <li><strong>26 de diciembre:</strong> abierto a partir de las 12:00h.</li>
-          <li><strong>31 de diciembre:</strong> abierto hasta las 18:00h.</li>
-          <li><strong>1 de enero:</strong> abierto a partir de las 12:00h.</li>
+          <li><strong>26 de diciembre:</strong> párking cerrado.</li>
+          <li><strong>31 de diciembre:</strong> párking cerrado.</li>
+          <li><strong>1 de enero:</strong> párking cerrado.</li>
           </ul>`;
       avisoDiv.style.display = 'block';
       setTimeout(() => {

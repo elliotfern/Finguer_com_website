@@ -1,281 +1,289 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    color: #000000;
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #000000;
 }
 
 /* IMATGES */
 .img-responsive {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Estilos HOMEPAGE */
 
 .quadre_reserves {
-    border-style:solid;
-    border-radius: 25px;
-    border-color: #D5D5D5;
-    padding:20px;
+  border-style: solid;
+  border-radius: 25px;
+  border-color: #d5d5d5;
+  padding: 20px;
 }
 
 /* Pagina de pagament */
 @media (min-width: 500px) {
-    .quadre_reserves {
-        width: 1000px;
-    }
+  .quadre_reserves {
+    width: 1000px;
+  }
 }
 
 .finguer1 {
-    background: linear-gradient(180deg, #002daf 0%, #02164f 100%);
-    border-radius: 25px;
-    padding: 20px;
-    color: white;
+  background: linear-gradient(180deg, #002daf 0%, #02164f 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
 }
 
 .finguer2 {
-    background: linear-gradient(180deg, #ffb900 0%, #a57024 100%);
-    border-radius: 25px;
-    padding: 20px;
-    color: white;
+  background: linear-gradient(180deg, #ffb900 0%, #a57024 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
 }
 
 .finguer3 {
-    background: linear-gradient(180deg, #525252 0%, #c9c9c9 100%);
-    border-radius: 25px;
-    padding: 20px;
-    color: white;
+  background: linear-gradient(180deg, #525252 0%, #c9c9c9 100%);
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
 }
 
 .servicios {
-    background: linear-gradient(90deg, #ffb900 0%, #ff0041 100%);
-    border-radius: 25px;
-    padding: 20px;
+  background: linear-gradient(90deg, #ffb900 0%, #ff0041 100%);
+  border-radius: 25px;
+  padding: 20px;
 }
 
 .bloc1 {
-    background-color: #02164f;
-    border-radius: 25px;
-    padding: 50px;
-    color: white;
-    margin-top: 55px;
+  background-color: #02164f;
+  border-radius: 25px;
+  padding: 50px;
+  color: white;
+  margin-top: 55px;
 }
-
 
 /* Pagina de pagament */
 @media (min-width: 500px) {
-    /* Agrega aquí tus estilos específicos para dispositivos más grandes de 500px */
-    .quadre-formulari-pagina-pagament {
-        max-width: 60%;
-    }
+  /* Agrega aquí tus estilos específicos para dispositivos más grandes de 500px */
+  .quadre-formulari-pagina-pagament {
+    max-width: 60%;
+  }
 }
 
 /* OTROS STILOS */
 .container-inici {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 label {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 select,
-input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
+input[type='text'] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
 #mensaje_error {
-    margin-top: 10px;
-    font-size: 14px;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
 #total,
 #dias,
 #subTotal,
 #precio_iva {
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 20px;
 }
 
 #pagamentTargeta {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 #pagamentTargeta:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 #payment-form {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #f9f9f9;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
 }
 
 label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
+input[type='text'] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
 #card-element {
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
 }
 
 #card-errors {
-    color: #dc3545;
-    margin-bottom: 20px;
+  color: #dc3545;
+  margin-bottom: 20px;
 }
 
 #pagar,
 #pagamentBizum {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 #pagar:hover,
 #pagamentBizum:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 /* NAV BAR MOBIL */
 @media (max-width: 450px) {
-    .navbar {
-        width: 100%; /* Ajusta el ancho para que ocupe toda la pantalla */
-        z-index: 1000; /* Asegura que el navbar esté por encima del contenido de la página */
-    }
+  .navbar {
+    width: 100%; /* Ajusta el ancho para que ocupe toda la pantalla */
+    z-index: 1000; /* Asegura que el navbar esté por encima del contenido de la página */
+  }
 
-    .navbar-collapse {
-        background-color: #333; /* Cambia el color de fondo según tus preferencias */
-        padding: 5px; /* Agrega un padding para los márgenes internos */
-        border-radius:25px;
-        max-height: 0; /* Oculta el menú inicialmente */
-        overflow: hidden; /* Oculta cualquier contenido que exceda la altura máxima */
-        transition: max-height 0.3s ease; /* Agrega una transición suave */
-    }
+  .navbar-collapse {
+    background-color: #333; /* Cambia el color de fondo según tus preferencias */
+    padding: 5px; /* Agrega un padding para los márgenes internos */
+    border-radius: 25px;
+    max-height: 0; /* Oculta el menú inicialmente */
+    overflow: hidden; /* Oculta cualquier contenido que exceda la altura máxima */
+    transition: max-height 0.3s ease; /* Agrega una transición suave */
+  }
 
-    .navbar-collapse.show {
-        max-height: 500px; /* Establece la altura máxima para mostrar el menú */
-    }
+  .navbar-collapse.show {
+    max-height: 500px; /* Establece la altura máxima para mostrar el menú */
+  }
 
-    /* Estilos para los elementos del menú desplegable */
-    .navbar-collapse .navbar-nav .nav-item {
-        margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
-        color: white;
-        padding-right: 15px; /* Agrega un padding para los márgenes internos */
-        padding-left: 15px; /* Agrega un padding para los márgenes internos */
-    }
+  /* Estilos para los elementos del menú desplegable */
+  .navbar-collapse .navbar-nav .nav-item {
+    margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
+    color: white;
+    padding-right: 15px; /* Agrega un padding para los márgenes internos */
+    padding-left: 15px; /* Agrega un padding para los márgenes internos */
+  }
 
-    .navbar-collapse .navbar-nav .nav-link {
-        margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
-        color: white!important;
-    }
+  .navbar-collapse .navbar-nav .nav-link {
+    margin-bottom: 10px; /* Ajusta el margen inferior de cada elemento del menú según tus preferencias */
+    color: white !important;
+  }
 
-    /* Estilos para el texto del menú desplegable */
-    .navbar-collapse.navbar-nav .nav-link {
-        color: #fff; /* Cambia el color del texto según tus preferencias */
-    }
+  /* Estilos para el texto del menú desplegable */
+  .navbar-collapse.navbar-nav .nav-link {
+    color: #fff; /* Cambia el color del texto según tus preferencias */
+  }
 }
 
 /* COOKIE BANNER */
 #cookie-banner {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-    z-index: 9999;
-    /* Asegura que esté por encima de todo lo demás */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  z-index: 9999;
+  /* Asegura que esté por encima de todo lo demás */
 }
 
 #cookie-banner button {
-    margin: 5px;
-    padding: 8px 20px;
-    border: none;
-    cursor: pointer;
+  margin: 5px;
+  padding: 8px 20px;
+  border: none;
+  cursor: pointer;
 }
 
 #accept-cookies-btn {
-    background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 #reject-cookies-btn {
-    background-color: #f44336;
+  background-color: #f44336;
 }
 
 /* Estilo de la ventana emergente */
+#ventanaEmergente {
+  position: fixed;
+  display: none;
+  max-width: min(480px, 90vw);
+  max-height: 90vh;
+  overflow: auto;
+  z-index: 9999;
+}
+
 .ventana {
-    display: none;
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 200px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    overflow: auto;
+  display: none;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 200px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  overflow: auto;
 }
 
 .contenidoVentana {
-    background-color: white;
-    padding: 5px;
-    border-radius: 8px;
-    text-align: left;
-    box-sizing: border-box;
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 /* Media Queries para mejorar la responsividad */
 @media screen and (max-width: 600px) {
-    .contenidoVentana {
-        padding: 15px; /* Reducir padding en móviles */
-        font-size: 14px; /* Ajustar el tamaño del texto */
-    }
+  .contenidoVentana {
+    padding: 15px; /* Reducir padding en móviles */
+    font-size: 14px; /* Ajustar el tamaño del texto */
+  }
 }

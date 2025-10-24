@@ -1,84 +1,169 @@
 import { enviarConfirmacioReserva } from './enviarConfirmacioReserva';
 
-// Función para abrir la ventana emergente y posicionarla encima del botón
-export const obrirFinestra = (event: MouseEvent, id: string): void => {
+type DeviceInfo = {
+  dispositiu?: string;
+  navegador?: string;
+  sistema_operatiu?: string;
+  ip?: string;
+};
+type DeviceInfoInput = DeviceInfo | DeviceInfo[] | null | undefined;
+
+const clamp = (min: number, val: number, max: number): number => Math.max(min, Math.min(val, max));
+
+/** Inserta (o actualiza) el bloque de información del dispositivo justo antes del botón "Tancar finestra". */
+function renderDeviceInfoBlock(container: HTMLElement, data: DeviceInfoInput): void {
+  const info: DeviceInfo = Array.isArray(data) ? data[0] ?? {} : data ?? {};
+
+  const existing = container.querySelector('#deviceInfoBlock');
+  if (existing) existing.remove();
+
+  const block = document.createElement('div');
+  block.id = 'deviceInfoBlock';
+  block.style.marginBottom = '0.75rem';
+  block.style.padding = '0.75rem';
+  block.style.border = '1px solid rgba(0,0,0,.1)';
+  block.style.borderRadius = '8px';
+  block.style.fontSize = '0.95rem';
+
+  block.innerHTML = `
+    <div><strong>Dispositiu:</strong> ${info.dispositiu ?? '-'}</div>
+    <div><strong>Navegador:</strong> ${info.navegador ?? '-'}</div>
+    <div><strong>Sistema Operatiu:</strong> ${info.sistema_operatiu ?? '-'}</div>
+    <div><strong>IP:</strong> ${info.ip ?? '-'}</div>
+  `;
+
+  const byId = container.querySelector('#btnTancarFinestra');
+  const byData = container.querySelector('[data-role="close-popup"]');
+  const byText = Array.from(container.querySelectorAll('button, a')).find((el) => (el.textContent ?? '').trim().toLowerCase().includes('tancar finestra'));
+
+  const closeBtn = byId ?? byData ?? byText;
+
+  if (closeBtn && closeBtn.parentElement) {
+    closeBtn.parentElement.insertBefore(block, closeBtn);
+  } else {
+    container.prepend(block);
+  }
+}
+
+/** Devuelve un DOMRect a partir de un evento o elemento; si no se puede, centra en el viewport. */
+function getSourceRect(opener: MouseEvent | HTMLElement | null): DOMRect {
+  // 1) Si es evento: prioriza currentTarget, luego target
+  if (opener && typeof (opener as MouseEvent).type === 'string') {
+    const ev = opener as MouseEvent;
+    const cur = ev.currentTarget;
+    if (cur instanceof Element) {
+      return cur.getBoundingClientRect();
+    }
+    const tgt = ev.target;
+    if (tgt instanceof Element) {
+      return tgt.getBoundingClientRect();
+    }
+  }
+
+  // 2) Si es un elemento directamente
+  if (opener instanceof Element) {
+    return opener.getBoundingClientRect();
+  }
+
+  // 3) Fallback: rect de 1x1 centrado
+  const w = 1;
+  const h = 1;
+  const cx = Math.max(0, window.innerWidth / 2 - w / 2);
+  const cy = Math.max(0, window.innerHeight / 2 - h / 2);
+  return new DOMRect(cx, cy, w, h);
+}
+
+/** Posiciona el popup (fixed) cerca del rectángulo origen y lo encaja dentro del viewport. */
+function positionPopupFixed(popup: HTMLElement, sourceRect: DOMRect): void {
+  // Preparar para medir
+  popup.style.position = 'fixed';
+  popup.style.maxWidth = 'min(480px, 90vw)';
+  popup.style.maxHeight = '90vh';
+  popup.style.overflow = 'auto';
+  popup.style.zIndex = '9999';
+
+  const prevDisplay = popup.style.display;
+
+  popup.style.display = 'block';
+  popup.style.visibility = 'hidden';
+
+  const width = popup.offsetWidth;
+  const height = popup.offsetHeight;
+  const margin = 8;
+
+  // Horizontal: centrado respecto al "opener", encajonado
+  let left = sourceRect.left + sourceRect.width / 2 - width / 2;
+  left = clamp(margin, left, window.innerWidth - width - margin);
+
+  // Vertical: intenta abajo; si no cabe, arriba; encajona
+  let top = sourceRect.bottom + margin;
+  if (top + height > window.innerHeight - margin) {
+    top = sourceRect.top - height - margin;
+  }
+  top = clamp(margin, top, window.innerHeight - height - margin);
+
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+
+  popup.style.visibility = 'visible';
+  if (prevDisplay === 'none') {
+    // Lo dejamos visible
+  }
+  // prevVisibility lo dejamos en 'visible'
+}
+
+/**
+ * Abre "ventanaEmergente" dentro del viewport, actualiza enlaces,
+ * prepara el botón de confirmación y añade el bloque de Device Info antes de "Tancar finestra".
+ *
+ * Llamadas válidas:
+ *   obrirFinestra(event, id, deviceInfo)
+ *   obrirFinestra(document.getElementById('miBoton') as HTMLElement, id, deviceInfo)
+ *   obrirFinestra(null, id, deviceInfo)  // se centra en pantalla
+ */
+export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: string, deviceInfo?: DeviceInfoInput): void => {
   const urlWeb = window.location.origin + '/control';
-  const ventana = document.getElementById('ventanaEmergente') as HTMLElement;
-  const boton = event.target as HTMLElement; // Botón que dispara el evento
+  const ventana = document.getElementById('ventanaEmergente') as HTMLElement | null;
 
-  const btnConfirmacio = document.getElementById('enlace1') as HTMLButtonElement;
-  //const btnFactura = document.getElementById('enlace2') as HTMLAnchorElement;
-
+  // Botón Confirmación
+  const btnConfirmacio = document.getElementById('enlace1') as HTMLButtonElement | null;
   if (btnConfirmacio) {
-    // Restaurar el texto original del botón
-    btnConfirmacio.textContent = 'Enviar confirmació email'; // Texto original
-    btnConfirmacio.disabled = false; // Asegurarse de habilitar el botón
-
-    // Eliminar estilos de desactivado
-    btnConfirmacio.style.cursor = 'pointer'; // Restaurar el cursor
-    btnConfirmacio.style.opacity = '1'; // Restaurar opacidad
-
-    // Cambiar las clases de los botones
+    btnConfirmacio.textContent = 'Enviar confirmació email';
+    btnConfirmacio.disabled = false;
+    btnConfirmacio.style.cursor = 'pointer';
+    btnConfirmacio.style.opacity = '1';
     btnConfirmacio.classList.remove('btn-success');
     btnConfirmacio.classList.add('btn-secondary');
 
-    // Eliminar cualquier evento de clic previo
     const nuevoBtnConfirmacio = btnConfirmacio.cloneNode(true) as HTMLButtonElement;
     btnConfirmacio.parentNode?.replaceChild(nuevoBtnConfirmacio, btnConfirmacio);
 
-    // Asociar el nuevo evento al botón
-    nuevoBtnConfirmacio.addEventListener('click', function (event) {
-      event.preventDefault(); // Evitar que el enlace cambie la URL
-      enviarConfirmacioReserva(id); // Llamar a la función para ejecutar la acción
+    nuevoBtnConfirmacio.addEventListener('click', (ev: MouseEvent) => {
+      ev.preventDefault();
+      enviarConfirmacioReserva(id);
     });
   }
 
-  // Configurar enlaces con el ID recibido
-  const enlace2 = document.getElementById('enlace2') as HTMLAnchorElement;
-  const enlace3 = document.getElementById('enlace3') as HTMLAnchorElement;
-  const enlace4 = document.getElementById('enlace4') as HTMLAnchorElement;
+  // Enlaces
+  (document.getElementById('enlace2') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/email/factura/${id}`);
+  (document.getElementById('enlace3') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/modificar/reserva/${id}`);
+  (document.getElementById('enlace4') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/eliminar/reserva/${id}`);
 
-  if (enlace2) enlace2.href = `${urlWeb}/reserva/email/factura/${id}`;
-  if (enlace3) enlace3.href = `${urlWeb}/reserva/modificar/reserva/${id}`;
-  if (enlace4) enlace4.href = `${urlWeb}/reserva/eliminar/reserva/${id}`;
+  if (!ventana) return;
 
-  // Calcular la posición del botón y ajustar la ventana emergente
-  if (boton && ventana) {
-    const botonRect = boton.getBoundingClientRect();
-    const ventanaWidth = ventana.offsetWidth;
-    const ventanaHeight = ventana.offsetHeight;
+  // Bloque de Device Info
+  renderDeviceInfoBlock(ventana, deviceInfo);
 
-    // Calcular posición horizontal
-    let left = botonRect.left + botonRect.width / 2 - ventanaWidth / 2;
-    if (left + ventanaWidth > window.innerWidth) {
-      left = window.innerWidth - ventanaWidth - 10; // Ajustar margen derecho
-    }
-    if (left < 10) {
-      left = 10; // Ajustar margen izquierdo
-    }
+  // Posicionamiento robusto (fixed + clamp)
+  const srcRect = getSourceRect(opener);
+  positionPopupFixed(ventana, srcRect);
 
-    // Calcular posición vertical
-    let top = botonRect.top + window.scrollY + botonRect.height + 10;
-    if (top + ventanaHeight > window.innerHeight + window.scrollY) {
-      top = botonRect.top + window.scrollY - ventanaHeight - 10; // Ajustar posición superior
-    }
-    if (top < window.scrollY) {
-      top = window.scrollY + 10; // Ajustar posición superior mínima
-    }
-
-    // Aplicar posiciones ajustadas
-    ventana.style.left = `${left}px`;
-    ventana.style.top = `${top}px`;
-
-    // Mostrar la ventana
-    ventana.style.display = 'block';
-  }
+  // Mostrar
+  ventana.style.display = 'block';
 };
 
-// Función para cerrar la ventana emergente
+/** Cierra la ventana emergente. */
 export const tancarFinestra = (): void => {
-  const ventana = document.getElementById('ventanaEmergente') as HTMLElement;
-  if (ventana) {
-    ventana.style.display = 'none'; // Ocultar la ventana emergente
-  }
+  const ventana = document.getElementById('ventanaEmergente') as HTMLElement | null;
+  if (ventana) ventana.style.display = 'none';
 };

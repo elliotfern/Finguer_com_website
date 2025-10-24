@@ -44,7 +44,10 @@ export const daterangepicker = () => {
 
           // Fechas no permitidas
           const fechasNoPermitidas = [
-            { day: 25, month: 11 }, // 25 de diciembre
+            { day: 25, month: 11 }, // 25 diciembre
+            { day: 26, month: 11 }, // 26 diciembre
+            { day: 31, month: 11 }, // 31 diciembre
+            { day: 1, month: 0 }, // 1 enero
           ];
 
           // Función para verificar si una fecha es no permitida

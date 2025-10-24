@@ -1,8 +1,99 @@
 <?php
-// Configuración de cabeceras para aceptar JSON y responder JSON
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
-header("Access-Control-Allow-Methods: POST");
+// CORS + tipos
+header("Content-Type: application/json; charset=utf-8");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Accept");
+
+// Responder preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+function clientIp(): string
+{
+    // Prioriza X-Forwarded-For si hay proxy/CDN; toma el primer IP no vacío
+    $candidates = [
+        $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '',
+        $_SERVER['HTTP_CLIENT_IP'] ?? '',
+        $_SERVER['REMOTE_ADDR'] ?? '',
+    ];
+    foreach ($candidates as $c) {
+        if ($c) {
+            // Puede venir como "ip1, ip2"; tomamos la primera limpia
+            $parts = array_map('trim', explode(',', $c));
+            foreach ($parts as $p) {
+                if ($p !== '') return $p;
+            }
+        }
+    }
+    return 'Desconegut';
+}
+
+function detectBrowser(string $ua): string
+{
+    // Orden importante: Edge (Edg) -> Chrome/CriOS -> Safari -> Firefox
+    if (stripos($ua, 'Edg/') !== false || stripos($ua, 'Edge/') !== false) return 'Edge';
+    if (stripos($ua, 'OPR/') !== false || stripos($ua, 'Opera') !== false) return 'Opera';
+    if (stripos($ua, 'CriOS/') !== false) return 'Chrome'; // Chrome en iOS
+    if (stripos($ua, 'Chrome/') !== false) return 'Chrome';
+    if (stripos($ua, 'FxiOS/') !== false) return 'Firefox'; // Firefox en iOS
+    if (stripos($ua, 'Firefox/') !== false) return 'Firefox';
+    // Safari debe ir después de Chrome (porque Chrome contiene 'Safari')
+    if (stripos($ua, 'Safari/') !== false) return 'Safari';
+    return 'Desconegut';
+}
+
+function detectOSFromUA(string $ua): string
+{
+    $ua = strtolower($ua);
+    // Móvil primero
+    if (strpos($ua, 'android') !== false) return 'Android';
+    if (strpos($ua, 'iphone') !== false || strpos($ua, 'ipad') !== false || strpos($ua, 'ipod') !== false) return 'iOS';
+
+    // Escritorio / otros
+    if (strpos($ua, 'windows nt') !== false || strpos($ua, 'windows') !== false) return 'Windows';
+    if (strpos($ua, 'mac os x') !== false || strpos($ua, 'macintosh') !== false) return 'macOS';
+    if (strpos($ua, 'cros') !== false) return 'ChromeOS';
+    if (strpos($ua, 'linux') !== false) return 'Linux';
+
+    return 'Desconegut';
+}
+
+function detectDeviceType(string $ua): string
+{
+    return (preg_match('/mobile|android|iphone|ipad|ipod/i', $ua)) ? 'Mòbil' : 'Escriptori';
+}
+
+function getUserInfo(): array
+{
+    $uaRaw = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $ip = clientIp();
+
+    // Client Hints (si están disponibles)
+    $chPlatform = $_SERVER['HTTP_SEC_CH_UA_PLATFORM'] ?? '';
+    $chMobile   = $_SERVER['HTTP_SEC_CH_UA_MOBILE'] ?? '';
+    // Valores de CH suelen venir entre comillas, límpialos:
+    $chPlatform = trim($chPlatform, '"\'');
+
+    $so = $chPlatform !== '' ? $chPlatform : detectOSFromUA($uaRaw);
+    // Normaliza nombres
+    if (strcasecmp($so, 'mac os') === 0) $so = 'macOS';
+
+    $navegador = detectBrowser($uaRaw);
+    $dispositivo = ($chMobile === '?1') ? 'Mòbil' : detectDeviceType($uaRaw);
+
+    return [
+        'ip' => $ip,
+        'navegador' => $navegador,
+        'sistema_operatiu' => $so,
+        'dispositiu' => $dispositivo,
+        // opcionalmente guarda el UA crudo si tienes columna:
+        'user_agent_raw' => $uaRaw,
+    ];
+}
+
 
 // Leer el cuerpo de la solicitud JSON
 $data = json_decode(file_get_contents("php://input"), true);
@@ -45,7 +136,7 @@ if (empty($data["email"])) {
 if (empty($data["telefono"])) {
     $errors["telefono"] = "El teléfono es obligatorio.";
     $hasError = true;
-} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) { 
+} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) {
     $errors["telefono"] = "El teléfono debe contener solo números y tener entre 9 y 15 dígitos.";
     $hasError = true;
 }
@@ -75,6 +166,14 @@ $pais = !empty($data["pais"]) ? data_input($data["pais"]) : null;
 
 $tipoUsuario = 2; // Asignar tipo de usuario por defecto
 
+// informacion tecnica usuario
+$info = getUserInfo();
+
+$dispositiu = $info['dispositiu'];
+$navegador = $info['navegador'];
+$sistema_operatiu = $info['sistema_operatiu'];
+$ip = $info['ip'];
+
 // Si hay errores en los datos, devolver una respuesta de error
 if ($hasError) {
     echo json_encode([
@@ -84,39 +183,39 @@ if ($hasError) {
     exit;
 }
 
-      global $conn;
-      $sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario";
-      $stmt= $conn->prepare($sql);
-      $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
-      $stmt->bindParam(":email", $email, PDO::PARAM_STR);
-      $stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
-      $stmt->bindParam(":nif", $nif, PDO::PARAM_STR);
-      $stmt->bindParam(":direccion", $direccion, PDO::PARAM_STR);
-      $stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
-      $stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
-      $stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
-      $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
-      $stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+global $conn;
+$sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
+$stmt->bindParam(":email", $email, PDO::PARAM_STR);
+$stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
+$stmt->bindParam(":nif", $nif, PDO::PARAM_STR);
+$stmt->bindParam(":direccion", $direccion, PDO::PARAM_STR);
+$stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
+$stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
+$stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
+$stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
+$stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+$stmt->bindParam(":dispositiu", $dispositiu, PDO::PARAM_STR);
+$stmt->bindParam(":navegador", $navegador, PDO::PARAM_STR);
+$stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
+$stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
 
-      if ($stmt->execute()) {
-        // Obtener el ID del nuevo cliente insertado
-        $idCliente = $conn->lastInsertId();
-        
-        // response output
-         // Devolver respuesta de éxito
-        header( "Content-Type: application/json" );
-        echo json_encode([
-            "status" => "success",
-            "idCliente" => $idCliente,
-            "message" => "Cliente creado con exito."
-        ]);
+if ($stmt->execute()) {
+    // Obtener el ID del nuevo cliente insertado
+    $idCliente = $conn->lastInsertId();
 
-      } else {
-          // response output - data error
-          header( "Content-Type: application/json" );
-          echo json_encode([
-            "status" => "error",
-            "message" => "Error en la base de datos."
-        ]);
-      }
-  
+    // response output
+    // Devolver respuesta de éxito
+    echo json_encode([
+        "status" => "success",
+        "idCliente" => $idCliente,
+        "message" => "Cliente creado con exito."
+    ]);
+} else {
+    // response output - data error
+    echo json_encode([
+        "status" => "error",
+        "message" => "Error en la base de datos."
+    ]);
+}
