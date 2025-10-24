@@ -3,6 +3,7 @@ import { detectAndRedirect } from './utils/selectorIdioma';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import 'bootstrap';
+import { reservesPendents } from './components/intranet/reserves/reservesPendents';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -81,14 +82,8 @@ if (window.location.pathname.startsWith('/control/') && !window.location.pathnam
 }
 
 // RESERVES PENDENTS
-if (window.location.pathname === '/control/reserves-pendents') {
-  import('./components/intranet/reserves/reservesPendents')
-    .then((module) => {
-      module.reservesPendents();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo de la homepage:', error);
-    });
+if (window.location.pathname === '/control/reserves-pendents' || window.location.pathname === '/control') {
+  reservesPendents();
 }
 
 // LOGIN
