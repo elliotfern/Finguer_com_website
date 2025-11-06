@@ -22,8 +22,8 @@ export const calcularTotalReserva = (): {
 
   const costoDia = 5;
   const porcentajeIva = 0.21;
-  const costeReservaFinguerClass = 30;
-  const costeReservaGoldClass = 50;
+  const costeReservaFinguerClass = 100;
+  const costeReservaGoldClass = 140;
 
   // Verificar si las fechas seleccionadas son válidas antes de calcular el precio total
   if (!validarFechas()) {
@@ -50,7 +50,7 @@ export const calcularTotalReserva = (): {
   }
 
   // ----- RECARGO POR DÍAS EXTRA (a partir del 4º día) -----
-  const recargoDiasSinIva = diasReserva > 3 ? (diasReserva - 3) * (costoDia / (1 + porcentajeIva)) : 0;
+  const recargoDiasSinIva = diasReserva > 10 ? (diasReserva - 10) * (costoDia / (1 + porcentajeIva)) : 0;
 
   precioReserva = costeBaseSinIva + recargoDiasSinIva;
 
