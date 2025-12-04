@@ -59,14 +59,7 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
       const dataSortida2 = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato2);
       const dataSortidaAny = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato3);
 
-      const tipo = data.tipo;
-      let tipoReserva2 = '';
-      if (tipo === 1) {
-        tipoReserva2 = 'Finguer Class';
-      } else if (tipo === 2) {
-        tipoReserva2 = 'Gold Finguer Class';
-      }
-
+      const tipoReserva2 = data.tipoReserva;
       const limpieza = data.limpieza;
       let limpieza2 = '';
       if (limpieza === 15) {

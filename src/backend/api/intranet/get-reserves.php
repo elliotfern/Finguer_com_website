@@ -17,35 +17,99 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                 $data = array();
                 global $conn;
                 /** @var PDO $conn */
-                $stmt = $conn->prepare("SELECT rc1.idReserva,
-                        rc1.fechaReserva,
-                        rc1.firstName AS 'clientNom',
-                        rc1.lastName AS 'clientCognom',
-                        rc1.tel AS 'telefono',
-                        rc1.diaSalida AS 'dataSortida',
-                        rc1.horaEntrada AS 'HoraEntrada',
-                        rc1.horaSalida AS 'HoraSortida',
-                        rc1.diaEntrada AS 'dataEntrada',
-                        rc1.matricula,
-                        rc1.vehiculo AS 'modelo',
-                        rc1.vuelo,
-                        rc1.tipo,
-                        rc1.checkIn,
-                        rc1.checkOut,
-                        rc1.notes,
-                        rc1.buscadores,
-                        rc1.limpieza,
-                        rc1.importe,
-                        rc1.id,
-                        rc1.processed,
-                        u.nombre,
-                        u.telefono AS tel,
-                        rc1.numeroPersonas
-                        FROM reserves_parking AS rc1
-                        LEFT JOIN reservas_buscadores AS b ON rc1.buscadores = b.id
-                        LEFT JOIN usuaris AS u ON rc1.idClient = u.id
-                        WHERE rc1.checkIn = 5
-                        ORDER BY rc1.diaEntrada ASC, rc1.horaEntrada ASC");
+                $query = "SELECT
+                            -- Identificadors bàsics
+                            pr.localizador                AS idReserva,
+                            pr.fecha_reserva              AS fechaReserva,
+
+                            -- Nom i cognom del client (aproximat a partir de u.nombre)
+                            SUBSTRING_INDEX(COALESCE(u.nombre, ''), ' ', 1) AS clientNom,
+                            TRIM(
+                                SUBSTRING(
+                                    COALESCE(u.nombre, ''),
+                                    LENGTH(SUBSTRING_INDEX(COALESCE(u.nombre, ''), ' ', 1)) + 1
+                                )
+                            ) AS clientCognom,
+
+                            u.telefono                    AS telefono,
+
+                            -- Dates i hores d'entrada/sortida
+                            DATE(pr.salida_prevista)      AS dataSortida,
+                            TIME(pr.entrada_prevista)     AS HoraEntrada,
+                            TIME(pr.salida_prevista)      AS HoraSortida,
+                            DATE(pr.entrada_prevista)     AS dataEntrada,
+
+                            -- Vehicle
+                            pr.matricula,
+                            pr.vehiculo                   AS modelo,
+                            pr.vuelo,
+                            pr.tipo,
+                            -- Descripció humana del tipus de reserva
+                            CASE pr.tipo
+                                WHEN 1 THEN 'Reserva Finguer class'
+                                WHEN 2 THEN 'Gold Finguer class'
+                                ELSE 'Tipus desconegut'
+                            END                           AS tipoReserva,
+
+                            -- Estat del vehicle (mapejat als codis antics)
+                            CASE pr.estado_vehiculo
+                                WHEN 'dentro'            THEN 1
+                                WHEN 'salido'            THEN 3
+                                ELSE 5  -- 'pendiente_entrada'
+                            END                           AS checkIn,
+
+                            NULL                          AS checkOut, -- per a pendents no té sentit encara
+
+                            pr.notas                      AS notes,
+                            pr.canal                      AS buscadores,
+
+                            -- Codi de neteja (0/1/2/3) derivat dels serveis
+                            CASE
+                                WHEN s_l.codigo = 'LIMPIEZA_EXT'      THEN 1
+                                WHEN s_l.codigo = 'LIMPIEZA_EXT_INT'  THEN 2
+                                WHEN s_l.codigo = 'LIMPIEZA_PRO'      THEN 3
+                                ELSE 0
+                            END                           AS limpieza,
+
+                            -- Import: import pagat a Redsys (si hi ha un pagament confirmat), si no 0
+                            COALESCE(p.importe, 0)        AS importe,
+
+                            pr.id,
+
+                            -- processed: 1 si hi ha pagament confirmat, 0 si no
+                            CASE 
+                                WHEN p.id IS NULL THEN 0 
+                                ELSE 1 
+                            END                           AS processed,
+
+                            u.nombre,
+                            u.telefono                    AS tel,
+                            pr.personas                   AS numeroPersonas
+
+                        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+
+                        -- Client
+                        LEFT JOIN epgylzqu_parking_finguer_v2.usuarios u
+                            ON pr.usuario_id = u.id
+
+                        -- Pagament Redsys (si existeix i està confirmat)
+                        LEFT JOIN epgylzqu_parking_finguer_v2.pagos p
+                            ON p.reserva_id = pr.id
+                        AND p.estado = 'confirmado'
+
+                        -- Servei de neteja (si n'hi ha)
+                        LEFT JOIN epgylzqu_parking_finguer_v2.parking_reservas_servicios prs_l
+                            ON prs_l.reserva_id = pr.id
+                        LEFT JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s_l
+                            ON s_l.id = prs_l.servicio_id
+                        AND s_l.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
+
+                        -- Només vehicles pendents d'entrada
+                        WHERE pr.estado_vehiculo = 'pendiente_entrada'
+
+                        ORDER BY pr.entrada_prevista ASC;";
+
+                $stmt = $conn->prepare($query);
                 $stmt->execute();
                 if ($stmt->rowCount() === 0) echo json_encode(['message' => 'No rows']);
                 else {
@@ -122,9 +186,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
             // 3) Numero reserves pendents
             elseif (isset($_GET['type']) && $_GET['type'] == 'numReservesPendents') {
-                $query = "SELECT COUNT(r.idReserva) AS numero
-                        FROM reserves_parking as r
-                        WHERE r.checkIn = 5";
+                $query = "SELECT COUNT(r.localizador) AS numero
+                        FROM parking_reservas as r
+                        WHERE r.estado_vehiculo = 'pendiente_entrada'";
 
                 // Preparar la consulta
                 $stmt = $conn->prepare($query);

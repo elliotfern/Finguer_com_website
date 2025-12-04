@@ -5,6 +5,7 @@ export interface Reserva {
   importe: string | number;
   processed: number;
   tipo: number;
+  tipoReserva: string;
   limpieza: number;
   nombre?: string;
   tel?: string;
