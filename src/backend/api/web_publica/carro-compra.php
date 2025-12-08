@@ -43,7 +43,7 @@ $seguroCancelacion = data_input($data["seguroCancelacion"]);
 
 
 global $conn;
-$sql = "INSERT INTO carro_compra (session, precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, fechaEntrada, fechaSalida, horaEntrada, horaSalida, limpieza, tipoReserva, diasReserva, seguroCancelacion)
+$sql = "INSERT INTO epgylzqu_parking_finguer_v2.carro_compra (session, precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, fechaEntrada, fechaSalida, horaEntrada, horaSalida, limpieza, tipoReserva, diasReserva, seguroCancelacion)
         VALUES (:session, :precioTotal, :costeSeguro, :precioReserva, :costeIva, :precioSubtotal, :costoLimpiezaSinIva, :fechaEntrada, :fechaSalida, :horaEntrada, :horaSalida, :limpieza, :tipoReserva, :diasReserva, :seguroCancelacion)";;
 
 /** @var PDO $conn */

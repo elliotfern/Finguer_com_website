@@ -1,11 +1,10 @@
 export interface Reserva {
   id: number;
-  idReserva: number;
-  fechaReserva: string;
+  localizador: number;
+  fecha_reserva: string;
   importe: string | number;
   processed: number;
-  tipo: number;
-  tipoReserva: string;
+  tipo: string;
   limpieza: number;
   nombre?: string;
   tel?: string;
@@ -17,11 +16,11 @@ export interface Reserva {
   HoraEntrada: string;
   HoraSortida: string;
   matricula: string;
-  modelo: string;
+  vehiculo: string;
   numeroPersonas: number;
   notes: string;
   vuelo: string;
-  checkIn: number;
+  estado_vehiculo: string;
   buscadores: number;
 }
 

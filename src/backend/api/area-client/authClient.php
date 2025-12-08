@@ -61,7 +61,7 @@ if ($email === false) {
 // Verifica si el correo electrónico existe en la base de datos
 
 /** @var PDO $conn */
-$stmt = $conn->prepare("SELECT id, email FROM epgylzqu_finguer.usuaris AS u WHERE email = :email");
+$stmt = $conn->prepare("SELECT id, email FROM epgylzqu_parking_finguer_v2.usuarios AS u WHERE email = :email");
 $stmt->execute(['email' => $email]);
 
 if ($stmt->rowCount() === 0) {
@@ -83,7 +83,7 @@ if ($stmt->rowCount() === 0) {
 
     // Guardamos el token en la base de datos para verificarlo más tarde
     $expiry = date('Y-m-d H:i:s');
-    $stmt = $conn->prepare("INSERT INTO epgylzqu_finguer.usuaris_tokens  (userId, token, created_at) VALUES (:userId, :token, :created_at)");
+    $stmt = $conn->prepare("INSERT INTO epgylzqu_parking_finguer_v2.usuarios_tokens  (userId, token, created_at) VALUES (:userId, :token, :created_at)");
     $stmt->execute([
         'userId' => $userId,
         'token' => $token,

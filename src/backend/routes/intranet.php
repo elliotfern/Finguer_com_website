@@ -42,6 +42,9 @@ $base_routes = [
     '/control/calendari/sortides/any/{any}/mes/{mes}' => 'public/intranet/calendari-reserves/sortides-mes.php',
     '/control/calendari/sortides/any/{any}/mes/{mes}/dia/{dia}' => 'public/intranet/calendari-reserves/sortides-dia.php',
     '/control/reserves' => 'public/intranet/reserves/llistat-reserves.php',
+
+    // test
+    '/control/test' => 'public/intranet/test/test.php',
 ];
 
 // Rutas principales sin idioma explícito (solo para el idioma por defecto)
@@ -101,6 +104,10 @@ $routes = [
     '/control/calendari/sortides/any/{any}/mes/{mes}/dia/{dia}' => ['view' => 'public/intranet/calendari-reserves/sortides-dia.php', 'needs_session' => true],
 
     '/control/reserves' => ['view' => 'public/intranet/reserves/llistat-reserves.php', 'needs_session' => true],
+
+
+    // test
+    '/control/test' => ['view' => 'public/intranet/test/test.php', 'needs_session' => true],
 ];
 
 // Unir rutas base con rutas específicas de idioma

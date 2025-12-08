@@ -2,9 +2,9 @@
 global $conn;
 
 // Paso 2: Consulta SQL para seleccionar reservas de los últimos 5 minutos
-$sql = "SELECT idReserva, fechaReserva, id
-FROM reserves_parking
-WHERE processed = 0 AND fechaReserva >= NOW() - INTERVAL 1 MONTH AND idReserva != 1;";
+$sql = "SELECT id,localizador, fecha_reserva
+FROM epgylzqu_parking_finguer_v2.parking_reservas 
+WHERE estado = 'pendiente' AND fecha_reserva >= NOW() - INTERVAL 5 MINUTE AND localizador != 1;";
 /** @var PDO $conn */
 $stmt = $conn->prepare($sql);
 $stmt->execute();

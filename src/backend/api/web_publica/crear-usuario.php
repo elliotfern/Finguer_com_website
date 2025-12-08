@@ -184,7 +184,9 @@ if ($hasError) {
 }
 
 global $conn;
-$sql = "INSERT INTO usuaris SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+
+// 🔁 CAMBIO IMPORTANTE: nueva BD + nueva tabla
+$sql = "INSERT INTO epgylzqu_parking_finguer_v2.usuarios SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
 $stmt->bindParam(":email", $email, PDO::PARAM_STR);

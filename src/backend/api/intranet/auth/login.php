@@ -50,7 +50,7 @@ if ($email === false) {
 }
 
 $query = "SELECT u.id, u.email, u.password, u.tipoUsuario
-    FROM usuaris AS u
+    FROM epgylzqu_parking_finguer_v2.usuarios AS u
     WHERE u.email = :email";
 
 // Preparar la consulta

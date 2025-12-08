@@ -6,541 +6,917 @@ use RedsysConsultasPHP\Client\Client;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// verifactu
+use eseperio\verifactu\Verifactu;
+use eseperio\verifactu\models\InvoiceSubmission;
+use eseperio\verifactu\models\InvoiceId;
+use eseperio\verifactu\models\Breakdown;
+use eseperio\verifactu\models\BreakdownDetail;
+use eseperio\verifactu\models\Chaining;
+use eseperio\verifactu\models\ComputerSystem;
+use eseperio\verifactu\models\LegalPerson;
+use eseperio\verifactu\models\enums\InvoiceType;
+use eseperio\verifactu\models\enums\TaxType;
+use eseperio\verifactu\models\enums\YesNoType;
+use eseperio\verifactu\models\enums\HashType;
+use eseperio\verifactu\models\enums\OperationQualificationType;
+use eseperio\verifactu\models\InvoiceResponse;
+use eseperio\verifactu\services\QrGeneratorService;
+
 function verificarPagament($id, $ejecutarAcciones = false)
 {
-    $id = $id;
-
-    if (is_numeric($id)) {
-        $id_old = intval($id);
-
-        if (filter_var($id_old, FILTER_VALIDATE_INT)) {
-            global $conn;
-            // consulta general reserves 
-            $sql = "SELECT r.idReserva
-            FROM reserves_parking AS r
-            WHERE r.id = $id_old";
-
-            /** @var PDO $conn */
-            $pdo_statement = $conn->prepare($sql);
-            $pdo_statement->execute();
-            $result = $pdo_statement->fetchAll(PDO::FETCH_ASSOC);
-
-            // Verificar si la consulta no devolvió resultados
-            if (empty($result)) {
-                // Si no hay resultados, retornar o hacer algo para bloquear la ejecución
-                return [
-                    'status' => 'error',
-                    'message' => 'No se encontró la reserva con el ID proporcionado.'
-                ];
-            }
-
-            foreach ($result as $row) {
-                $idReserva = $row['idReserva'];
-            }
-
-            $token = $_ENV['MERCHANTCODE'];
-            $token2 = $_ENV['KEY'];
-            $url = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
-            $client = new Client($url, $token2);
-
-            $order = $idReserva;
-            $terminal = '1';
-            $merchant_code = $token;
-            $response = $client->getTransaction($order, $terminal, $merchant_code);
-
-            // Supongamos que $response contiene el objeto Transaction
-            // Acceder a las propiedades protegidas mediante reflexión
-
-            // Función para obtener el valor de una propiedad protegida de un objeto
-            if (!function_exists('getProtectedPropertyValue')) {
-                function getProtectedPropertyValue($object, $propertyName)
-                {
-                    $reflection = new ReflectionClass($object);
-                    $property = $reflection->getProperty($propertyName);
-                    $property->setAccessible(true);
-                    return $property->getValue($object);
-                }
-            }
-
-            try {
-                $response = $client->getTransaction($order, $terminal, $merchant_code);
-
-                if (!$response) {
-                    return [
-                        'status' => 'error',
-                        'message' => 'Error Redsys: Sin respuesta.',
-                    ];
-                }
-
-                // Acceder a las propiedades
-                $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
-
-                // Verificar el valor de Ds_Response
-                switch ($ds_response) {
-                    case '9218':
-                        return [
-                            'status' => 'error',
-                            'message' => 'Error 9218 Redsys: Pago no procesado.',
-                        ];
-                        break;
-                    case '0000':
-                        $data = [
-                            'status' => 'success',
-                            'message' => 'Redsys: Pago verificado correctamente.',
-                        ];
-
-                        // Ara camviem l'estat del pagament a la base de dades
-
-                        // Ejecutar acciones adicionales si el parámetro es true
-                        if ($ejecutarAcciones) {
-
-                            $processed = 1;
-
-                            $sql = "UPDATE reserves_parking SET processed=:processed
-                        WHERE id=:id";
-                            $stmt = $conn->prepare($sql);
-                            $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
-                            $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
-                            $stmt->execute();
-
-                            enviarConfirmacio($id_old);
-                            enviarFactura($id_old);
-                            return $data;
-                        } else {
-                            return $data;
-                        }
-
-                    default:
-                        return [
-                            'status' => 'error',
-                            'message' => 'Error Redsys: No se ha podido verificar el pago.',
-                        ];
-                }
-            } catch (Exception $e) {
-                // Manejar el error de la API de Redsys
-                return [
-                    'status' => 'error',
-                    'message' => 'Error Redsys'
-                ];
-
-                if ($e->getMessage() === 'Error XML0024') {
-                    return [
-                        'status' => 'error',
-                        'message' => 'Error XML0024 Redsys: No existen operaciones para los datos solicitados.'
-                    ];
-                }
-            }
-        } else {
-            return [
-                'status' => 'error',
-                'message' => 'ID no valido.'
-            ];
-        }
-    } else {
+    if (!is_numeric($id)) {
         return [
-            'status' => 'error',
+            'status'  => 'error',
             'message' => 'No se ha seleccionado ninguna reserva.'
         ];
     }
+
+    $idReservaNueva = (int)$id;
+
+    if (!filter_var($idReservaNueva, FILTER_VALIDATE_INT)) {
+        return [
+            'status'  => 'error',
+            'message' => 'ID no válido.'
+        ];
+    }
+
+    global $conn;
+
+    // 1) Buscar la reserva en la BD NUEVA
+    $sql = "
+        SELECT 
+            pr.id,
+            pr.localizador,
+            pr.usuario_id
+        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        WHERE pr.id = :id
+        LIMIT 1
+    ";
+
+    /** @var PDO $conn */
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id', $idReservaNueva, PDO::PARAM_INT);
+    $stmt->execute();
+    $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$reserva) {
+        return [
+            'status'  => 'error',
+            'message' => 'No se encontró la reserva en la nueva base de datos.'
+        ];
+    }
+
+    $localizador = $reserva['localizador']; // esto es el Ds_Order que mandamos a Redsys
+
+    // 2) Llamar a Redsys (igual que antes)
+    $token        = $_ENV['MERCHANTCODE'];
+    $token2       = $_ENV['KEY'];
+    $url          = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
+    $client       = new Client($url, $token2);
+
+    $order        = $localizador; // Ds_Order
+    $terminal     = '1';
+    $merchantCode = $token;
+
+    // helper para acceder a propiedades protegidas
+    if (!function_exists('getProtectedPropertyValue')) {
+        function getProtectedPropertyValue($object, $propertyName)
+        {
+            $reflection = new ReflectionClass($object);
+            $property   = $reflection->getProperty($propertyName);
+            $property->setAccessible(true);
+            return $property->getValue($object);
+        }
+    }
+
+    try {
+        $response = $client->getTransaction($order, $terminal, $merchantCode);
+
+        if (!$response) {
+            return [
+                'status'  => 'error',
+                'message' => 'Error Redsys: Sin respuesta.',
+            ];
+        }
+
+        $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
+
+        switch ($ds_response) {
+            case '9218':
+                return [
+                    'status'  => 'error',
+                    'message' => 'Error 9218 Redsys: Pago no procesado.',
+                ];
+
+            case '0000':
+                // Pago OK
+                $data = [
+                    'status'  => 'success',
+                    'message' => 'Redsys: Pago verificado correctamente.',
+                ];
+
+                if ($ejecutarAcciones) {
+
+                    // 3) Acciones en BD nueva: marcar pago + reserva
+                    try {
+                        $conn->beginTransaction();
+
+                        // 3.1 Calcular importe total (base + IVA) desde los servicios
+                        $sqlTotales = "
+                            SELECT 
+                                subtotal_calculado,
+                                iva_calculado,
+                                total_calculado
+                            FROM epgylzqu_parking_finguer_v2.parking_reservas
+                            WHERE id = :reserva_id
+                            LIMIT 1
+                        ";
+                        $stmtTot = $conn->prepare($sqlTotales);
+                        $stmtTot->bindParam(':reserva_id', $idReservaNueva, PDO::PARAM_INT);
+                        $stmtTot->execute();
+                        $totales = $stmtTot->fetch(PDO::FETCH_ASSOC);
+
+                        $subtotal = (float)($totales['subtotal_calculado'] ?? 0);
+                        $iva      = (float)($totales['iva_calculado'] ?? 0);
+                        $total    = (float)($totales['total_calculado'] ?? ($subtotal + $iva));
+
+                        // 3.2 Insertar en pagos (si no existe ya un pago confirmado)
+                        $sqlPagoExiste = "
+                            SELECT id 
+                            FROM epgylzqu_parking_finguer_v2.pagos
+                            WHERE reserva_id = :reserva_id
+                              AND estado = 'confirmado'
+                            LIMIT 1
+                        ";
+                        $stmtPagoEx = $conn->prepare($sqlPagoExiste);
+                        $stmtPagoEx->bindParam(':reserva_id', $idReservaNueva, PDO::PARAM_INT);
+                        $stmtPagoEx->execute();
+                        $pagoExistente = $stmtPagoEx->fetch(PDO::FETCH_ASSOC);
+
+                        $pagoId = null;
+
+                        if (!$pagoExistente) {
+                            $sqlInsertPago = "
+                                INSERT INTO epgylzqu_parking_finguer_v2.pagos
+                                (reserva_id, factura_id, fecha, metodo, importe, estado, pasarela, pedido_pasarela)
+                                VALUES
+                                (:reserva_id, NULL, NOW(), 'tarjeta', :importe, 'confirmado', 'REDSYS', :pedido)
+                            ";
+                            $stmtPago = $conn->prepare($sqlInsertPago);
+                            $stmtPago->bindParam(':reserva_id', $idReservaNueva, PDO::PARAM_INT);
+                            $stmtPago->bindParam(':importe', $total, PDO::PARAM_STR);
+                            $stmtPago->bindParam(':pedido', $localizador, PDO::PARAM_STR);
+                            $stmtPago->execute();
+
+                            $pagoId = (int)$conn->lastInsertId();
+                        } else {
+                            $pagoId = (int)$pagoExistente['id'];
+                        }
+
+                        // 3.3 Marcar reserva como pagada
+                        $sqlUpdReserva = "
+                            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                            SET estado = 'pagada'
+                            WHERE id = :id
+                        ";
+                        $stmtUpd = $conn->prepare($sqlUpdReserva);
+                        $stmtUpd->bindParam(':id', $idReservaNueva, PDO::PARAM_INT);
+                        $stmtUpd->execute();
+
+                        // ⚠️ Aquí en el futuro:
+                        // - crear factura + facturas_lineas
+                        // - actualizar pagos.factura_id
+                        // De momento solo marcamos pagada y registramos pago.
+
+                        $conn->commit();
+                    } catch (\Throwable $e) {
+                        if ($conn->inTransaction()) {
+                            $conn->rollBack();
+                        }
+                        return [
+                            'status'  => 'error',
+                            'message' => 'Error al actualizar el pago en la base de datos.',
+                        ];
+                    }
+
+                    // TODO: cuando adaptemos enviarConfirmacio/enviarFactura a la BD nueva,
+                    enviarConfirmacio($idReservaNueva);
+                    $facturaId = crearFacturaParaReserva($conn, $idReservaNueva);
+                    enviarFactura($facturaId);
+
+                    return $data;
+                } else {
+                    // Solo informar, sin tocar BD
+                    return $data;
+                }
+
+            default:
+                return [
+                    'status'  => 'error',
+                    'message' => 'Error Redsys: No se ha podido verificar el pago.',
+                ];
+        }
+    } catch (\Exception $e) {
+        // Manejar el error de la API de Redsys
+        if ($e->getMessage() === 'Error XML0024') {
+            return [
+                'status'  => 'error',
+                'message' => 'Error XML0024 Redsys: No existen operaciones para los datos solicitados.'
+            ];
+        }
+
+        return [
+            'status'  => 'error',
+            'message' => 'Error Redsys'
+        ];
+    }
 }
+
+function crearFacturaParaReserva(PDO $conn, int $reservaId): ?int
+{
+
+    // 0) Comprobar si ya existe una factura para esta reserva
+    $sqlExist = "
+        SELECT id, numero
+        FROM epgylzqu_parking_finguer_v2.facturas
+        WHERE reserva_id = :reserva_id
+        LIMIT 1
+    ";
+    $stmtExist = $conn->prepare($sqlExist);
+    $stmtExist->bindParam(':reserva_id', $reservaId, PDO::PARAM_INT);
+    $stmtExist->execute();
+    $facturaExistente = $stmtExist->fetch(PDO::FETCH_ASSOC);
+
+    if ($facturaExistente) {
+        // Ya hay factura: devolvemos su ID y NO creamos otra
+        return (int)$facturaExistente['id'];
+    }
+
+    // 1) Coger reserva (totales calculados en frontend)
+    $sql = "
+        SELECT
+            pr.id,
+            pr.usuario_id,
+            pr.fecha_reserva,
+            pr.subtotal_calculado,
+            pr.iva_calculado,
+            pr.total_calculado
+        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        WHERE pr.id = :id
+        LIMIT 1
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id', $reservaId, PDO::PARAM_INT);
+    $stmt->execute();
+    $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$reserva) {
+        return null;
+    }
+
+    $fechaEmision = $reserva['fecha_reserva'] ?? date('Y-m-d H:i:s');
+
+    // 🔹 AQUÍ cogemos exactamente lo que viene de la reserva
+    $subtotal = (float)$reserva['subtotal_calculado'];  // base imponible total
+    $iva      = (float)$reserva['iva_calculado'];       // IVA total
+    $total    = (float)$reserva['total_calculado'];     // total con IVA
+    $usuarioId = (int)$reserva['usuario_id'];
+
+    // 2) Calcular el siguiente número de factura (último numero + 1)
+    $sqlUlt = "
+        SELECT numero
+        FROM epgylzqu_parking_finguer_v2.facturas
+        WHERE numero IS NOT NULL AND numero > 0
+        ORDER BY numero DESC
+        LIMIT 1
+    ";
+    $stmtUlt = $conn->query($sqlUlt);
+    $rowUlt  = $stmtUlt->fetch(PDO::FETCH_ASSOC);
+
+    // último número del sistema viejo
+    $ultimoNumeroHistorico = 5296;
+
+    if ($rowUlt && !empty($rowUlt['numero'])) {
+        $ultimoNumero = (int)$rowUlt['numero'];
+    } else {
+        $ultimoNumero = $ultimoNumeroHistorico;
+    }
+
+    $nuevoNumero = $ultimoNumero + 1;
+    $anio        = (int)date('Y', strtotime($fechaEmision));
+    $serie       = (string)$anio; // o 'FINGUER' si prefieres
+
+    // 3) Insertar en facturas usando los totales correctos
+    $sqlInsF = "
+        INSERT INTO epgylzqu_parking_finguer_v2.facturas
+        (
+            numero,
+            serie,
+            reserva_id,
+            usuario_id,
+            fecha_emision,
+            subtotal,
+            impuesto_total,
+            total,
+            estado
+        ) VALUES (
+            :numero,
+            :serie,
+            :reserva_id,
+            :usuario_id,
+            :fecha_emision,
+            :subtotal,
+            :impuesto_total,
+            :total,
+            'emitida'
+        )
+    ";
+    $stmtF = $conn->prepare($sqlInsF);
+    $stmtF->bindParam(':numero',        $nuevoNumero,  PDO::PARAM_INT);
+    $stmtF->bindParam(':serie',         $serie,        PDO::PARAM_STR);
+    $stmtF->bindParam(':reserva_id',    $reservaId,    PDO::PARAM_INT);
+    $stmtF->bindParam(':usuario_id',    $usuarioId,    PDO::PARAM_INT);
+    $stmtF->bindParam(':fecha_emision', $fechaEmision, PDO::PARAM_STR);
+    $stmtF->bindParam(':subtotal',      $subtotal);
+    $stmtF->bindParam(':impuesto_total',      $iva);     // 🔹 AQUÍ VA EL IVA CORRECTO
+    $stmtF->bindParam(':total',         $total);
+
+    if (!$stmtF->execute()) {
+        return null;
+    }
+
+    $facturaId = (int)$conn->lastInsertId();
+
+    // 4) Insertar lineas desde parking_reservas_servicios (Opción A: solo base)
+    $sqlServ = "
+        SELECT
+            prs.servicio_id,
+            prs.descripcion,
+            prs.cantidad,
+            prs.precio_unitario,
+            prs.impuesto_percent,
+            prs.total_base
+        FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
+        WHERE prs.reserva_id = :reserva_id
+        ORDER BY prs.id ASC
+    ";
+    $stmtServ = $conn->prepare($sqlServ);
+    $stmtServ->bindParam(':reserva_id', $reservaId, PDO::PARAM_INT);
+    $stmtServ->execute();
+    $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
+
+    $sqlLinea = "
+        INSERT INTO epgylzqu_parking_finguer_v2.facturas_lineas
+        (
+            factura_id,
+            linea,
+            descripcion,
+            cantidad,
+            precio_unitario,
+            impuesto_percent,
+            total_base,
+            total_impuesto,
+            total_linea,
+            reserva_id
+        ) VALUES (
+            :factura_id,
+            :linea,
+            :descripcion,
+            :cantidad,
+            :precio_unitario,
+            :impuesto_percent,
+            :total_base,
+            :total_impuesto,
+            :total_linea,
+            :reserva_id
+        )
+    ";
+    $stmtLinea = $conn->prepare($sqlLinea);
+
+    $nLinea = 1;
+    foreach ($servicios as $srv) {
+        $base   = (float)$srv['total_base'];
+        $ivaPrc = (float)$srv['impuesto_percent'];
+
+        // Opción A: no calculamos IVA por línea, lo dejamos a 0
+        $totalImp   = 0;
+        $totalLinea = $base;
+
+        $stmtLinea->execute([
+            ':factura_id'      => $facturaId,
+            ':linea'           => $nLinea++,
+            ':descripcion'     => $srv['descripcion'],
+            ':cantidad'        => $srv['cantidad'],
+            ':precio_unitario' => $srv['precio_unitario'],
+            ':impuesto_percent' => $ivaPrc,
+            ':total_base'      => $base,
+            ':total_impuesto'  => $totalImp,
+            ':total_linea'     => $totalLinea,
+            ':reserva_id'      => $reservaId,
+        ]);
+    }
+
+    // 5) Vincular pago (si existía) con la factura
+    $sqlPago = "
+        UPDATE epgylzqu_parking_finguer_v2.pagos
+        SET factura_id = :factura_id
+        WHERE reserva_id = :reserva_id
+          AND estado = 'confirmado'
+    ";
+    $stmtPago = $conn->prepare($sqlPago);
+    $stmtPago->execute([
+        ':factura_id' => $facturaId,
+        ':reserva_id' => $reservaId,
+    ]);
+
+    return $facturaId;
+}
+
 
 function enviarConfirmacio($id)
 {
     global $conn;
 
-    $id = $id;
-    $email_pass = $_ENV['EMAIL_PASS'];
     $brevoApi = $_ENV['BREVO_API'];
 
-    // Incluye los archivos autoload de PHPMailer
+    // Incluye PHPMailer
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
 
+    if (!is_numeric($id)) {
+        echo json_encode(["message" => "error"]);
+        return;
+    }
 
-    if (is_numeric($id)) {
-        $id_old = intval($id);
+    $idReserva = (int)$id;
 
-        if (filter_var($id_old, FILTER_VALIDATE_INT)) {
-            $codi_resposta = 2;
+    if (!filter_var($idReserva, FILTER_VALIDATE_INT)) {
+        echo json_encode(["message" => "error"]);
+        return;
+    }
 
-            // consulta general reserves 
-            $sql = "SELECT r.idReserva, r.idClient, r.processed, r.fechaReserva, r.tipo, u.email, u.nombre, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores, r.importe, r.subTotal, r.importeIva, r.costeReserva, r.costeSeguro, r.costeLimpieza
-            FROM reserves_parking AS r
-            LEFT JOIN usuaris AS u ON r.idClient = u.id
-            WHERE r.id = $id_old";
+    // 1) Datos de la reserva + usuario (NUEVO MODELO)
+    $sql = "
+        SELECT
+            pr.id,
+            pr.localizador,
+            pr.fecha_reserva,
+            pr.entrada_prevista,
+            pr.salida_prevista,
+            pr.tipo,
+            pr.vehiculo,
+            pr.matricula,
+            pr.vuelo,
+            pr.subtotal_calculado,
+            pr.iva_calculado,
+            pr.total_calculado,
+            pr.personas,
 
-            /** @var PDO $conn */
-            $pdo_statement = $conn->prepare($sql);
-            $pdo_statement->execute();
-            $result = $pdo_statement->fetchAll();
-            foreach ($result as $row) {
-                $idReserva_old = $row['idReserva'];
-                $idClient_old = $row['idClient'];
-                $processed_old = $row['processed'];
-                $fechaReserva_old = $row['fechaReserva'];
-                $nombre_old = $row['nombre'];
-                $email_old = $row['email'];
-                $horaEntrada_old = $row['horaEntrada'];
-                $diaEntrada_old = $row['diaEntrada'];
-                $fecha_formateada1 = date('d-m-Y', strtotime($diaEntrada_old));
-                $horaSalida_old = $row['horaSalida'];
-                $diaSalida_old = $row['diaSalida'];
-                $fecha_formateada2 = date('d-m-Y', strtotime($diaSalida_old));
-                $vehiculo_old = $row['vehiculo'];
-                $matricula_old = $row['matricula'];
-                $vuelo_old = $row['vuelo'];
-                $importe_old = $row['importe'];
-                $subTotal_old = $row['subTotal'];
-                $importeIva_old = $row['importeIva'];
-                $costeReserva_old = $row['costeReserva'];
-                $costeSeguro_old = $row['costeSeguro'];
-                $costeLimpieza_old = $row['costeLimpieza'];
+            u.email,
+            u.nombre,
+            u.telefono
+        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        LEFT JOIN epgylzqu_parking_finguer_v2.usuarios u
+            ON pr.usuario_id = u.id
+        WHERE pr.id = :id
+        LIMIT 1
+    ";
 
-                $tipo = $row['tipo'];
-                if ($tipo == 1) {
-                    $tipoReserva2 = "Finguer Class";
-                } elseif ($tipo == 2) {
-                    $tipoReserva2 = "Gold Finguer Class";
-                } else {
-                    $tipoReserva2 = "Finguer Class";
-                }
-                $limpieza = $row['limpieza'];
-                if ($limpieza == 1) {
-                    $limpieza2 = "Servicio de limpieza exterior";
-                } elseif ($limpieza == 2) {
-                    $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-                } elseif ($limpieza == 3) {
-                    $limpieza2 = "Limpieza PRO";
-                } else {
-                    $limpieza2 = "Sin servicio de limpieza.";
-                }
+    /** @var PDO $conn */
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":id", $idReserva, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                $notes_old = $row['notes'];
-                $buscadores_old = $row['buscadores'];
-            }
-            // aqui comença l'enviament
-            // Crea una nueva instancia de PHPMailer
-            $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
+    if (!$row) {
+        echo json_encode(["message" => "error"]);
+        return;
+    }
 
-            try {
-                // Configura el servidor SMTP
-                $mail->isSMTP();
-                $mail->Host       = 'smtp-relay.brevo.com'; // Servidor SMTP de Brevo
-                $mail->SMTPAuth   = true;
-                $mail->Username   = '7a0605001@smtp-brevo.com'; // Tu dirección de correo de Brevo
-                $mail->Password   = $brevoApi; // Tu contraseña de Brevo o API key
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Habilitar encriptación TLS
-                $mail->Port       = 587; // Puerto SMTP para TLS
+    $localizador       = $row['localizador'];
+    $fechaReserva_old  = $row['fecha_reserva'];
+    $fechaReserva_fmt  = date('d-m-Y H:i:s', strtotime($fechaReserva_old));
 
-                // Configura el remitente y el destinatario
-                $mail->setFrom('hello@finguer.com', 'Finguer.com');
-                $mail->addAddress($email_old, $nombre_old);
+    $entradaPrevista   = $row['entrada_prevista'];
+    $salidaPrevista    = $row['salida_prevista'];
 
-                // Añade destinatarios ocultos (BCC) si es necesario
-                $mail->addBCC('hello@finguer.com');
-                $mail->addBCC('elliotfernandez87@gmail.com');
+    $diaEntrada_old    = date('Y-m-d', strtotime($entradaPrevista));
+    $horaEntrada_old   = date('H:i',   strtotime($entradaPrevista));
+    $diaSalida_old     = date('Y-m-d', strtotime($salidaPrevista));
+    $horaSalida_old    = date('H:i',   strtotime($salidaPrevista));
 
-                // Configura el asunto y el cuerpo del correo electrónico
-                $mail->isHTML(true);
-                $mail->Subject = 'Confirmación de su reserva en Finguer.com';
-                $mail->CharSet = 'UTF-8';
-                $mail->Body = '
-                        <!DOCTYPE html>
-                        <html lang="es">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Confirmación de Reserva efectuadamente correctamente en Finguer.com</title>
-                        </head>
-                        <body>
-                        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0;">
+    $fecha_formateada1 = date('d-m-Y', strtotime($diaEntrada_old));
+    $fecha_formateada2 = date('d-m-Y', strtotime($diaSalida_old));
 
-                        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff;">
-                            <tr>
-                                <td align="center" bgcolor="#007bff" style="padding: 40px 0;">
-                                    <h1 style="color: #ffffff; margin: 0;">Confirmación de Reserva de Parking en Finguer.com</h1>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 40px 30px;">
-                                    <p>Estimado/a ' . $nombre_old . ',</p>
-                                    <p>Su reserva de parking ha sido confirmada con éxito. A continuación, encontrará los detalles de su reserva:</p>
-                                    <ul>
-                                        <li><strong>Tipo de servicio:</strong> ' . $tipoReserva2 . '</li>
-                                        <li><strong>Limpieza:</strong> ' . $limpieza2 . '</li>
-                                        <li><strong>Fecha de entrada: ' . $fecha_formateada1 . ' - ' . $horaEntrada_old . '</strong></li>
-                                        <li><strong>Fecha de salida: ' . $fecha_formateada2 . ' - ' . $horaSalida_old . '</strong></li>
-                                        <li><strong>Precio (IVA incluido) ' . $importe_old . ' €</strong></li>
-                                        <li><strong>Lugar de Parking:</strong> Carrer de l\'Alt Camp, 9, 08830 Sant Boi de Llobregat, (Barcelona) España</li>
-                                    </ul>
-                                    <p>Por favor, asegúrese de llegar a tiempo y tener su reserva a mano para su presentación.</p>
-                                    <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.</p>
-                                    <p>Gracias por elegir nuestro servicio de parking.</p>
-                                    <p>Atentamente,</p>
-                                    <p>BCN Parking SL - Finguer.com</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align="center" bgcolor="#007bff" style="padding: 20px 30px;">
-                                    <p style="color: #ffffff; margin: 0;">Este correo electrónico fue enviado automáticamente. Por favor no respondas a este mensaje.</p>
-                                </td>
-                            </tr>
-                        </table>
-                        </body>
-                        </html>
-                    ';
+    $vehiculo_old      = $row['vehiculo'];
+    $matricula_old     = $row['matricula'];
+    $vuelo_old         = $row['vuelo'];
 
-                // Envía el correo electrónico
-                $mail->send();
-                $data = array(
-                    "message" => "success"
-                );
+    $importe_old       = (float)$row['total_calculado'];
+    $subTotal_old      = (float)$row['subtotal_calculado'];
+    $importeIva_old    = (float)$row['iva_calculado'];
 
-                // Establecer el encabezado de respuesta a JSON
-                header('Content-Type: application/json');
+    $nombre_old        = $row['nombre'];
+    $email_old         = $row['email'];
 
-                // Devolver los datos en formato JSON
-                echo json_encode($data);
-            } catch (Exception $e) {
-                $data = array(
-                    "message" => "error"
-                );
+    $tipo              = (int)$row['tipo'];
+    if ($tipo === 1) {
+        $tipoReserva2 = "Finguer Class";
+    } elseif ($tipo === 2) {
+        $tipoReserva2 = "Gold Finguer Class";
+    } else {
+        $tipoReserva2 = "Finguer Class";
+    }
 
-                // Establecer el encabezado de respuesta a JSON
-                header('Content-Type: application/json');
+    // 2) Servicio de limpieza desde parking_reservas_servicios
+    $sqlLimpieza = "
+        SELECT s.codigo, s.nombre
+        FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
+        JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s
+          ON s.id = prs.servicio_id
+        WHERE prs.reserva_id = :reserva_id
+          AND s.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
+        LIMIT 1
+    ";
+    $stmtLimp = $conn->prepare($sqlLimpieza);
+    $stmtLimp->bindParam(":reserva_id", $idReserva, PDO::PARAM_INT);
+    $stmtLimp->execute();
+    $rowLimp = $stmtLimp->fetch(PDO::FETCH_ASSOC);
 
-                // Devolver los datos en formato JSON
-                echo json_encode($data);
-            }
-        } else {
-            $data = array(
-                "message" => "error"
-            );
-
-            // Establecer el encabezado de respuesta a JSON
-            header('Content-Type: application/json');
-
-            // Devolver los datos en formato JSON
-            echo json_encode($data);
+    if ($rowLimp) {
+        switch ($rowLimp['codigo']) {
+            case 'LIMPIEZA_EXT':
+                $limpieza2 = "Servicio de limpieza exterior";
+                break;
+            case 'LIMPIEZA_EXT_INT':
+                $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
+                break;
+            case 'LIMPIEZA_PRO':
+                $limpieza2 = "Limpieza PRO";
+                break;
+            default:
+                $limpieza2 = $rowLimp['nombre'];
         }
     } else {
-        $data = array(
-            "message" => "error"
-        );
+        $limpieza2 = "Sin servicio de limpieza.";
+    }
 
-        // Establecer el encabezado de respuesta a JSON
-        header('Content-Type: application/json');
+    // 3) Email de confirmación (similar al antiguo)
+    $mail = new PHPMailer(true);
 
-        // Devolver los datos en formato JSON
-        echo json_encode($data);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp-relay.brevo.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = '7a0605001@smtp-brevo.com';
+        $mail->Password   = $brevoApi;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('hello@finguer.com', 'Finguer.com');
+        $mail->addAddress($email_old, $nombre_old);
+
+        $mail->addBCC('hello@finguer.com');
+        $mail->addBCC('elliotfernandez87@gmail.com');
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Confirmación de su reserva en Finguer.com';
+        $mail->CharSet = 'UTF-8';
+
+        $mail->Body = '
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Confirmación de Reserva en Finguer.com</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0;">
+
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff;">
+                <tr>
+                    <td align="center" bgcolor="#007bff" style="padding: 40px 0;">
+                        <h1 style="color: #ffffff; margin: 0;">Confirmación de Reserva de Parking en Finguer.com</h1>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 40px 30px;">
+                        <p>Estimado/a ' . htmlspecialchars($nombre_old) . ',</p>
+                        <p>Su reserva de parking ha sido confirmada con éxito. A continuación, encontrará los detalles de su reserva:</p>
+                        <ul>
+                            <li><strong>Localizador:</strong> ' . htmlspecialchars($localizador) . '</li>
+                            <li><strong>Tipo de servicio:</strong> ' . $tipoReserva2 . '</li>
+                            <li><strong>Limpieza:</strong> ' . $limpieza2 . '</li>
+                            <li><strong>Fecha de entrada: ' . $fecha_formateada1 . ' - ' . $horaEntrada_old . '</strong></li>
+                            <li><strong>Fecha de salida: ' . $fecha_formateada2 . ' - ' . $horaSalida_old . '</strong></li>
+                            <li><strong>Precio (IVA incluido): ' . number_format($importe_old, 2, ',', '') . ' €</strong></li>
+                            <li><strong>Lugar de Parking:</strong> Carrer de l\'Alt Camp, 9, 08830 Sant Boi de Llobregat, (Barcelona) España</li>
+                        </ul>
+                        <p>Por favor, asegúrese de llegar a tiempo y tener su reserva a mano para su presentación.</p>
+                        <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.</p>
+                        <p>Gracias por elegir nuestro servicio de parking.</p>
+                        <p>Atentamente,</p>
+                        <p>BCN Parking SL - Finguer.com</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" bgcolor="#007bff" style="padding: 20px 30px;">
+                        <p style="color: #ffffff; margin: 0;">Este correo electrónico fue enviado automáticamente. Por favor no respondas a este mensaje.</p>
+                    </td>
+                </tr>
+            </table>
+
+            </body>
+            </html>
+        ';
+
+        $mail->send();
+        echo json_encode(["message" => "success"]);
+    } catch (Exception $e) {
+        echo json_encode(["message" => "error"]);
     }
 }
 
-function enviarFactura($id)
+
+
+function enviarFactura($idFactura)
 {
     global $conn;
     $brevoApi = $_ENV['BREVO_API'];
 
-    $id = $id;
+    if (!is_numeric($idFactura)) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'No se ha seleccionado ninguna factura.',
+        ]);
+        return;
+    }
+
+    $idFactura = (int)$idFactura;
 
     require_once(APP_ROOT . '/vendor/tecnickcom/tcpdf/tcpdf.php');
-
-    // Incluye los archivos autoload de PHPMailer
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
     require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
 
-    $email_pass = $_ENV['EMAIL_PASS'];
+    // 1) Datos de la factura + reserva + usuario (NUEVO MODELO)
+    $sql = "
+        SELECT
+            f.id,
+            f.numero,
+            f.serie,
+            f.fecha_emision,
+            f.subtotal,
+            f.total,
+            f.impuesto_total,
 
-    // Incluye la clase TCPDF
-    //use \TCPDF;
+            pr.id              AS reserva_id,
+            pr.entrada_prevista,
+            pr.salida_prevista,
+            pr.vehiculo,
+            pr.matricula,
+            pr.vuelo,
+            pr.tipo,
 
-    if (is_numeric($id)) {
-        $id_old = intval($id);
+            u.nombre,
+            u.email,
+            u.empresa,
+            u.nif,
+            u.direccion,
+            u.ciudad,
+            u.codigo_postal,
+            u.pais,
+            u.telefono
+        FROM epgylzqu_parking_finguer_v2.facturas f
+        JOIN epgylzqu_parking_finguer_v2.parking_reservas pr
+          ON f.reserva_id = pr.id
+        JOIN epgylzqu_parking_finguer_v2.usuarios u
+          ON f.usuario_id = u.id
+        WHERE f.id = :id
+        LIMIT 1
+    ";
+    /** @var PDO $conn */
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id', $idFactura, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (filter_var($id_old, FILTER_VALIDATE_INT)) {
-            $codi_resposta = 2;
+    if (!$row) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'No se encontró la factura.',
+        ]);
+        return;
+    }
 
-            // consulta general reserves 
-            $sql = "SELECT r.idReserva, r.idClient, r.processed, r.fechaReserva, r.tipo, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores,
-        u.email, 
-        u.nombre,
-        u.email,
-        u.empresa,
-        u.nif,
-        u.direccion,
-        u.ciudad,
-        u.codigo_postal,
-        u.pais,
-        u.telefono, r.importe, r.subTotal, r.importeIva, r.costeReserva, r.costeSeguro, r.costeLimpieza, r.seguroCancelacion
-        FROM reserves_parking AS r
-        LEFT JOIN usuaris AS u ON r.idClient = u.id
-        WHERE r.id = $id_old";
+    // --------
+    // Reconstruimos las variables que usabas antes
+    // --------
 
-            /** @var PDO $conn */
-            $pdo_statement = $conn->prepare($sql);
-            $pdo_statement->execute();
-            $result = $pdo_statement->fetchAll();
-            foreach ($result as $row) {
-                $idReserva_old = $row['idReserva'];
-                $idClient_old = $row['idClient'];
-                $processed_old = $row['processed'];
-                $fechaReserva_old = $row['fechaReserva'];
-                $fechaReserva = date('d-m-Y H:i:s', strtotime($fechaReserva_old));
-                $fechaAnoReserva = date('Y', strtotime($fechaReserva_old));
-                $horaEntrada_old = $row['horaEntrada'];
-                $diaEntrada_old = $row['diaEntrada'];
-                $fecha_formateada1 = date('d-m-Y', strtotime($diaEntrada_old));
-                $horaSalida_old = $row['horaSalida'];
-                $diaSalida_old = $row['diaSalida'];
-                $fecha_formateada2 = date('d-m-Y', strtotime($diaSalida_old));
-                $vehiculo_old = $row['vehiculo'];
-                $matricula_old = $row['matricula'];
-                $vuelo_old = $row['vuelo'];
-                $importe_old = $row['importe'];
-                $subTotal_old = $row['subTotal'];
-                $importeIva_old = $row['importeIva'];
-                $costeReserva_old = $row['costeReserva'];
-                $costeSeguro_old = $row['costeSeguro'];
-                $costeLimpieza_old = $row['costeLimpieza'];
-                $seguroCancelacion_old = $row['seguroCancelacion'];
+    // Número de factura
+    $id_old = (int)$row['numero'];
 
+    // Fecha de emisión (antes fechaReserva)
+    $fechaReserva_old = $row['fecha_emision'];
+    $fechaReserva     = date('d-m-Y H:i:s', strtotime($fechaReserva_old));
+    $fechaAnoReserva  = date('Y', strtotime($fechaReserva_old));
 
-                if (is_numeric($costeSeguro_old) && $costeSeguro_old > 0) {
-                    $costeSeguro = number_format($costeSeguro_old, 2, ',', '') . " €";
-                } else {
-                    $costeSeguro = "-";
-                }
+    // Entrada / salida: vienen como DATETIME en parking_reservas
+    $entradaPrevista = $row['entrada_prevista'];
+    $salidaPrevista  = $row['salida_prevista'];
 
-                if (is_numeric($costeLimpieza_old)) {
-                    $costeLimpieza = number_format($costeLimpieza_old, 2, ',', '') . " €";
-                } else {
-                    $costeLimpieza = "-";
-                }
+    $diaEntrada_old    = date('Y-m-d', strtotime($entradaPrevista));
+    $horaEntrada_old   = date('H:i',   strtotime($entradaPrevista));
+    $diaSalida_old     = date('Y-m-d', strtotime($salidaPrevista));
+    $horaSalida_old    = date('H:i',   strtotime($salidaPrevista));
+    $fecha_formateada1 = date('d-m-Y', strtotime($diaEntrada_old));
+    $fecha_formateada2 = date('d-m-Y', strtotime($diaSalida_old));
 
+    // Vehículo / matrícula / vuelo
+    $vehiculo_old  = $row['vehiculo'];
+    $matricula_old = $row['matricula'];
+    $vuelo_old     = $row['vuelo']; // si luego lo quieres poner, lo tienes aquí
 
-                $nombre_old = $row['nombre'];
-                $email_old = $row['email'];
-                $empresa_old = $row['empresa'];
-                $nif_old = $row['nif'];
-                $direccion_old = $row['direccion'];
-                $ciudad_old = $row['ciudad'];
-                $codigo_postal_old = $row['codigo_postal'];
-                $pais_old = $row['pais'];
-                $telefono_old = $row['telefono'];
+    // Totales legales
+    $importe_old    = (float)$row['total'];
+    $subTotal_old   = (float)$row['subtotal'];
+    $importeIva_old = (float)$row['impuesto_total'];
 
-                $tipo = $row['tipo'];
-                if ($tipo == 1) {
-                    $tipoReserva2 = "Finguer Class";
-                } elseif ($tipo == 2) {
-                    $tipoReserva2 = "Gold Finguer Class";
-                } else {
-                    $tipoReserva2 = "Finguer Class";
-                }
-                $limpieza = $row['limpieza'];
-                if (in_array($limpieza, [1, 15])) {
-                    $limpieza2 = "Servicio de limpieza exterior";
-                } else if (in_array($limpieza, [2, 25, 35])) {
-                    $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-                } else if (in_array($limpieza, [3, 55, 95])) {
-                    $limpieza2 = "Limpieza PRO";
-                } else {
-                    $limpieza2 = "Sin servicio de limpieza";
-                }
+    // Datos del cliente
+    $nombre_old        = $row['nombre'];
+    $email_old         = $row['email'];
+    $empresa_old       = $row['empresa'];
+    $nif_old           = $row['nif'];
+    $direccion_old     = $row['direccion'];
+    $ciudad_old        = $row['ciudad'];
+    $codigo_postal_old = $row['codigo_postal'];
+    $pais_old          = $row['pais'];
+    $telefono_old      = $row['telefono'];
 
-                if ($seguroCancelacion_old == 1) {
-                    $seguro = "Contratado";
-                } else {
-                    $seguro = "No Contratado";
-                }
+    // Tipo de servicio (1 / 2)
+    $tipo = (int)$row['tipo'];
+    if ($tipo === 1) {
+        $tipoReserva2 = "Finguer Class";
+    } elseif ($tipo === 2) {
+        $tipoReserva2 = "Gold Finguer Class";
+    } else {
+        $tipoReserva2 = "Finguer Class";
+    }
 
-                $notes_old = $row['notes'];
-                $buscadores_old = $row['buscadores'];
-            }
+    // 2) Coste Reserva, Limpieza, Seguro, Limpieza2, SeguroCancelación
+    //    -> ahora vienen de parking_reservas_servicios
 
-            // aqui comença l'enviament de la factura PDF per email
-            $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-            $pdf->AddPage();
+    $reservaId = (int)$row['reserva_id'];
 
-            // set header and footer fonts
-            $pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-            $pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+    $sqlServ = "
+        SELECT s.codigo, s.nombre, prs.total_base
+        FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
+        JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s
+          ON s.id = prs.servicio_id
+        WHERE prs.reserva_id = :reserva_id
+    ";
+    $stmtServ = $conn->prepare($sqlServ);
+    $stmtServ->bindParam(':reserva_id', $reservaId, PDO::PARAM_INT);
+    $stmtServ->execute();
+    $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
 
-            // set margins
-            $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $costeReserva_old  = 0.0;
+    $costeLimpieza_old = 0.0;
+    $costeSeguro_old   = 0.0;
+    $limpieza2         = "Sin servicio de limpieza";
+    $seguro            = "No Contratado";
 
-            // set auto page breaks
-            $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    foreach ($servicios as $srv) {
+        $codigo = $srv['codigo'];
+        $base   = (float)$srv['total_base'];
 
-            // Agregar elementos HTML al PDF
-            $htmlContent = '
+        switch ($codigo) {
+            case 'RESERVA_FINGUER':
+            case 'RESERVA_FINGUER_GOLD':
+                $costeReserva_old = $base;
+                break;
+
+            case 'LIMPIEZA_EXT':
+                $costeLimpieza_old = $base;
+                $limpieza2 = "Servicio de limpieza exterior";
+                break;
+
+            case 'LIMPIEZA_EXT_INT':
+                $costeLimpieza_old = $base;
+                $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
+                break;
+
+            case 'LIMPIEZA_PRO':
+                $costeLimpieza_old = $base;
+                $limpieza2 = "Limpieza PRO";
+                break;
+
+            case 'SEGURO_CANCELACION':
+                $costeSeguro_old = $base;
+                $seguro = "Contratado";
+                break;
+        }
+    }
+
+    // Formatear valores como antes
+    if (is_numeric($costeSeguro_old) && $costeSeguro_old > 0) {
+        $costeSeguro = number_format($costeSeguro_old, 2, ',', '') . " €";
+    } else {
+        $costeSeguro = "-";
+    }
+
+    if (is_numeric($costeLimpieza_old) && $costeLimpieza_old > 0) {
+        $costeLimpieza = number_format($costeLimpieza_old, 2, ',', '') . " €";
+    } else {
+        $costeLimpieza = "-";
+    }
+
+    // (seguroCancelacion_old ya no existe como campo;
+    //  lo inferimos: si hay línea SEGURO_CANCELACION, lo consideramos contratado)
+    $seguroCancelacion_old = ($costeSeguro_old > 0) ? 1 : 0;
+
+    // ---------------------------------------------------------------------
+    // 3) Generación del PDF (tu HTML casi tal cual, con las nuevas variables)
+    // ---------------------------------------------------------------------
+
+    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
+    $pdf->AddPage();
+
+    $pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+    $pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+    $htmlContent = '
+        <div class="container">
             <div class="container">
-            <div class="container">
-            <img alt="Finguer" src="https://finguer.com/public/img/logo-header.svg" width="150" height="70">
+                <img alt="Finguer" src="https://finguer.com/public/img/logo-header.svg" width="150" height="70">
             </div>
             <br>
             <strong>Número de factura: ' . $id_old . '/' . $fechaAnoReserva . '</strong><br>
             Fecha de la factura: ' . $fechaReserva . '<br>
-            </div>
-            
-            <div class="container">
-              <table class="table">
-                      <thead>
-                      <tr>
+        </div>
+        
+        <div class="container">
+            <table class="table">
+                <thead>
+                    <tr>
                         <th>
                             <strong>Facturado a:</strong><br>
-                            ' . $nombre_old . '<br>
-                            ' . $email_old . '<br>';
+                            ' . htmlspecialchars($nombre_old) . '<br>
+                            ' . htmlspecialchars($email_old)  . '<br>';
 
-            if (isset($empresa_old)) {
-                $htmlContent .= $empresa_old . '<br>';
-            }
+    if (!empty($empresa_old)) {
+        $htmlContent .= htmlspecialchars($empresa_old) . '<br>';
+    }
 
-            if (isset($nif_old)) {
-                $htmlContent .= 'NIF/NIE/CIF: ' . $nif_old . '<br>';
-            }
+    if (!empty($nif_old)) {
+        $htmlContent .= 'NIF/NIE/CIF: ' . htmlspecialchars($nif_old) . '<br>';
+    }
 
-            if (isset($direccion_old)) {
-                $htmlContent .= $direccion_old . '<br>
-                                ' . $ciudad_old . ', ' . $codigo_postal_old . '<br>
-                                ' . $pais_old . '<br>
-                                Teléfono: ' . $telefono_old . ' ';
-            }
+    if (!empty($direccion_old)) {
+        $htmlContent .= htmlspecialchars($direccion_old) . '<br>'
+            . htmlspecialchars($ciudad_old) . ', ' . htmlspecialchars($codigo_postal_old) . '<br>'
+            . htmlspecialchars($pais_old) . '<br>'
+            . 'Teléfono: ' . htmlspecialchars($telefono_old);
+    }
 
-            $htmlContent .= '</th>
-                        <th>
-                        <strong>BCN PARKING S.L</strong><br>
-                        CIF: B65548919<br>
-                        Carrer de l\'Alt Camp, 9<br>
-                        Sant Boi de Llobregat (Barcelona)<br>
-                        Código postal: 08830<br>
-                        ESPAÑA
+    $htmlContent .= '
                         </th>
-                      </tr>
-                      </thead>
-              </table>
-            </div>
-            <div class="container">
+                        <th>
+                            <strong>BCN PARKING S.L</strong><br>
+                            CIF: B65548919<br>
+                            Carrer de l\'Alt Camp, 9<br>
+                            Sant Boi de Llobregat (Barcelona)<br>
+                            Código postal: 08830<br>
+                            ESPAÑA
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <div class="container">
             <h2 style="text-align: center;"><strong>DETALLES DE LA FACTURA</strong></h2>
-                <div class="table-responsive">
-                    <table cellpadding="5" cellspacing="0" style="border: 1px solid black;">
-                        <thead>
-                            <tr style="background-color: black; color: white;">
-                                <th style="padding: 5px; border: 1px solid black;">Descripción producto</th>
-                                <th style="padding: 5px; border: 1px solid black;">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <div class="table-responsive">
+                <table cellpadding="5" cellspacing="0" style="border: 1px solid black;">
+                    <thead>
+                        <tr style="background-color: black; color: white;">
+                            <th style="padding: 5px; border: 1px solid black;">Descripción producto</th>
+                            <th style="padding: 5px; border: 1px solid black;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <tr>
                             <td style="padding: 5px; border: 1px solid black;">
                                 Tipo de servicio: ' . $tipoReserva2 . '<br>
                                 Fecha de entrada: ' . $fecha_formateada1 . ' - ' . $horaEntrada_old . '<br>
                                 Fecha de salida: ' . $fecha_formateada2 . ' - ' . $horaSalida_old . '<br>
-                                Vehículo: ' . $vehiculo_old . '<br>
-                                Matrícula: ' . $matricula_old . '
+                                Vehículo: ' . htmlspecialchars($vehiculo_old) . '<br>
+                                Matrícula: ' . htmlspecialchars($matricula_old) . '
                             </td>
-
                             <td style="padding: 5px; border: 1px solid black;">' . number_format($costeReserva_old, 2, ',', '') . ' €</td>
                         </tr>
 
@@ -549,7 +925,6 @@ function enviarFactura($id)
                                <strong>Servicio de Limpieza:</strong><br>
                                 ' . $limpieza2 . '
                             </td>
-
                             <td style="padding: 5px; border: 1px solid black;">' . $costeLimpieza . '</td>
                         </tr>   
                         
@@ -557,17 +932,15 @@ function enviarFactura($id)
                             <td style="padding: 5px; border: 1px solid black;">
                                <strong>Seguro de Cancelación de la Reserva:</strong><br>
                                 ' . $seguro . '
-                                </td>
-
+                            </td>
                             <td style="padding: 5px; border: 1px solid black;">' . $costeSeguro . '</td>
                         </tr>
-                           
-                           </tbody>                       
-                    </table>
-                </div>
+                    </tbody>                       
+                </table>
             </div>
-            
-            <div class="container">
+        </div>
+        
+        <div class="container">
             <table cellpadding="5" cellspacing="0" style="border: 1px solid black; width: 50%;">
                 <thead>
                     <tr>
@@ -592,82 +965,304 @@ function enviarFactura($id)
             </table>
         </div>
         
-        Muchas gracias por confiar en nuestros servicios. Esperamos que sea de su agrado.';
+        Muchas gracias por confiar en nuestros servicios. Esperamos que sea de su agrado.
+    ';
 
-            // Escribir el contenido HTML en el PDF
-            $pdf->writeHTML($htmlContent, true, false, true, false, '');
+    $pdf->writeHTML($htmlContent, true, false, true, false, '');
+    $filename = APP_ROOT . '/pdf/documento.pdf';
+    $pdf->Output($filename, 'F');
 
-            $filename = APP_ROOT . '/pdf/documento.pdf'; // Nombre del archivo PDF generado
-            $pdf->Output($filename, 'F'); // Guardar el PDF en el servidor
+    // 4) Enviar email
+    $mail = new PHPMailer(true);
+    $mail->CharSet = 'UTF-8';
+    $mail->isSMTP();
+    $mail->Host       = 'smtp-relay.brevo.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = '7a0605001@smtp-brevo.com';
+    $mail->Password   = $brevoApi;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
 
-            // Configurar PHPMailer
-            $mail = new PHPMailer(true); // Pasa true para habilitar excepciones
-            $mail->CharSet = 'UTF-8';
-            $mail->isSMTP();
-            $mail->Host       = 'smtp-relay.brevo.com'; // Servidor SMTP de Brevo
-            $mail->SMTPAuth   = true;
-            $mail->Username   = '7a0605001@smtp-brevo.com'; // Tu dirección de correo de Brevo
-            $mail->Password   = $brevoApi; // Tu contraseña de Brevo o API key
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Habilitar encriptación TLS
-            $mail->Port       = 587; // Puerto SMTP para TLS
+    $mail->setFrom('web@finguer.com', 'Finguer');
+    $mail->addAddress($email_old, $nombre_old);
+    $mail->addBCC('hello@finguer.com');
+    $mail->addBCC('elliotfernandez87@gmail.com');
 
-            // Configurar remitente y destinatario
-            $mail->setFrom('web@finguer.com', 'Finguer');
-            $mail->addAddress($email_old, $nombre_old);
+    $mail->addAttachment($filename);
+    $mail->Subject = 'Factura servicios Finguer.com';
+    $mail->Body    = 'Adjunto encontrarás el documento PDF con tu factura.';
 
-            $mail->addBCC('hello@finguer.com');
-            $mail->addBCC('elliotfernandez87@gmail.com');
-
-            // Adjuntar el archivo PDF generado
-            $mail->addAttachment($filename);
-
-            // Configurar el correo electrónico
-            $mail->Subject = 'Factura servicios Finguer.com';
-            $mail->Body = 'Adjunto encontrarás el documento PDF con tu factura.';
-
-            // Enviar el correo electrónico
-            if ($mail->send()) {
-                $data = [
-                    'status' => 'success',
-                    'message' => 'Factura enviada correctamente por email al cliente.',
-                ];
-                // Establecer el encabezado de respuesta a JSON
-                header('Content-Type: application/json');
-
-                // Devolver los datos en formato JSON
-                echo json_encode($data);
-            } else {
-                $data = [
-                    'status' => 'error',
-                    'codigo' => $mail->ErrorInfo,
-                    'message' => 'Hubo un error al enviar la factura al cliente',
-                ];
-                // Establecer el encabezado de respuesta a JSON
-                header('Content-Type: application/json');
-
-                // Devolver los datos en formato JSON
-                echo json_encode($data);
-            }
-        } else {
-            $data = [
-                'status' => 'error',
-                'message' => 'ID no válido.',
-            ];
-            // Establecer el encabezado de respuesta a JSON
-            header('Content-Type: application/json');
-
-            // Devolver los datos en formato JSON
-            echo json_encode($data);
-        }
+    if ($mail->send()) {
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Factura enviada correctamente por email al cliente.',
+        ]);
     } else {
-        $data = [
-            'status' => 'error',
-            'message' => 'No se ha seleccionado ninguna reserva.',
-        ];
-        // Establecer el encabezado de respuesta a JSON
-        header('Content-Type: application/json');
+        echo json_encode([
+            'status'  => 'error',
+            'codigo'  => $mail->ErrorInfo,
+            'message' => 'Hubo un error al enviar la factura al cliente',
+        ]);
+    }
+}
 
-        // Devolver los datos en formato JSON
-        echo json_encode($data);
+
+function enviarFacturaAVerifactu(int $idFactura): array
+{
+    global $conn;
+
+    // 1) Cargar datos de la factura + reserva + usuario
+    $sql = "
+        SELECT
+            f.id,
+            f.numero,
+            f.serie,
+            f.fecha_emision,
+            f.subtotal,
+            f.impuesto,
+            f.total,
+            f.verifactu_estado,
+            f.verifactu_hash,
+
+            pr.entrada_prevista,
+            pr.salida_prevista,
+            pr.vehiculo,
+            pr.matricula,
+            pr.vuelo,
+            pr.tipo,
+
+            u.nombre,
+            u.email,
+            u.empresa,
+            u.nif,
+            u.direccion,
+            u.ciudad,
+            u.codigo_postal,
+            u.pais,
+            u.telefono
+        FROM epgylzqu_parking_finguer_v2.facturas f
+        JOIN epgylzqu_parking_finguer_v2.parking_reservas pr
+          ON f.reserva_id = pr.id
+        JOIN epgylzqu_parking_finguer_v2.usuarios u
+          ON f.usuario_id = u.id
+        WHERE f.id = :id
+        LIMIT 1
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindValue(':id', $idFactura, PDO::PARAM_INT);
+    $stmt->execute();
+    $factura = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$factura) {
+        return [
+            'status'  => 'error',
+            'message' => 'Factura no encontrada.'
+        ];
+    }
+
+    // Si ya está aceptada en Verifactu, no reenviamos
+    if (!empty($factura['verifactu_estado']) && $factura['verifactu_estado'] === 'aceptada') {
+        return [
+            'status'  => 'ok',
+            'message' => 'La factura ya estaba enviada y aceptada en Verifactu.'
+        ];
+    }
+
+    // 2) Construir el modelo InvoiceSubmission
+    $invoice = new InvoiceSubmission();
+
+    // 2.1 ID de factura (InvoiceId)
+    $issueDate = (new DateTime($factura['fecha_emision']))->format('Y-m-d');
+    $year      = (new DateTime($factura['fecha_emision']))->format('Y');
+
+    // Formato serie/número para AEAT, p.ej. "6723/2025"
+    $seriesNumber = $factura['numero'] . '/' . $year;
+
+    $invoiceId = new InvoiceId();
+    $invoiceId->issuerNif    = 'B65548919';         // CIF de BCN PARKING S.L (ajusta si es otro)
+    $invoiceId->seriesNumber = $seriesNumber;
+    $invoiceId->issueDate    = $issueDate;
+    $invoice->setInvoiceId($invoiceId);
+
+    // 2.2 Datos básicos factura
+    $invoice->issuerName           = 'BCN PARKING S.L';
+    $invoice->invoiceType          = InvoiceType::STANDARD;
+    $invoice->operationDescription = 'Servicios de aparcamiento y extras';
+    $invoice->taxAmount            = (float)$factura['impuesto'];
+    $invoice->totalAmount          = (float)$factura['total'];
+    $invoice->simplifiedInvoice    = YesNoType::NO;
+
+    // ¿Tenemos destinatario identificado?
+    $tieneNifReceptor = !empty($factura['nif']);
+    $invoice->invoiceWithoutRecipient = $tieneNifReceptor ? YesNoType::NO : YesNoType::YES;
+
+    // 2.3 Desglose de impuestos (solo un tramo 21%)
+    $breakdown = new Breakdown();
+    $detail = new BreakdownDetail();
+    $detail->taxType               = TaxType::IVA;
+    $detail->taxRate               = 21.00;
+    $detail->taxableBase           = (float)$factura['subtotal'];
+    $detail->taxAmount             = (float)$factura['impuesto'];
+    $detail->operationQualification = OperationQualificationType::SUBJECT_NO_EXEMPT_NO_REVERSE;
+    $breakdown->addDetail($detail);
+    $invoice->setBreakdown($breakdown);
+
+    // 2.4 Encadenamiento (chaining)
+    $chaining = new Chaining();
+
+    // Buscar última factura con hash para encadenar
+    $sqlPrev = "
+        SELECT
+            numero,
+            fecha_emision,
+            verifactu_hash
+        FROM epgylzqu_parking_finguer_v2.facturas
+        WHERE id <> :id
+          AND verifactu_hash IS NOT NULL
+        ORDER BY fecha_emision DESC, numero DESC
+        LIMIT 1
+    ";
+    $stmtPrev = $conn->prepare($sqlPrev);
+    $stmtPrev->bindValue(':id', $idFactura, PDO::PARAM_INT);
+    $stmtPrev->execute();
+    $prev = $stmtPrev->fetch(PDO::FETCH_ASSOC);
+
+    if ($prev && !empty($prev['verifactu_hash'])) {
+        $prevYear   = (new DateTime($prev['fecha_emision']))->format('Y');
+        $prevSeries = $prev['numero'] . '/' . $prevYear;
+
+        $chaining->firstRecord = YesNoType::NO;
+        $chaining->setPreviousInvoice([
+            'seriesNumber' => $prevSeries,
+            'issuerNif'    => 'B65548919',
+            'issueDate'    => (new DateTime($prev['fecha_emision']))->format('Y-m-d'),
+            'hash'         => $prev['verifactu_hash'],
+        ]);
+    } else {
+        // Primera factura de la cadena
+        $chaining->firstRecord = YesNoType::YES;
+    }
+
+    $invoice->setChaining($chaining);
+
+    // 2.5 Información del sistema (ComputerSystem)
+    $system = new ComputerSystem();
+    $system->systemName          = 'Finguer Parking';
+    $system->version             = '1.0';
+    $system->providerName        = 'BCN PARKING S.L';
+    $system->systemId            = '01';
+    $system->installationNumber  = '1';
+    $system->onlyVerifactu       = YesNoType::YES;
+    $system->multipleObligations = YesNoType::NO;
+
+    $provider = new LegalPerson();
+    $provider->name = 'BCN PARKING S.L';
+    $provider->nif  = 'B65548919';
+    $system->setProviderId($provider);
+
+    $invoice->setSystemInfo($system);
+
+    // 2.6 Fechas / hash / etc.
+    $now = new DateTime('now', new DateTimeZone('Europe/Madrid'));
+    $invoice->recordTimestamp = $now->format(DATE_ATOM);  // 2025-12-04T17:30:00+01:00
+    $invoice->hashType        = HashType::SHA_256;        // La librería calculará la huella
+    $invoice->operationDate   = $issueDate;
+    $invoice->externalRef     = 'RES-' . $factura['numero'];
+
+    // 2.7 Receptor (si tiene NIF)
+    if ($tieneNifReceptor) {
+        $recipient = new LegalPerson();
+        $recipient->name = $factura['nombre'];   // nombre cliente
+        $recipient->nif  = $factura['nif'];      // NIF cliente
+        $invoice->addRecipient($recipient);
+    }
+
+    // 2.8 Validar antes de enviar
+    $validation = $invoice->validate();
+    if ($validation !== true) {
+        return [
+            'status'  => 'error',
+            'message' => 'Errores de validación en el modelo de factura Verifactu.',
+            'errors'  => $validation,
+        ];
+    }
+
+    // 3) Enviar a AEAT (Alta)
+    try {
+        $response = Verifactu::registerInvoice($invoice);
+
+        // 3.1 Generar QR (necesita CSV de la respuesta)
+        if ($response->submissionStatus === InvoiceResponse::STATUS_OK) {
+            $invoice->csv = $response->csv;
+
+            $qrPngData = Verifactu::generateInvoiceQr(
+                $invoice,
+                QrGeneratorService::DESTINATION_STRING,
+                300,
+                QrGeneratorService::RENDERER_GD
+            );
+            $qrBase64 = base64_encode($qrPngData);
+        } else {
+            $qrBase64 = null;
+        }
+
+        // 4) Guardar resultado en BD
+        $estado   = ($response->submissionStatus === InvoiceResponse::STATUS_OK) ? 'aceptada' : 'error';
+        $csv      = $response->csv ?? null;
+        $hashAEAT = $invoice->hash ?? null;  // la librería ha calculado la huella
+        $respJson = json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        $sqlUpdate = "
+            UPDATE epgylzqu_parking_finguer_v2.facturas
+            SET
+                verifactu_estado      = :estado,
+                verifactu_id_registro = :csv,
+                verifactu_hash        = :hash,
+                verifactu_qr_texto    = :qr,
+                verifactu_xml         = NULL,
+                verifactu_respuesta   = :respuesta
+            WHERE id = :id
+        ";
+
+        $stmtUp = $conn->prepare($sqlUpdate);
+        $stmtUp->bindValue(':estado',    $estado);
+        $stmtUp->bindValue(':csv',       $csv);
+        $stmtUp->bindValue(':hash',      $hashAEAT);
+        $stmtUp->bindValue(':qr',        $qrBase64);
+        $stmtUp->bindValue(':respuesta', $respJson);
+        $stmtUp->bindValue(':id',        $idFactura, PDO::PARAM_INT);
+        $stmtUp->execute();
+
+        // 5) Respuesta amigable
+        if ($response->submissionStatus === InvoiceResponse::STATUS_OK) {
+            return [
+                'status'  => 'success',
+                'message' => 'Factura registrada correctamente en Verifactu.',
+                'csv'     => $response->csv,
+                'hash'    => $hashAEAT,
+            ];
+        }
+
+        // Si no es OK, listamos errores de líneas
+        $errores = [];
+        foreach ($response->lineResponses as $lineResponse) {
+            $errores[] = [
+                'codigo'  => $lineResponse->errorCode,
+                'mensaje' => $lineResponse->errorMessage,
+            ];
+        }
+
+        return [
+            'status'  => 'error',
+            'message' => 'AEAT ha devuelto errores al registrar la factura.',
+            'errors'  => $errores,
+        ];
+    } catch (\Throwable $e) {
+        return [
+            'status'  => 'error',
+            'message' => 'Excepción comunicando con Verifactu/AEAT.',
+            'error'   => $e->getMessage(),
+        ];
     }
 }

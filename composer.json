@@ -4,6 +4,11 @@
         "phpmailer/phpmailer": "^6.9",
         "tecnickcom/tcpdf": "^6.2",
         "civitatis/redsys-consultas": "^0.0.4",
-        "firebase/php-jwt": "^6.10"
-    }
+        "firebase/php-jwt": "^6.10",
+        "eseperio/verifactu-php": "dev-master",
+        "bacon/bacon-qr-code": "^3.0",
+        "robrichards/xmlseclibs": "^3.1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

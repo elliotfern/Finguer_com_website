@@ -3,7 +3,7 @@ import { Reserva } from '../../../../types/interfaces';
 export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
   try {
     // Corregir la URL
-    const url = `${window.location.origin}/api/intranet/reserves/get/?type=pendents`;
+    const url = `${window.location.origin}/api/intranet/reserves/get/?type=reserves&estado_vehiculo=pendiente_entrada`;
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -43,7 +43,7 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       // Operaciones de manipulación de las variables
       // a) Fecha reserva
-      const fechaReservaString = data.fechaReserva;
+      const fechaReservaString = data.fecha_reserva;
       const fechaReservaDate = new Date(fechaReservaString);
       const fechaReserva_formateada = fechaReservaDate.toLocaleDateString('es-ES', opcionesFormato);
 
@@ -59,14 +59,14 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
       const dataSortida2 = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato2);
       const dataSortidaAny = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato3);
 
-      const tipoReserva2 = data.tipoReserva;
+      const tipo = data.tipo;
       const limpieza = data.limpieza;
       let limpieza2 = '';
-      if (limpieza === 15) {
+      if (limpieza === 1) {
         limpieza2 = 'Servicio de limpieza exterior';
-      } else if (limpieza === 25) {
+      } else if (limpieza === 2) {
         limpieza2 = 'Servicio de lavado exterior + aspirado tapicería interior';
-      } else if (limpieza === 55) {
+      } else if (limpieza === 3) {
         limpieza2 = 'Limpieza PRO';
       } else {
         limpieza2 = '-';
@@ -89,10 +89,10 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       // 1 - IdReserva
       html += '<td>';
-      if (Number(data.idReserva) === 1) {
+      if (Number(data.localizador) === 1) {
         html += '<button type="button" class="btn btn-primary btn-sm">Client anual</button>';
       } else {
-        html += data.idReserva + ' // ' + fechaReserva_formateada;
+        html += data.localizador + ' // ' + fechaReserva_formateada;
       }
       html += '</td>';
 
@@ -101,7 +101,7 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       // 3 - Pagado
       html += '<td>';
-      if (Number(data.idReserva) === 1) {
+      if (Number(data.localizador) === 1) {
         html += '<button type="button" class="btn btn-success">SI</button>';
         html += '<p>Client anual</p>';
       } else {
@@ -116,7 +116,7 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
       html += '</td>';
 
       // 4 - Tipus de reserva
-      html += `<td><strong>${tipoReserva2}</strong></td>`;
+      html += `<td><strong>${tipo}</strong></td>`;
 
       // 5 - Neteja
       html += `<td>${limpieza2}</td>`;
@@ -150,7 +150,7 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       // 9 - Vehicle i matricula
       html += '<td>';
-      html += data.modelo;
+      html += data.vehiculo;
       if (data.matricula) {
         html += ` // ${data.matricula}`;
       } else {
@@ -172,18 +172,22 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
       }
       html += '</td>';
 
-      // 11 - CheckIn
+      // 11 - CheckIn // CheckOut
       html += '<td>';
-      if (data.checkIn === 5) {
+      if (data.estado_vehiculo === 'pendiente_entrada') {
         html += `<a href="${urlWeb}/reserva/fer/check-in/${data.id}" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Check-In</a>`;
+      } else if (data.estado_vehiculo === 'dentro') {
+        html += `<a href="${urlWeb}/reserva/fer/check-out/${data.id}" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Check-out</a>`;
+      } else if (data.estado_vehiculo === 'salido') {
+        html += `Salido`;
       }
       html += '</td>';
 
       // 12 - Notes
       html += '<td>';
-      if (!data.idReserva) {
+      if (!data.localizador) {
         html += `<a href="${urlWeb}/reserva/modificar/nota/${data.id}" class="btn btn-info btn-sm" role="button" aria-pressed="true">Crear</a>`;
-      } else if (data.idReserva && !data.notes) {
+      } else if (data.localizador && !data.notes) {
         html += `<a href="${urlWeb}/reserva/modificar/nota/${data.id}" class="btn btn-info btn-sm" role="button" aria-pressed="true">Crear</a>`;
       } else if (data.notes) {
         html += `<a href="${urlWeb}/reserva/info/nota/${data.id}" class="btn btn-danger btn-sm" role="button" aria-pressed="true">Veure</a>`;
@@ -192,12 +196,12 @@ export const carregarDadesTaulaReservesPendents = async (): Promise<void> => {
 
       // 13 - Cercadors
       html += '<td>';
-      if (Number(data.idReserva) === 1) {
+      if (Number(data.localizador) === 1) {
         html += '-';
       } else {
-        if (!data.idReserva) {
+        if (!data.localizador) {
           html += `<a href="${urlWeb}/reserva/modificar/cercador/${data.id}" class="btn btn-warning btn-sm" role="button" aria-pressed="true">Alta</a>`;
-        } else if (data.idReserva && !data.buscadores) {
+        } else if (data.localizador && !data.buscadores) {
           html += `<a href="${urlWeb}/reserva/modificar/cercador/${data.id}" class="btn btn-warning btn-sm" role="button" aria-pressed="true">Alta</a>`;
         } else {
           html += '<button type="button" class="btn btn-success btn-sm">Alta</button>';
