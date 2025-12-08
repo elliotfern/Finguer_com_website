@@ -6,30 +6,7 @@
 </div>
 
 <div class="container">
-    <div class='table-responsive'>
-        <table class='table table-striped' id="pendents">
-            <thead class="table-dark">
-                <tr>
-                    <th>Núm. Comanda // data</th>
-                    <th>Import</th>
-                    <th>Pagat</th>
-                    <th>Tipus</th>
-                    <th>Neteja</th>
-                    <th>Client // tel.</th>
-                    <th>Entrada &darr;</th>
-                    <th>Sortida</th>
-                    <th>Dades Vehicle</th>
-                    <th>Vol tornada</th>
-                    <th>Check-in</th>
-                    <th>Notes</th>
-                    <th>Cercadors</th>
-                    <th>Opcions</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
+    <div id="contenidorTaulaReserves"></div>
 </div>
 
 <!-- Ventana emergente -->
@@ -54,5 +31,5 @@
 </div>
 
 <div class="container" style="margin-bottom:50px">
-    <h5 id="numReservesPendents"></h5>
+    <h5 id="numReserves"></h5>
 </div>

@@ -8,7 +8,7 @@ $base_routes = [
     // API INTRANET
     '/api/intranet/auth/login' => 'src/backend/api/intranet/auth/login.php',
     '/api/intranet/reserves/get' => 'src/backend/api/intranet/get-reserves.php',
-    '/api/intranet/reserves/post' => 'src/backend/api/intranet/post-login.php',
+    '/api/intranet/reserves/post' => 'src/backend/api/intranet/post-reserves.php',
     '/api/intranet/users/get' => 'src/backend/api/intranet/get-users.php',
     '/api/intranet/email/get' => 'src/backend/api/intranet/email/get-email.php',
 
@@ -19,6 +19,9 @@ $base_routes = [
     '/api/alta-reserva' => 'src/backend/api/web_publica/crear-reserva.php',
     '/api/pagamentRedsysTargeta' => 'src/backend/api/web_publica/pagament-redsys-targeta.php',
     '/api/pagamentRedsysBizum' => 'src/backend/api/web_publica/pagament-redsys-bizum.php',
+
+    // API FACTURES
+    '/api/factures/pdf' => 'src/backend/api/intranet/factures/generar-factura.php',
 ];
 
 // Rutas principales sin idioma explícito (solo para el idioma por defecto)
@@ -32,7 +35,7 @@ $routes = [
 
     '/api/intranet/reserves/get' => ['view' => 'src/backend/api/intranet/get-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
 
-    '/api/intranet/reserves/post' => ['view' => 'src/backend/api/intranet/post-login.php', 'needs_session' => true, 'no_header_footer' => true],
+    '/api/intranet/reserves/post' => ['view' => 'src/backend/api/intranet/post-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
 
     '/api/intranet/users/get' => ['view' => 'src/backend/api/intranet/get-users.php', 'needs_session' => true, 'no_header_footer' => true],
 
@@ -50,6 +53,9 @@ $routes = [
     '/api/pagamentRedsysTargeta' => ['view' => 'src/backend/api/web_publica/pagament-redsys-targeta.php', 'needs_session' => false, 'no_header_footer' => true],
 
     '/api/pagamentRedsysBizum' => ['view' => 'src/backend/api/web_publica/pagament-redsys-bizum.php', 'needs_session' => false, 'no_header_footer' => true],
+
+    // API FACTURES
+    '/api/factures/pdf' => ['view' => 'src/backend/api/intranet/factures/generar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
 ];
 
 // Unir rutas base con rutas específicas de idioma

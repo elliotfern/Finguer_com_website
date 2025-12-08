@@ -1,6 +1,5 @@
 import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent';
-import { compatadorReservesPendents } from './taulaReservesPendents/comptadorReservesPendents';
-import { carregarDadesTaulaReservesPendents } from './taulaReservesPendents/taulaReservesPendents';
+import { carregarDadesTaulaReserves } from './taulaReserves/taulaReserves';
 
 // TIPADO (mismo shape que usa tu popup)
 type DeviceInfo = {
@@ -31,9 +30,8 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
   }
 }
 
-export const reservesPendents = () => {
-  carregarDadesTaulaReservesPendents();
-  compatadorReservesPendents();
+export const reserves = (estatParking: string) => {
+  carregarDadesTaulaReserves(estatParking);
 
   // 👇 HAZ EL HANDLER ASYNC
   document.addEventListener('click', async (event: MouseEvent) => {

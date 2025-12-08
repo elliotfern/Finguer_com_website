@@ -21,7 +21,10 @@ export interface Reserva {
   notes: string;
   vuelo: string;
   estado_vehiculo: string;
-  buscadores: number;
+  canal: number;
+  factura_id?: number | null;
+  factura_numero?: string | null;
+  factura_serie?: string | null;
 }
 
 export interface Comptador {
