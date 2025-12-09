@@ -69,6 +69,9 @@ function verificarPagament($id, $ejecutarAcciones = false)
 
     $localizador = $reserva['localizador']; // esto es el Ds_Order que mandamos a Redsys
 
+
+
+
     // 2) Llamar a Redsys (igual que antes)
     $token        = $_ENV['MERCHANTCODE'];
     $token2       = $_ENV['KEY'];
@@ -79,28 +82,62 @@ function verificarPagament($id, $ejecutarAcciones = false)
     $terminal     = '1';
     $merchantCode = $token;
 
-    // helper para acceder a propiedades protegidas
     if (!function_exists('getProtectedPropertyValue')) {
         function getProtectedPropertyValue($object, $propertyName)
         {
+            // Si no es un objeto, no podemos leer propiedades
+            if (!is_object($object)) {
+                return null;
+            }
+
             $reflection = new ReflectionClass($object);
-            $property   = $reflection->getProperty($propertyName);
+
+            if (!$reflection->hasProperty($propertyName)) {
+                return null;
+            }
+
+            $property = $reflection->getProperty($propertyName);
             $property->setAccessible(true);
+
             return $property->getValue($object);
         }
     }
 
+
+
     try {
         $response = $client->getTransaction($order, $terminal, $merchantCode);
 
-        if (!$response) {
+        // NUEVO: si la respuesta es null o no es un objeto, corta aquí.
+        if (!is_object($response)) {
+            error_log(
+                'Redsys getTransaction devolvió respuesta no válida. ' .
+                    'order=' . $order .
+                    ' terminal=' . $terminal .
+                    ' merchant=' . $merchantCode .
+                    ' response=' . var_export($response, true)
+            );
+
             return [
                 'status'  => 'error',
-                'message' => 'Error Redsys: Sin respuesta.',
+                'message' => 'Error Redsys: respuesta vacía o inválida.',
             ];
         }
 
         $ds_response = getProtectedPropertyValue($response, 'Ds_Response');
+
+        if ($ds_response === null) {
+            error_log(
+                'No se pudo obtener Ds_Response de la respuesta Redsys: ' .
+                    var_export($response, true)
+            );
+
+            return [
+                'status'  => 'error',
+                'message' => 'Error Redsys: no se pudo leer Ds_Response.',
+            ];
+        }
+
 
         switch ($ds_response) {
             case '9218':

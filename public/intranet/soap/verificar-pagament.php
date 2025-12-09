@@ -2,7 +2,7 @@
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 
 $idReserva = $routeParams[0];
-$response = verificarPagament($idReserva, false);
+$response = verificarPagamentRedsys($idReserva, false);
 
 ?>
 <div class='container' style='margin-bottom:150px'>

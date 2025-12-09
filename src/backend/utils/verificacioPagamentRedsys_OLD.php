@@ -6,7 +6,7 @@ use RedsysConsultasPHP\Client\Client;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-function verificarPagament($id, $ejecutarAcciones = false)
+function verificarPagament_OLD($id, $ejecutarAcciones = false)
 {
     $id = $id;
 

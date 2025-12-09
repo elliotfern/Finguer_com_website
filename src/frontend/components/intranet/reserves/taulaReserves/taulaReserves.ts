@@ -189,20 +189,43 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       // 3 - Pagado
       html += '<td>';
+
       if (Number(data.localizador) === 1) {
         html += '<button type="button" class="btn btn-success">SI</button>';
         html += '<p>Client anual</p>';
       } else {
+        // Calcular si la reserva tiene más de 2 meses
+        const fechaReserva = new Date(data.fecha_reserva);
+        const ahora = new Date();
+
+        // Diferencia en milisegundos (Date -> number con getTime())
+        const diffMs = ahora.getTime() - fechaReserva.getTime();
+
+        // Aproximación de meses: 30 días por mes
+        const diffMeses = diffMs / (1000 * 60 * 60 * 24 * 30);
+        const esAntigua = diffMeses > 2;
+
         if (Number(data.processed) === 1) {
           html += '<button type="button" class="btn btn-success">SI</button>';
-          html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</a></p>`;
+
+          // Sólo mostrar enlace si NO es antigua
+          if (!esAntigua) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}">
+        <strong>Verificar pagament</strong></a></p>`;
+          }
         } else if (Number(data.canal) === 3) {
           html += '<button type="button" class="btn btn-danger">NO</button>';
         } else {
           html += '<button type="button" class="btn btn-danger">NO</button>';
-          html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</a></p>`;
+
+          // Sólo mostrar enlace si NO es antigua
+          if (!esAntigua) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}">
+        <strong>Verificar pagament</strong></a></p>`;
+          }
         }
       }
+
       html += '</td>';
 
       // 4 - CANAL

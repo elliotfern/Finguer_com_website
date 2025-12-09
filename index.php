@@ -9,6 +9,7 @@ require_once __DIR__ . '/src/backend/config/config.php';
 require_once __DIR__ . '/src/backend/utils/verificacioPagamentRedsys.php';
 require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
 require_once __DIR__ . '/src/backend/utils/generarFacturaPdf.php';
+require_once __DIR__ . '/src/backend/utils/verificarRedsys.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
 
 // Obtener la ruta solicitada
