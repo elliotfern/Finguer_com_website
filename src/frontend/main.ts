@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 import 'bootstrap';
 import { reserves } from './components/intranet/reserves/reservesPendents';
+import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -97,6 +98,11 @@ if (window.location.pathname === '/control/reserves-parking') {
 if (window.location.pathname === '/control/reserves-completades') {
   const estatParking = 'salido';
   reserves(estatParking);
+}
+
+// FACTURACIO
+if (window.location.pathname === '/control/facturacio') {
+  initTaulaFacturacio();
 }
 
 // LOGIN

@@ -239,7 +239,7 @@ function verificarPagament($id, $ejecutarAcciones = false)
 
                     // TODO: cuando adaptemos enviarConfirmacio/enviarFactura a la BD nueva,
                     enviarConfirmacio($idReservaNueva);
-                    $facturaId = crearFacturaParaReserva($conn, $idReservaNueva);
+                    $facturaId = crearFacturaParaReserva($conn, $idReservaNueva, 'redsys');
                     enviarFactura($facturaId);
 
                     return $data;
@@ -270,9 +270,8 @@ function verificarPagament($id, $ejecutarAcciones = false)
     }
 }
 
-function crearFacturaParaReserva(PDO $conn, int $reservaId): ?int
+function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'manual'): ?int
 {
-
     // 0) Comprobar si ya existe una factura para esta reserva
     $sqlExist = "
         SELECT id, numero
@@ -314,160 +313,222 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId): ?int
 
     $fechaEmision = $reserva['fecha_reserva'] ?? date('Y-m-d H:i:s');
 
-    // 🔹 AQUÍ cogemos exactamente lo que viene de la reserva
-    $subtotal = (float)$reserva['subtotal_calculado'];  // base imponible total
-    $iva      = (float)$reserva['iva_calculado'];       // IVA total
-    $total    = (float)$reserva['total_calculado'];     // total con IVA
+    $subtotal  = (float)$reserva['subtotal_calculado'];  // base imponible total
+    $iva       = (float)$reserva['iva_calculado'];       // IVA total
+    $total     = (float)$reserva['total_calculado'];     // total con IVA
     $usuarioId = (int)$reserva['usuario_id'];
 
-    // 2) Calcular el siguiente número de factura (último numero + 1)
-    $sqlUlt = "
-        SELECT numero
-        FROM epgylzqu_parking_finguer_v2.facturas
-        WHERE numero IS NOT NULL AND numero > 0
-        ORDER BY numero DESC
-        LIMIT 1
-    ";
-    $stmtUlt = $conn->query($sqlUlt);
-    $rowUlt  = $stmtUlt->fetch(PDO::FETCH_ASSOC);
+    // 2) Calcular el siguiente número de factura
+    $serieCodigo = (int)date('Y', strtotime($fechaEmision)); // 2025, 2026...
+    $numeracion  = generarNumeroFactura($conn, (string)$serieCodigo);
 
-    // último número del sistema viejo
-    $ultimoNumeroHistorico = 5296;
+    try {
+        $conn->beginTransaction();
 
-    if ($rowUlt && !empty($rowUlt['numero'])) {
-        $ultimoNumero = (int)$rowUlt['numero'];
-    } else {
-        $ultimoNumero = $ultimoNumeroHistorico;
-    }
+        // 3) Insertar en facturas usando los totales correctos
+        $sqlInsF = "
+            INSERT INTO epgylzqu_parking_finguer_v2.facturas
+            (
+                numero,
+                serie,
+                reserva_id,
+                usuario_id,
+                fecha_emision,
+                subtotal,
+                impuesto_total,
+                total,
+                estado
+            ) VALUES (
+                :numero,
+                :serie,
+                :reserva_id,
+                :usuario_id,
+                :fecha_emision,
+                :subtotal,
+                :impuesto_total,
+                :total,
+                'emitida'
+            )
+        ";
+        $stmtF = $conn->prepare($sqlInsF);
+        $stmtF->bindParam(':numero',        $numeracion['numero'],  PDO::PARAM_STR); // 👈 STR, no INT
+        $stmtF->bindParam(':serie',         $numeracion['serie'],   PDO::PARAM_STR);
+        $stmtF->bindParam(':reserva_id',    $reservaId,             PDO::PARAM_INT);
+        $stmtF->bindParam(':usuario_id',    $usuarioId,             PDO::PARAM_INT);
+        $stmtF->bindParam(':fecha_emision', $fechaEmision,          PDO::PARAM_STR);
+        $stmtF->bindParam(':subtotal',      $subtotal);
+        $stmtF->bindParam(':impuesto_total', $iva);
+        $stmtF->bindParam(':total',         $total);
 
-    $nuevoNumero = $ultimoNumero + 1;
-    $anio        = (int)date('Y', strtotime($fechaEmision));
-    $serie       = (string)$anio; // o 'FINGUER' si prefieres
+        if (!$stmtF->execute()) {
+            $conn->rollBack();
+            return null;
+        }
 
-    // 3) Insertar en facturas usando los totales correctos
-    $sqlInsF = "
-        INSERT INTO epgylzqu_parking_finguer_v2.facturas
-        (
-            numero,
-            serie,
-            reserva_id,
-            usuario_id,
-            fecha_emision,
-            subtotal,
-            impuesto_total,
-            total,
-            estado
-        ) VALUES (
-            :numero,
-            :serie,
-            :reserva_id,
-            :usuario_id,
-            :fecha_emision,
-            :subtotal,
-            :impuesto_total,
-            :total,
-            'emitida'
-        )
-    ";
-    $stmtF = $conn->prepare($sqlInsF);
-    $stmtF->bindParam(':numero',        $nuevoNumero,  PDO::PARAM_INT);
-    $stmtF->bindParam(':serie',         $serie,        PDO::PARAM_STR);
-    $stmtF->bindParam(':reserva_id',    $reservaId,    PDO::PARAM_INT);
-    $stmtF->bindParam(':usuario_id',    $usuarioId,    PDO::PARAM_INT);
-    $stmtF->bindParam(':fecha_emision', $fechaEmision, PDO::PARAM_STR);
-    $stmtF->bindParam(':subtotal',      $subtotal);
-    $stmtF->bindParam(':impuesto_total',      $iva);     // 🔹 AQUÍ VA EL IVA CORRECTO
-    $stmtF->bindParam(':total',         $total);
+        $facturaId = (int)$conn->lastInsertId();
 
-    if (!$stmtF->execute()) {
+        // 4) Insertar lineas desde parking_reservas_servicios
+        $sqlServ = "
+            SELECT
+                prs.servicio_id,
+                prs.descripcion,
+                prs.cantidad,
+                prs.precio_unitario,
+                prs.impuesto_percent,
+                prs.total_base
+            FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
+            WHERE prs.reserva_id = :reserva_id
+            ORDER BY prs.id ASC
+        ";
+        $stmtServ = $conn->prepare($sqlServ);
+        $stmtServ->bindParam(':reserva_id', $reservaId, PDO::PARAM_INT);
+        $stmtServ->execute();
+        $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
+
+        $sqlLinea = "
+            INSERT INTO epgylzqu_parking_finguer_v2.facturas_lineas
+            (
+                factura_id,
+                linea,
+                descripcion,
+                cantidad,
+                precio_unitario,
+                impuesto_percent,
+                total_base,
+                total_impuesto,
+                total_linea,
+                reserva_id
+            ) VALUES (
+                :factura_id,
+                :linea,
+                :descripcion,
+                :cantidad,
+                :precio_unitario,
+                :impuesto_percent,
+                :total_base,
+                :total_impuesto,
+                :total_linea,
+                :reserva_id
+            )
+        ";
+        $stmtLinea = $conn->prepare($sqlLinea);
+
+        $nLinea = 1;
+        foreach ($servicios as $srv) {
+            $base   = (float)$srv['total_base'];
+            $ivaPrc = (float)$srv['impuesto_percent'];
+
+            // 👇 Ahora sí calculamos el IVA y el total de la línea
+            $totalImp   = round($base * $ivaPrc / 100, 2);
+            $totalLinea = $base + $totalImp;
+
+            $stmtLinea->execute([
+                ':factura_id'      => $facturaId,
+                ':linea'           => $nLinea++,
+                ':descripcion'     => $srv['descripcion'],
+                ':cantidad'        => $srv['cantidad'],
+                ':precio_unitario' => $srv['precio_unitario'],
+                ':impuesto_percent' => $ivaPrc,
+                ':total_base'      => $base,
+                ':total_impuesto'  => $totalImp,
+                ':total_linea'     => $totalLinea,
+                ':reserva_id'      => $reservaId,
+            ]);
+        }
+
+        // 5) Vincular pago (si existía) con la factura
+        $sqlPago = "
+            UPDATE epgylzqu_parking_finguer_v2.pagos
+            SET factura_id = :factura_id
+            WHERE reserva_id = :reserva_id
+              AND estado = 'confirmado'
+        ";
+        $stmtPago = $conn->prepare($sqlPago);
+        $stmtPago->execute([
+            ':factura_id' => $facturaId,
+            ':reserva_id' => $reservaId,
+        ]);
+
+        // ... después de insertar la factura y las líneas ...
+
+        // 1) Buscar el hash de l'última factura anterior
+        $sqlLast = "
+            SELECT hash_interno
+            FROM epgylzqu_parking_finguer_v2.facturas
+            WHERE id <> :id
+            AND hash_interno IS NOT NULL
+            ORDER BY fecha_emision DESC, id DESC
+            LIMIT 1
+        ";
+        $stmtLast = $conn->prepare($sqlLast);
+        $stmtLast->execute([':id' => $facturaId]);
+        $lastRow = $stmtLast->fetch(PDO::FETCH_ASSOC);
+
+        $hashAnterior = $lastRow ? (string)$lastRow['hash_interno'] : '';
+
+        // 2) Carregar la factura acabada de crear
+        $sqlFactura = "
+            SELECT
+                id,
+                serie,
+                numero,
+                fecha_emision,
+                subtotal,
+                impuesto_total,
+                total,
+                facturar_a_nif
+            FROM epgylzqu_parking_finguer_v2.facturas
+            WHERE id = :id
+            LIMIT 1
+        ";
+        $stmtFac = $conn->prepare($sqlFactura);
+        $stmtFac->execute([':id' => $facturaId]);
+        $rowFactura = $stmtFac->fetch(PDO::FETCH_ASSOC);
+
+        if ($rowFactura) {
+            $hashActual = calcularHashInternoFacturaFromRow($rowFactura, $hashAnterior);
+
+            $sqlUpdHash = "
+                UPDATE epgylzqu_parking_finguer_v2.facturas
+                SET hash_interno = :hash_interno,
+                    hash_interno_anterior = :hash_interno_anterior
+                WHERE id = :id
+            ";
+            $stmtUpdHash = $conn->prepare($sqlUpdHash);
+            $stmtUpdHash->execute([
+                ':hash_interno'          => $hashActual,
+                ':hash_interno_anterior' => $hashAnterior !== '' ? $hashAnterior : null,
+                ':id'                    => $facturaId,
+            ]);
+        }
+
+
+        $conn->commit();
+
+        // Si es manual (desde intranet), miramos cookie
+        $usuarioBackofficeId = ($origen === 'manual')
+            ? getUsuarioBackofficeIdFromCookie()
+            : null;
+
+        $accionLog = ($origen === 'manual')
+            ? 'creacion'
+            : 'creacion_automatica_redsys';
+
+        registrarLogFactura($conn, $facturaId, $usuarioBackofficeId, $accionLog, [
+            'reserva_id' => $reservaId,
+            'subtotal'   => $subtotal,
+            'iva'        => $iva,
+            'total'      => $total,
+            'origen'     => $origen,
+        ]);
+
+        return $facturaId;
+    } catch (\Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         return null;
     }
-
-    $facturaId = (int)$conn->lastInsertId();
-
-    // 4) Insertar lineas desde parking_reservas_servicios (Opción A: solo base)
-    $sqlServ = "
-        SELECT
-            prs.servicio_id,
-            prs.descripcion,
-            prs.cantidad,
-            prs.precio_unitario,
-            prs.impuesto_percent,
-            prs.total_base
-        FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
-        WHERE prs.reserva_id = :reserva_id
-        ORDER BY prs.id ASC
-    ";
-    $stmtServ = $conn->prepare($sqlServ);
-    $stmtServ->bindParam(':reserva_id', $reservaId, PDO::PARAM_INT);
-    $stmtServ->execute();
-    $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
-
-    $sqlLinea = "
-        INSERT INTO epgylzqu_parking_finguer_v2.facturas_lineas
-        (
-            factura_id,
-            linea,
-            descripcion,
-            cantidad,
-            precio_unitario,
-            impuesto_percent,
-            total_base,
-            total_impuesto,
-            total_linea,
-            reserva_id
-        ) VALUES (
-            :factura_id,
-            :linea,
-            :descripcion,
-            :cantidad,
-            :precio_unitario,
-            :impuesto_percent,
-            :total_base,
-            :total_impuesto,
-            :total_linea,
-            :reserva_id
-        )
-    ";
-    $stmtLinea = $conn->prepare($sqlLinea);
-
-    $nLinea = 1;
-    foreach ($servicios as $srv) {
-        $base   = (float)$srv['total_base'];
-        $ivaPrc = (float)$srv['impuesto_percent'];
-
-        // Opción A: no calculamos IVA por línea, lo dejamos a 0
-        $totalImp   = 0;
-        $totalLinea = $base;
-
-        $stmtLinea->execute([
-            ':factura_id'      => $facturaId,
-            ':linea'           => $nLinea++,
-            ':descripcion'     => $srv['descripcion'],
-            ':cantidad'        => $srv['cantidad'],
-            ':precio_unitario' => $srv['precio_unitario'],
-            ':impuesto_percent' => $ivaPrc,
-            ':total_base'      => $base,
-            ':total_impuesto'  => $totalImp,
-            ':total_linea'     => $totalLinea,
-            ':reserva_id'      => $reservaId,
-        ]);
-    }
-
-    // 5) Vincular pago (si existía) con la factura
-    $sqlPago = "
-        UPDATE epgylzqu_parking_finguer_v2.pagos
-        SET factura_id = :factura_id
-        WHERE reserva_id = :reserva_id
-          AND estado = 'confirmado'
-    ";
-    $stmtPago = $conn->prepare($sqlPago);
-    $stmtPago->execute([
-        ':factura_id' => $facturaId,
-        ':reserva_id' => $reservaId,
-    ]);
-
-    return $facturaId;
 }
 
 
@@ -753,12 +814,11 @@ function enviarFactura($idFactura)
     // --------
 
     // Número de factura
-    $id_old = (int)$row['numero'];
+    $numeroFactura = $row['serie'] . '/' . $row['numero']; // ej: 2025/00005
 
     // Fecha de emisión (antes fechaReserva)
     $fechaReserva_old = $row['fecha_emision'];
     $fechaReserva     = date('d-m-Y H:i:s', strtotime($fechaReserva_old));
-    $fechaAnoReserva  = date('Y', strtotime($fechaReserva_old));
 
     // Entrada / salida: vienen como DATETIME en parking_reservas
     $entradaPrevista = $row['entrada_prevista'];
@@ -892,7 +952,7 @@ function enviarFactura($idFactura)
                 <img alt="Finguer" src="https://finguer.com/public/img/logo-header.svg" width="150" height="70">
             </div>
             <br>
-            <strong>Número de factura: ' . $id_old . '/' . $fechaAnoReserva . '</strong><br>
+            <strong>Número de factura: ' . htmlspecialchars($numeroFactura) . '</strong><br>
             Fecha de la factura: ' . $fechaReserva . '<br>
         </div>
         
@@ -1006,7 +1066,9 @@ function enviarFactura($idFactura)
     ';
 
     $pdf->writeHTML($htmlContent, true, false, true, false, '');
-    $filename = APP_ROOT . '/pdf/documento.pdf';
+
+    $numeroFactura = $row['serie'] . '_' . $row['numero']; // 2025_00023
+    $filename = APP_ROOT . '/pdf/facturas/' . $numeroFactura . '.pdf';
     $pdf->Output($filename, 'F');
 
     // 4) Enviar email
@@ -1030,11 +1092,26 @@ function enviarFactura($idFactura)
     $mail->Body    = 'Adjunto encontrarás el documento PDF con tu factura.';
 
     if ($mail->send()) {
+
+        $usuarioBackofficeId = getUsuarioBackofficeIdFromCookie();
+
+        registrarLogFactura($conn, $idFactura, $usuarioBackofficeId, 'envio_email', [
+            'email' => $email_old,
+        ]);
+
         echo json_encode([
             'status'  => 'success',
             'message' => 'Factura enviada correctamente por email al cliente.',
         ]);
     } else {
+
+        $usuarioBackofficeId = getUsuarioBackofficeIdFromCookie();
+
+        registrarLogFactura($conn, $idFactura, $usuarioBackofficeId, 'envio_email_error', [
+            'email' => $email_old,
+            'error' => $mail->ErrorInfo,
+        ]);
+
         echo json_encode([
             'status'  => 'error',
             'codigo'  => $mail->ErrorInfo,
@@ -1056,7 +1133,7 @@ function enviarFacturaAVerifactu(int $idFactura): array
             f.serie,
             f.fecha_emision,
             f.subtotal,
-            f.impuesto,
+            f.impuesto_total,
             f.total,
             f.verifactu_estado,
             f.verifactu_hash,
@@ -1126,7 +1203,7 @@ function enviarFacturaAVerifactu(int $idFactura): array
     $invoice->issuerName           = 'BCN PARKING S.L';
     $invoice->invoiceType          = InvoiceType::STANDARD;
     $invoice->operationDescription = 'Servicios de aparcamiento y extras';
-    $invoice->taxAmount            = (float)$factura['impuesto'];
+    $invoice->taxAmount            = (float)$factura['impuesto_total'];
     $invoice->totalAmount          = (float)$factura['total'];
     $invoice->simplifiedInvoice    = YesNoType::NO;
 

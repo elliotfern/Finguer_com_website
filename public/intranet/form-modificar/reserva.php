@@ -1,310 +1,292 @@
 <?php
 global $conn;
 
+require_once APP_ROOT . '/public/intranet/inc/header.php';
+
 $id = $routeParams[0];
 
 if (is_numeric($id)) {
     $id_old = intval($id);
-   
-    if ( filter_var($id_old, FILTER_VALIDATE_INT) ) {
+
+    if (filter_var($id_old, FILTER_VALIDATE_INT)) {
         $codi_resposta = 2;
 
-        // consulta general reserves 
-        $sql = "SELECT r.idReserva, r.idClient, r.importe, r.processed, r.fechaReserva, r.tipo, u.nombre, r.horaEntrada, r.diaEntrada, r.horaSalida, r.diaSalida, r.vehiculo, r.matricula, r.vuelo, r.limpieza, r.notes, r.buscadores
-        FROM reserves_parking AS r
-        LEFT JOIN usuaris AS u ON r.idClient = u.id
-        WHERE r.id = $id_old";
+        // =========================
+        // 1) SELECT con nueva tabla
+        // =========================
+
+        $sql = "
+            SELECT 
+                r.id                AS idReserva,
+                r.usuario_id        AS idClient,
+                r.total_calculado   AS importe,
+                r.estado            AS estado,
+                r.fecha_reserva     AS fechaReserva,
+                r.tipo              AS tipo,
+                u.nombre            AS nombre,
+                r.entrada_prevista  AS entrada_prevista,
+                r.salida_prevista   AS salida_prevista,
+                r.vehiculo          AS vehiculo,
+                r.matricula         AS matricula,
+                r.vuelo             AS vuelo,
+                r.notas             AS notas,
+                r.canal             AS canal
+            FROM epgylzqu_parking_finguer_v2.parking_reservas AS r
+            LEFT JOIN epgylzqu_parking_finguer_v2.usuarios AS u ON r.usuario_id = u.id
+            WHERE r.id = :id
+            LIMIT 1
+        ";
 
         $pdo_statement = $conn->prepare($sql);
+        $pdo_statement->bindParam(':id', $id_old, PDO::PARAM_INT);
         $pdo_statement->execute();
-        $result = $pdo_statement->fetchAll();
-        foreach($result as $row) {
-            $idReserva_old = $row['idReserva'];
-            $idClient_old = $row['idClient'];
-            $importe_old = $row['importe'];
-            $processed_old = $row['processed'];
+        $row = $pdo_statement->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            $idReserva_old    = $row['idReserva'];
+            $idClient_old     = $row['idClient'];
+            $importe_old      = $row['importe'];
+            $estado_old       = $row['estado'];
             $fechaReserva_old = $row['fechaReserva'];
-            $tipo_old = $row['tipo'];
-            $nombre_old = $row['nombre'];
-            $horaEntrada_old = $row['horaEntrada'];
-            $diaEntrada_old = $row['diaEntrada'];
-            $horaSalida_old = $row['horaSalida'];
-            $diaSalida_old = $row['diaSalida'];
-            $vehiculo_old = $row['vehiculo'];
-            $matricula_old = $row['matricula'];
-            $vuelo_old = $row['vuelo'];
-            $limpieza_old = $row['limpieza'];
+            $tipo_old         = $row['tipo'];
+            $nombre_old       = $row['nombre'];
 
-            if ($limpieza_old == 1) {
-                $limpieza2 = "Servicio de limpieza exterior";
-            } elseif ($limpieza_old == 2) {
-                 $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-            } elseif ($limpieza_old == 3) {
-                $limpieza2 = "Limpieza PRO";
-            } else {
-                $limpieza2 = "-";
-            }
+            $entrada_prevista_old = $row['entrada_prevista'];
+            $salida_prevista_old  = $row['salida_prevista'];
 
-            $notes_old = $row['notes'];
-            $buscadores_old = $row['buscadores'];
+            // Spliteamos las datetimes en fecha / hora para el formulario
+            $diaEntrada_old  = $entrada_prevista_old ? date('Y-m-d', strtotime($entrada_prevista_old)) : '';
+            $horaEntrada_old = $entrada_prevista_old ? date('H:i', strtotime($entrada_prevista_old)) : '';
+
+            $diaSalida_old   = $salida_prevista_old ? date('Y-m-d', strtotime($salida_prevista_old)) : '';
+            $horaSalida_old  = $salida_prevista_old ? date('H:i', strtotime($salida_prevista_old)) : '';
+
+            $vehiculo_old    = $row['vehiculo'];
+            $matricula_old   = $row['matricula'];
+            $vuelo_old       = $row['vuelo'];
+            $notes_old       = $row['notas'];
+            $canal_old       = $row['canal'];
+        } else {
+            echo "<div class='container'><div class='alert alert-danger'>No s'ha trobat aquesta reserva a la base de dades nova.</div></div>";
+            exit;
         }
-        
-        if ($fechaReserva_old !== NULL) {
+
+        if ($fechaReserva_old !== null) {
             $fecha_formateada = "<h4>Reserva efectuada el dia: " . date('d-m-Y H:i:s', strtotime($fechaReserva_old)) . "</h4>";
         } else {
             $fecha_formateada = "";
         }
-        
-        echo "<div class='container'>
-        <h2>Modificació ID Reserva: ".$idReserva_old." </h2>";
+
+        echo "<div class='container' style='margin-bottom:50px'>
+        <h2>Modificació ID Reserva: " . htmlspecialchars((string)$idReserva_old) . " </h2>";
         echo $fecha_formateada;
 
-              if (isset($_POST["update"])) {                  
-                if (empty($_POST["buscadores"])) {
-                    $buscadores = data_input($_POST["buscadores"]);
+        // ==================================
+        // 2) Procesar POST (UPDATE nueva BD)
+        // ==================================
+        if (isset($_POST["update"])) {
+
+            // Sanitizar / recoger datos
+            $importe     = data_input($_POST["importe"] ?? '');
+            $tipo        = data_input($_POST["tipo"] ?? '');
+            $estado      = data_input($_POST["estado"] ?? '');
+            $horaEntrada = data_input($_POST["horaEntrada"] ?? '');
+            $diaEntrada  = data_input($_POST["diaEntrada"] ?? '');
+            $horaSalida  = data_input($_POST["horaSalida"] ?? '');
+            $diaSalida   = data_input($_POST["diaSalida"] ?? '');
+            $vehiculo    = data_input($_POST["vehiculo"] ?? '');
+            $matricula   = data_input($_POST["matricula"] ?? '');
+            $vuelo       = data_input($_POST["vuelo"] ?? '');
+            $notes       = data_input($_POST["notes"] ?? '');
+
+            // Construir datetimes entrada/salida
+            $entrada_prevista = null;
+            if (!empty($diaEntrada)) {
+                $entrada_prevista = $diaEntrada . (empty($horaEntrada) ? ' 00:00:00' : ' ' . $horaEntrada . ':00');
+            }
+
+            $salida_prevista = null;
+            if (!empty($diaSalida)) {
+                $salida_prevista = $diaSalida . (empty($horaSalida) ? ' 00:00:00' : ' ' . $horaSalida . ':00');
+            }
+
+            // Aquí podrías validar y setear $hasError si algo está mal
+
+            if (!isset($hasError)) {
+
+                $sqlUpdate = "
+                    UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                    SET 
+                        total_calculado  = :importe,
+                        tipo             = :tipo,
+                        estado           = :estado,
+                        entrada_prevista = :entrada_prevista,
+                        salida_prevista  = :salida_prevista,
+                        vehiculo         = :vehiculo,
+                        matricula        = :matricula,
+                        vuelo            = :vuelo,
+                        notas            = :notes
+                    WHERE id = :id
+                ";
+
+                $stmt = $conn->prepare($sqlUpdate);
+
+                // total_calculado es DECIMAL → PARAM_STR va bien
+                $stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
+                $stmt->bindParam(":tipo", $tipo, PDO::PARAM_STR);
+                $stmt->bindParam(":estado", $estado, PDO::PARAM_STR);
+                $stmt->bindParam(":entrada_prevista", $entrada_prevista, PDO::PARAM_STR);
+                $stmt->bindParam(":salida_prevista", $salida_prevista, PDO::PARAM_STR);
+                $stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
+                $stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
+                $stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
+                $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
+                $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
+
+                if ($stmt->execute()) {
+                    $codi_resposta = 1;
                 } else {
-                    $buscadores = data_input($_POST["buscadores"]);
+                    $codi_resposta = 2;
                 }
 
-                if (empty($_POST["importe"])) {
-                    $importe = data_input($_POST["importe"]);
+                if ($codi_resposta == 1) {
+                    echo '<div class="alert alert-success" role="alert"><h4 class="alert-heading"><strong>Reserva actualitzada correctament.</strong></h4>';
+                    echo "Reserva actualitzada.</div>";
                 } else {
-                    $importe = data_input($_POST["importe"]);
+                    echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
+                    echo "Les dades no s\'han transmès correctament.</div>";
                 }
+            } else {
+                echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</h4></strong>';
+                echo 'Controla que totes les dades siguin correctes.</div>';
+            }
+        }
 
-                if (empty($_POST["processed"])) {
-                    $processed = data_input($_POST["processed"]);
-                } else {
-                    $processed = data_input($_POST["processed"]);
-                }
+        // =======================
+        // 3) Formulario de edición
+        // =======================
+        if ($codi_resposta == 2) {
+            echo '<form action="" method="post" id="update" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
-                if (empty($_POST["tipo"])) {
-                    $tipo = data_input($_POST["tipo"]);
-                } else {
-                    $tipo = data_input($_POST["tipo"]);
-                }
+            echo '<h4>Dades de la reserva:</h4>';
 
-                if (empty($_POST["horaEntrada"])) {
-                    $horaEntrada = data_input($_POST["horaEntrada"]);
-                } else {
-                    $horaEntrada = data_input($_POST["horaEntrada"]);
-                }
+            // Nombre cliente
+            echo '<div class="col-md-4">';
+            echo '<label>Nom client:</label>';
+            echo '<input type="text" class="form-control" id="nombre" readonly value="' . htmlspecialchars((string)$nombre_old) . '">';
+            echo '<small class="form-text text-danger">* No es pot modificar</small>';
+            echo '</div>';
 
-                if (empty($_POST["diaEntrada"])) {
-                    $diaEntrada = data_input($_POST["diaEntrada"]);
-                } else {
-                    $diaEntrada = data_input($_POST["diaEntrada"]);
-                }
+            // Importe
+            echo '<div class="col-md-4">';
+            echo '<label>Import reserva:</label>';
+            echo '<input type="text" class="form-control" id="importe" readonly name="importe" value="' . htmlspecialchars((string)$importe_old) . '">';
+            echo '<small class="form-text text-danger">* No es pot modificar</small>';
+            echo '</div>';
 
-                if (empty($_POST["horaSalida"])) {
-                    $horaSalida = data_input($_POST["horaSalida"]);
-                } else {
-                    $horaSalida = data_input($_POST["horaSalida"]);
-                }
-               
-                if (empty($_POST["diaSalida"])) {
-                    $diaSalida = data_input($_POST["diaSalida"]);
-                } else {
-                    $diaSalida = data_input($_POST["diaSalida"]);
-                }
+            // Tipus reserva (campo tipo varchar(50))
+            echo '<div class="col-md-4">';
+            echo '<label>Tipus de reserva:</label>';
+            echo '<select class="form-select" name="tipo" id="tipo">';
+            echo '<option disabled>Selecciona una opció:</option>';
 
-                if (empty($_POST["vehiculo"])) {
-                    $vehiculo = data_input($_POST["vehiculo"]);
-                } else {
-                    $vehiculo = data_input($_POST["vehiculo"]);
-                }
+            $tipos = [
+                '1' => 'Finguer Class',
+                '2'  => 'Gold Finguer',
+                '3'  => 'Finguer Class Anual',
+            ];
 
-                if (empty($_POST["matricula"])) {
-                    $matricula = data_input($_POST["matricula"]);
-                } else {
-                    $matricula = data_input($_POST["matricula"]);
-                }
+            foreach ($tipos as $valor => $etiqueta) {
+                $selected = ($tipo_old === $valor) ? " selected" : "";
+                echo "<option value='" . htmlspecialchars($valor) . "'" . $selected . ">" . htmlspecialchars($etiqueta) . "</option>";
+            }
 
-                if (empty($_POST["vuelo"])) {
-                    $vuelo = data_input($_POST["vuelo"]);
-                } else {
-                    $vuelo = data_input($_POST["vuelo"]);
-                }
+            echo '</select>';
+            echo '</div>';
 
-                if (empty($_POST["notes"])) {
-                    $notes = data_input($_POST["notes"]);
-                } else {
-                    $notes = data_input($_POST["notes"]);
-                }
-                  
-               // Si no hi ha cap error, envia el formulari
-                if (!isset($hasError)) {
-                    $emailSent = true;
-          
-                } else { // Error > bloqueja i mostra avis
-                    echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</h4></strong>';
-                    echo 'Controla que totes les dades siguin correctes.</div>';
-                } 
-          
-                    $sql = "UPDATE reserves_parking SET buscadores=:buscadores, importe=:importe, processed=:processed, tipo=:tipo, horaEntrada=:horaEntrada, diaEntrada=:diaEntrada, horaSalida=:horaSalida, diaSalida=:diaSalida, vehiculo=:vehiculo, matricula=:matricula, vuelo=:vuelo, limpieza=:limpieza, notes=:notes
-                    WHERE id=:id";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bindParam(":buscadores", $buscadores, PDO::PARAM_INT);
-                    $stmt->bindParam(":importe", $importe, PDO::PARAM_INT);
-                    $stmt->bindParam(":processed", $processed, PDO::PARAM_INT);
-                    $stmt->bindParam(":tipo", $tipo, PDO::PARAM_INT);
-                    $stmt->bindParam(":horaEntrada", $horaEntrada, PDO::PARAM_STR);
-                    $stmt->bindParam(":diaEntrada", $diaEntrada, PDO::PARAM_STR);
-                    $stmt->bindParam(":horaSalida", $horaSalida, PDO::PARAM_STR);
-                    $stmt->bindParam(":diaSalida", $diaSalida, PDO::PARAM_STR);
-                    $stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
-                    $stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
-                    $stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
-                    $stmt->bindParam(":limpieza", $limpieza, PDO::PARAM_INT);
-                    $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
+            // Estado (enum: 'pendiente', 'pagada', 'cancelada', 'anual')
+            echo '<div class="col-md-4">';
+            echo '<label>Estat de la reserva:</label>';
+            echo '<select class="form-select" name="estado" id="estado">';
+            echo '<option disabled>Selecciona una opció:</option>';
 
-                    $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
-                    
-                    if ($stmt->execute()) {
-                        $codi_resposta = 1;
-                    } else {
-                        $codi_resposta = 2;
-                    }
-          
-                    if ($codi_resposta == 1)  {
-                    echo '<div class="alert alert-success" role="alert"><h4 class="alert-heading"><strong>Reserva actualizada correctament.</strong></h4>';
-                    echo "Reserva actualizada.</div>";
-                    } else { // Error > bloqueja i mostra avis
-                        echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
-                        echo 'Les dades no s\'han transmès correctament.</div>';
-                    }
-                }
-            
-                if ($codi_resposta == 2) { 
-                    echo '<form action="" method="post" id="update" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
+            $estados = [
+                'pendiente' => 'Pendent',
+                'pagada'    => 'Pagada',
+                'pago_oficina'  => 'Pago en oficina',
+                'cancelada' => 'Cancel·lada',
+                'anual'     => 'Anual',
+            ];
 
-                    echo '<h4>Dades de la reserva:</h4>';
+            foreach ($estados as $valor => $etiqueta) {
+                $selected = ($estado_old === $valor) ? " selected" : "";
+                echo "<option value='" . htmlspecialchars($valor) . "'" . $selected . ">" . htmlspecialchars($etiqueta) . "</option>";
+            }
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Nom i cognoms client:</label>';
-                    echo '<input type="text" class="form-control" id="nombre" readonly value="'.$nombre_old.'">';
-                    echo '</div>';
+            echo '</select>';
+            echo '</div>';
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Import reserva:</label>';
-                    echo '<input type="text" class="form-control" id="importe" name="importe" value="'.$importe_old.'">';
-                    echo '</div>';
+            echo "<hr>";
+            echo "<h4>Entrada i sortida:</h4>";
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Tipus de reserva:</label>';
-                    echo '<select class="form-select" name="tipo" id="tipo">';
-                    echo '<option selected disabled>Selecciona una opció:</option>';
-                    
-                    if ($tipo_old == 1) {
-                        echo "<option value='1' selected>Finguer Class</option>";
-                        echo "<option value='2'>Gold Finguer</option>"; 
-                      } else {
-                        echo "<option value='1'>Finguer Class</option>";
-                        echo "<option value='2' selected>Gold Finguer Class</option>";
-                      }
-                    echo '</select>';
-                    echo '</div>';
+            // Día entrada
+            echo '<div class="col-md-6">';
+            echo '<label>Dia entrada:</label>';
+            echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" value="' . htmlspecialchars((string)$diaEntrada_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Reserva pagada:</label>';
-                    echo '<select class="form-select" name="processed" id="processed">';
-                    echo '<option selected disabled>Selecciona una opció:</option>';
-                    
-                    if ($processed_old == 1) {
-                        echo "<option value='1' selected>SI</option>";
-                        echo "<option value='2'>NO</option>"; 
-                      } else {
-                        echo "<option value='1'>SI</option>";
-                        echo "<option value='2' selected>NO</option>";
-                      }
-                    echo '</select>';
-                    echo '</div>';
+            // Hora entrada
+            echo '<div class="col-md-6">';
+            echo '<label>Hora entrada:</label>';
+            echo '<input type="time" class="form-control" id="horaEntrada" name="horaEntrada" value="' . htmlspecialchars((string)$horaEntrada_old) . '">';
+            echo '</div>';
 
-                    echo "<hr>";
-                    echo "<h4>Entrada i sortida:</h4>";
+            // Día salida
+            echo '<div class="col-md-6">';
+            echo '<label>Dia sortida:</label>';
+            echo '<input type="date" class="form-control" id="diaSalida" name="diaSalida" value="' . htmlspecialchars((string)$diaSalida_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-6">';
-                    echo '<label>Dia entrada:</label>';
-                    echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" value="'.$diaEntrada_old.'">';
-                    echo '</div>';
+            // Hora salida
+            echo '<div class="col-md-6">';
+            echo '<label>Hora sortida:</label>';
+            echo '<input type="time" class="form-control" id="horaSalida" name="horaSalida" value="' . htmlspecialchars((string)$horaSalida_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-6">';
-                    echo '<label>Hora entrada:</label>';
-                    echo '<input type="text" class="form-control" id="horaEntrada" name="horaEntrada" value="'.$horaEntrada_old.'">';
-                    echo '</div>';
+            echo "<hr>";
 
-                    echo '<div class="col-md-6">';
-                    echo '<label>Dia sortida:</label>';
-                    echo '<input type="date" class="form-control" id="diaSalida" name="diaSalida" value="'.$diaSalida_old.'">';
-                    echo '</div>';
+            // Vehículo
+            echo '<div class="col-md-4">';
+            echo '<label>Model vehicle:</label>';
+            echo '<input type="text" class="form-control" id="vehiculo" name="vehiculo" value="' . htmlspecialchars((string)$vehiculo_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-6">';
-                    echo '<label>Hora sortida:</label>';
-                    echo '<input type="text" class="form-control" id="horaSalida" name="horaSalida" value="'.$horaSalida_old.'">';
-                    echo '</div>';
+            // Matrícula
+            echo '<div class="col-md-4">';
+            echo '<label>Número de matrícula:</label>';
+            echo '<input type="text" class="form-control" id="matricula" name="matricula" value="' . htmlspecialchars((string)$matricula_old) . '">';
+            echo '</div>';
 
-                    echo "<hr>";
+            // Vuelo
+            echo '<div class="col-md-4">';
+            echo '<label>Vol client:</label>';
+            echo '<input type="text" class="form-control" id="vuelo" name="vuelo" value="' . htmlspecialchars((string)$vuelo_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Model vehicle:</label>';
-                    echo '<input type="text" class="form-control" id="vehiculo" name="vehiculo" value="'.$vehiculo_old.'">';
-                    echo '</div>';
+            // Notas
+            echo '<div class="col-md-12">';
+            echo '<label>Nota reserva:</label>';
+            echo '<input type="text" class="form-control" id="notes" name="notes" value="' . htmlspecialchars((string)$notes_old) . '">';
+            echo '</div>';
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Número de matrícula:</label>';
-                    echo '<input type="text" class="form-control" id="matricula" name="matricula" value="'.$matricula_old.'">';
-                    echo '</div>';
+            echo "<div class='md-12' style='margin-top:15px;'>";
+            echo "<button id='update' name='update' type='submit' class='btn btn-primary'>Modificar reserva</button>";
+            echo "</div>";
 
-                    echo '<div class="col-md-4">';
-                    echo '<label>Vol client:</label>';
-                    echo '<input type="text" class="form-control" id="vuelo" name="vuelo" value="'.$vuelo_old.'">';
-                    echo '</div>';
-        
-
-                    echo '<div class="col-md-4">';
-                    echo '<label>Nota reserva:</label>';
-                    echo '<input type="text" class="form-control" id="notes" name="notes"  value="'.$notes_old.'">';
-                    echo '</div>';
-            
-                    echo '<div class="col-md-4">';
-                    echo '<label>Neteja:</label>';
-                    echo '<input type="text" class="form-control" id="nombre" readonly value="'.$limpieza2.'">';
-                    echo '</div>';
-              
-                    echo '<div class="col-md-4">';
-                    echo '<label>Buscador:</label>';
-                    echo '<select class="form-select" name="buscadores" id="buscadores">';
-                    echo '<option selected disabled>Selecciona una opció:</option>';
-                    echo "<option value='NULL' selected>Sense buscador</option>"; 
-                    $sql = "SELECT b.id, b.nombre
-                    FROM reservas_buscadores AS b
-                    ORDER BY b.nombre ASC";
-
-                    $pdo_statement = $conn->prepare($sql);
-                    $pdo_statement->execute();
-                    $result = $pdo_statement->fetchAll();
-                    foreach($result as $row) {
-                        $id = $row['id'];
-                        $nombre = $row['nombre'];
-                        if ($buscadores_old == $id) {
-                            echo "<option value=".$buscadores_old." selected>".$nombre."</option>"; 
-                          } else {
-                            echo "<option value=".$id.">".$nombre."</option>"; 
-                          }
-                      }
-                    echo '</select>';
-                    echo '</div>';
-        
-                    echo "<div class='md-12'>";
-                    echo "<button id='update' name='update' type='submit' class='btn btn-primary'>Modificar reserva</button><a href='".APP_SERVER."/reserva/modificar/reserva/".$id_old."'></a>
-                    </div>";
-        
-                    echo "</form>";
-                } else {
-                    echo '<a href="'.APP_WEB.'/inici" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
-                }
-           
-        
+            echo "</form>";
+        } else {
+            echo '<a href="' . APP_WEB . '/inici" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+        }
     } else {
         echo "Error: aquest ID no és vàlid";
     }
@@ -313,4 +295,3 @@ if (is_numeric($id)) {
 }
 
 echo "</div>";
-?>

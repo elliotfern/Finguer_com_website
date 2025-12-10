@@ -21,6 +21,7 @@ export interface Reserva {
   notes: string;
   vuelo: string;
   estado_vehiculo: string;
+  estado: string;
   canal: number;
   factura_id?: number | null;
   factura_numero?: string | null;

@@ -22,6 +22,9 @@ $base_routes = [
 
     // API FACTURES
     '/api/factures/pdf' => 'src/backend/api/intranet/factures/generar-factura.php',
+    '/api/factures/get' => 'src/backend/api/intranet/factures/get-factura.php',
+    //'/api/factures/logs' => 'src/backend/api/intranet/factures/logs.php',
+    '/api/factures/hash' => 'src/backend/api/intranet/factures/hash.php',
 ];
 
 // Rutas principales sin idioma explícito (solo para el idioma por defecto)
@@ -56,6 +59,10 @@ $routes = [
 
     // API FACTURES
     '/api/factures/pdf' => ['view' => 'src/backend/api/intranet/factures/generar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/factures/get' => ['view' => 'src/backend/api/intranet/factures/get-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+    //'/api/factures/logs' => ['view' => 'src/backend/api/intranet/factures/logs.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/factures/hash' => ['view' => 'src/backend/api/intranet/factures/hash.php', 'needs_session' => false, 'no_header_footer' => true],
+
 ];
 
 // Unir rutas base con rutas específicas de idioma

@@ -15,6 +15,8 @@
             <a href="<?php APP_SERVER; ?>/control/reserves-parking" class="btn btn-danger menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Estat 2: al parking</a>
 
             <a href="<?php APP_SERVER; ?>/control/reserves-completades" class="btn btn-success menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Estat 3: completades</a>
+
+            <a href="<?php APP_SERVER; ?>/control/facturacio" class="btn btn-primary menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Facturació</a>
         </div>
     </div>
 </div>

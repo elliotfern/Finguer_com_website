@@ -2,6 +2,23 @@ import { Reserva } from '../../../../types/interfaces';
 import { actualizarEstadoReserva } from './actualitzarEstatReserva';
 import { ComptadorReserves, comptadorReserves } from './comptadorReserves';
 
+function formatEstadoReservaHtml(estado: string): string {
+  switch (estado) {
+    case 'pendiente':
+      return '<span class="badge bg-warning text-dark">Pendent de pagament</span>';
+    case 'pago_oficina':
+      return '<span class="badge bg-info text-dark">Pagament a oficina</span>';
+    case 'pagada':
+      return '<span class="badge bg-success">Pagada</span>';
+    case 'cancelada':
+      return '<span class="badge bg-danger">Cancel·lada</span>';
+    case 'anual':
+      return '<span class="badge bg-primary">Client anual</span>';
+    default:
+      return `<span class="badge bg-secondary">${estado}</span>`;
+  }
+}
+
 // Crea la tabla completa (div -> table -> thead -> tbody) si no existe y devuelve el <tbody>
 const getOrCreateTableBody = (): HTMLTableSectionElement => {
   // Contenedor donde se pintará la tabla
@@ -31,6 +48,7 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
       <th>Núm. Comanda // data</th>
       <th>Import</th>
       <th>Factura</th>
+      <th>Veri*factu</th>
       <th>Pagat</th>
       <th>Canal</th>
       <th>Tipus</th>
@@ -187,41 +205,46 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       html += '</td>';
 
+      // 3 - VERIFACTU
+      html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">NO</a></td>`;
+
       // 3 - Pagado
       html += '<td>';
 
+      // === Cálculo antigüedad reserva ===
+      const rawFecha = data.fecha_reserva as string; // ej: "2025-10-21 13:30:47"
+      const fechaReserva = new Date(rawFecha.replace(' ', 'T')); // "2025-10-21T13:30:47"
+      const ahora = new Date();
+
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const diffDays = Math.floor((ahora.getTime() - fechaReserva.getTime()) / MS_PER_DAY);
+
+      // Cambia 45 por el umbral que prefieras (40, 60…)
+      const MAX_DIAS_VERIFICACION = 31;
+      const puedeVerificar = diffDays <= MAX_DIAS_VERIFICACION;
+      const estadoHtml = formatEstadoReservaHtml(data.estado);
+
       if (Number(data.localizador) === 1) {
-        html += '<button type="button" class="btn btn-success">SI</button>';
-        html += '<p>Client anual</p>';
+        html += `<p><button type="button" class="btn btn-success">SI</button></p>
+        <p>${estadoHtml}</p>`;
       } else {
-        // Calcular si la reserva tiene más de 2 meses
-        const fechaReserva = new Date(data.fecha_reserva);
-        const ahora = new Date();
-
-        // Diferencia en milisegundos (Date -> number con getTime())
-        const diffMs = ahora.getTime() - fechaReserva.getTime();
-
-        // Aproximación de meses: 30 días por mes
-        const diffMeses = diffMs / (1000 * 60 * 60 * 24 * 30);
-        const esAntigua = diffMeses > 2;
-
         if (Number(data.processed) === 1) {
-          html += '<button type="button" class="btn btn-success">SI</button>';
+          html += `<p><button type="button" class="btn btn-success">SI</button></p>
+          <p>${estadoHtml}</p>`;
 
-          // Sólo mostrar enlace si NO es antigua
-          if (!esAntigua) {
-            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}">
-        <strong>Verificar pagament</strong></a></p>`;
+          // SOLO mostramos el enlace si la reserva aún está dentro del plazo “seguro”
+          if (puedeVerificar) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
           }
         } else if (Number(data.canal) === 3) {
-          html += '<button type="button" class="btn btn-danger">NO</button>';
+          html += `<p><button type="button" class="btn btn-danger">NO</button></p>
+          <p>${estadoHtml}</p>`;
         } else {
-          html += '<button type="button" class="btn btn-danger">NO</button>';
+          html += `<p><button type="button" class="btn btn-danger">NO</button></p>
+          <p>${estadoHtml}</p>`;
 
-          // Sólo mostrar enlace si NO es antigua
-          if (!esAntigua) {
-            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}">
-        <strong>Verificar pagament</strong></a></p>`;
+          if (puedeVerificar) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
           }
         }
       }

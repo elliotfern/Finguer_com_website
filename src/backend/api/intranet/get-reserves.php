@@ -49,16 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                     $orderDirection = 'DESC';
                 }
 
-                // Filtro extra: excluir clientes anuales (localizador = 1) solo cuando están pendientes de entrada
-                $extraWhere = '';
-                if ($estadoVehiculo === 'pendiente_entrada') {
-                    $extraWhere = ' AND pr.localizador <> 1';
-                }
-
                 // --- 2) Query con placeholder ---
                 $query = "SELECT
                 -- Identificadors bàsics
                 pr.localizador,
+                pr.estado,
                 pr.fecha_reserva,
 
                 -- Nom i cognom del client (aproximat a partir de u.nombre)
@@ -143,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
                 -- Filtrar por estado_vehiculo dinámico
                 WHERE pr.estado_vehiculo = :estado_vehiculo
-                {$extraWhere}
+           
                 ORDER BY {$orderByField} {$orderDirection}{$limitClause};";
 
                 $stmt = $conn->prepare($query);
@@ -166,7 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                         estado_vehiculo,
                         COUNT(*) AS total
                     FROM epgylzqu_parking_finguer_v2.parking_reservas
-                    WHERE NOT (estado_vehiculo = 'pendiente_entrada' AND localizador = 1)
                     GROUP BY estado_vehiculo
                 ";
 
