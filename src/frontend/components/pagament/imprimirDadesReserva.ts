@@ -1,66 +1,112 @@
-import { PaymentData } from '../../types/interfaces';
+// src/pages/pago/imprimirDadesReserva.ts
 
-// --- Helpers Safari-safe ---
-const setText = (id: string, value: unknown): void => {
+type CarroLinea = {
+  codigo: string;
+  descripcion: string;
+  cantidad: number;
+  iva_percent: number;
+  base: number;
+  iva: number;
+  total: number;
+};
+
+type CarroSnapshot = {
+  diasReserva?: number;
+  seleccion?: {
+    tipoReserva?: string;
+    limpieza?: string;
+    seguroCancelacion?: number;
+    fechaEntrada?: string;
+    fechaSalida?: string;
+  };
+  lineas?: CarroLinea[];
+  totales?: {
+    subtotal_sin_iva: number;
+    iva_total: number;
+    total_con_iva: number;
+  };
+};
+
+type TotalesFallback = {
+  subtotal: number;
+  iva_total: number;
+  total: number;
+};
+
+function setText(id: string, value: string): void {
   const el = document.getElementById(id);
-  if (!el) return;
-  const str = value === null || value === undefined ? '' : String(value);
-  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-    el.value = str;
+  if (el) el.textContent = value;
+}
+
+function eur2(n: number): string {
+  return n.toFixed(2).replace('.', ',');
+}
+
+function splitDateTime(dt?: string): { date: string; time: string } {
+  if (!dt) return { date: '', time: '' };
+  const [d, t] = dt.split(' ');
+  const [y, m, day] = d.split('-');
+  const dateEs = `${day}/${m}/${y}`;
+  const time = (t ?? '').slice(0, 5);
+  return { date: dateEs, time };
+}
+
+function findLinea(lineas: CarroLinea[], pred: (l: CarroLinea) => boolean): CarroLinea | undefined {
+  return lineas.find(pred);
+}
+
+export function imprimirDadesReserva(snapshot: CarroSnapshot, totals: TotalesFallback): void {
+  const lineas = snapshot.lineas ?? [];
+
+  // Reserva / Limpieza / Seguro (por prefijo para que sea robusto)
+  const lineaReserva = findLinea(lineas, (l) => l.codigo.startsWith('RESERVA'));
+  const lineaLimpieza = findLinea(lineas, (l) => l.codigo.startsWith('LIMPIEZA') || l.codigo.startsWith('LAVADO'));
+  const lineaSeguro = findLinea(lineas, (l) => l.codigo.startsWith('SEGURO'));
+
+  // Tipo reserva (usa descripción real)
+  setText('tipoReserva', lineaReserva?.descripcion ?? snapshot.seleccion?.tipoReserva ?? '');
+
+  // Fechas/horas (vienen en seleccion)
+  const ent = splitDateTime(snapshot.seleccion?.fechaEntrada);
+  const sal = splitDateTime(snapshot.seleccion?.fechaSalida);
+
+  setText('fechaEntrada', ent.date);
+  setText('horaEntrada', ent.time);
+  setText('fechaSalida', sal.date);
+  setText('horaSalida', sal.time);
+
+  // Días
+  setText('diasReserva', String(snapshot.diasReserva ?? ''));
+
+  // Precios “sin IVA” (en tu tabla pones “Sin IVA”, así que usamos base)
+  setText('precioReserva', eur2(lineaReserva?.base ?? 0));
+
+  // Seguro
+  if (lineaSeguro) {
+    setText('seguroCancelacion', 'Contratado');
+    setText('costeSeguro2', `${eur2(lineaSeguro.base)} € (sin IVA)`);
   } else {
-    el.textContent = str;
+    setText('seguroCancelacion', 'No');
+    setText('costeSeguro2', `0,00 €`);
   }
-};
 
-// Acepta "12,34" o "12.34" y formatea "12,34"
-const toMoney = (v: unknown): string => {
-  const s = v === null || v === undefined ? '' : String(v).trim().replace(',', '.');
-  const n = parseFloat(s);
-  const num = isNaN(n) ? 0 : n;
-  return num.toFixed(2).replace('.', ',');
-};
+  // Limpieza
+  if (lineaLimpieza) {
+    setText('tipoLimpieza2', lineaLimpieza.descripcion);
+    setText('costeLimpieza', `${eur2(lineaLimpieza.base)} € (sin IVA)`);
+  } else {
+    setText('tipoLimpieza2', 'No');
+    setText('costeLimpieza', `0,00 €`);
+  }
 
-export function imprimirDadesReserva(data: PaymentData): void {
-  // Tipo de reserva
-  let tipo = 'Reserva desconocida';
-  if (data.tipoReserva === 'finguer_class') tipo = 'Finguer Class';
-  else if (data.tipoReserva === 'gold_finguer') tipo = 'Gold Finguer Class';
-  setText('tipoReserva', tipo);
+  // Totales: preferimos snapshot.totales si existe, sino fallback del endpoint
+  const sub = snapshot.totales?.subtotal_sin_iva ?? totals.subtotal;
+  const iva = snapshot.totales?.iva_total ?? totals.iva_total;
+  const tot = snapshot.totales?.total_con_iva ?? totals.total;
 
-  // Fechas y horas
-  setText('fechaEntrada', data.fechaEntrada);
-  setText('horaEntrada', data.horaEntrada);
-  setText('fechaSalida', data.fechaSalida);
-  setText('horaSalida', data.horaSalida);
-
-  // Días de reserva (sin nullish coalescing)
-  setText('diasReserva', data.diasReserva != null ? String(data.diasReserva) : '');
-
-  // Seguro de cancelación
-  let seguro = 'Desconocido';
-  if (data.seguroCancelacion === '1') seguro = 'Contratado';
-  else if (data.seguroCancelacion === '2') seguro = 'No contratado';
-  setText('seguroCancelacion', seguro);
-
-  // Tipo limpieza
-  let tipoLimpieza = 'Desconocido';
-  if (data.limpieza === '0') tipoLimpieza = 'No contratado';
-  if (data.limpieza === '15') tipoLimpieza = 'Servicio de limpieza exterior';
-  if (data.limpieza === '35') tipoLimpieza = 'Servicio de lavado exterior + aspirado tapicería interior';
-  if (data.limpieza === '95') tipoLimpieza = 'Lavado PRO. Lo dejamos como nuevo';
-  setText('tipoLimpieza2', tipoLimpieza);
-
-  // Precios (parser tolerante y formateo consistente)
-  setText('precioReserva', toMoney(data.precioReserva));
-  setText('costeSeguro2', `${toMoney(data.costeSeguro)} € (sin IVA)`);
-  setText('costeLimpieza', `${toMoney(data.costoLimpiezaSinIva)} € (sin IVA)`);
-  setText('costeSubTotal', toMoney(data.precioSubtotal));
-  setText('costeIva', toMoney(data.costeIva));
-
-  const total = toMoney(data.precioTotal);
-  setText('costeTotal', total);
-  setText('costeTotal2', total);
-  setText('costeTotal3', total);
-
-  console.log('[imprimirDadesReserva] Datos pintados en el DOM');
+  setText('costeSubTotal', eur2(sub));
+  setText('costeIva', eur2(iva));
+  setText('costeTotal', eur2(tot));
+  setText('costeTotal2', eur2(tot));
+  setText('costeTotal3', eur2(tot)); // por si reactivas bizum
 }

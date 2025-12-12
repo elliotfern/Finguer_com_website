@@ -1,60 +1,61 @@
 <?php
-// Configuración de cabeceras para aceptar JSON y responder JSON
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *"); // Permitir acceso desde cualquier origen (opcional, según el caso)
-header("Access-Control-Allow-Methods: POST");
 
-// Leer el cuerpo de la solicitud JSON
+declare(strict_types=1);
+
+header("Content-Type: application/json; charset=utf-8");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type");
+
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Verificar que los datos se recibieron correctamente
-if (!$data) {
+if (!is_array($data)) {
     echo json_encode([
         "status" => "error",
         "message" => "No se enviaron datos válidos.",
-        "errors" => []
+        "errors"  => []
     ]);
     exit;
 }
 
 $errors = [];
-$hasError = false;
 
 // ------------------------
-// VALIDACIONES DE CAMPOS
+// VALIDACIONES DE CAMPOS (igual que tenías)
 // ------------------------
-
-// Validación para 'vehiculo'
 if (empty($data["vehiculo"])) {
     $errors["vehiculo"] = "El modelo del vehículo es obligatorio.";
-    $hasError = true;
 } elseif (!preg_match("/^[a-zA-Z0-9\s]+$/", $data["vehiculo"])) {
     $errors["vehiculo"] = "El modelo del vehículo debe contener solo letras, números y espacios.";
-    $hasError = true;
 }
 
-// Validación para 'matricula'
 if (empty($data["matricula"])) {
     $errors["matricula"] = "La matrícula del vehículo es obligatoria.";
-    $hasError = true;
 }
 
-// Validación para 'vuelo'
 if (empty($data["vuelo"])) {
     $errors["vuelo"] = "El número del vuelo es obligatorio.";
-    $hasError = true;
 }
 
-// Validación para 'numeroPersonas'
 if (empty($data["numeroPersonas"])) {
     $errors["numero_personas"] = "El número de acompañantes es obligatorio.";
-    $hasError = true;
 } elseif (!filter_var($data["numeroPersonas"], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1, "max_range" => 20]])) {
     $errors["numero_personas"] = "El número de acompañantes debe ser un número entre 1 y 20.";
-    $hasError = true;
 }
 
-// Si hay errores, enviarlos al cliente
+// ✅ NUEVO: session obligatoria
+$session = trim((string)($data["session"] ?? ''));
+if ($session === '') {
+    $errors["session"] = "Falta session del carrito.";
+}
+
+// idClient + idReserva obligatorios
+$idClient  = isset($data["idClient"]) ? (int)$data["idClient"] : 0;
+$idReserva = isset($data["idReserva"]) ? trim((string)$data["idReserva"]) : '';
+
+if ($idClient <= 0) $errors["idClient"] = "Falta idClient.";
+if ($idReserva === '') $errors["idReserva"] = "Falta idReserva.";
+
 if (!empty($errors)) {
     echo json_encode([
         "status" => "error",
@@ -65,100 +66,90 @@ if (!empty($errors)) {
 }
 
 // ------------------------
-// EXTRAER Y NORMALIZAR DATOS
+// NORMALIZAR FORM DATA
 // ------------------------
-
-
-$vehiculo        = data_input($data["vehiculo"]);
-$matricula       = data_input($data["matricula"]);
-$vuelo           = data_input($data["vuelo"]);
-$numeroPersonas  = (int) data_input($data["numeroPersonas"]);
-
-$idClient        = isset($data["idClient"]) ? data_input($data["idClient"], ENT_NOQUOTES) : null;
-$idReserva       = isset($data["idReserva"]) ? data_input($data["idReserva"], ENT_NOQUOTES) : null; // localizador
-$tipo            = isset($data["tipo"]) ? data_input($data["tipo"], ENT_NOQUOTES) : null;
-$horaEntrada     = isset($data["horaEntrada"]) ? data_input($data["horaEntrada"], ENT_NOQUOTES) : null;
-$horaSalida      = isset($data["horaSalida"]) ? data_input($data["horaSalida"], ENT_NOQUOTES) : null;
-$limpieza        = isset($data["limpieza"]) ? $data["limpieza"] : null; // 0/1/2/3
-$diaEntrada2     = isset($data["diaEntrada"]) ? $data["diaEntrada"] : null;
-$diaSalida2      = isset($data["diaSalida"]) ? $data["diaSalida"] : null;
-$seguroCancelacion = isset($data["cancelacion"]) ? (int)$data["cancelacion"] : 0;
-
-// Costes (los seguimos leyendo del frontend)
-$costeSubTotal   = isset($data["costeSubTotal"])  ? (float)$data["costeSubTotal"]  : 0;
-$costeIva        = isset($data["costeIva"])       ? (float)$data["costeIva"]       : 0;
-$importe         = isset($data["costeTotal"])     ? (float)$data["costeTotal"]     : 0;
-
-// Costes (los seguimos leyendo del frontend, de momento no se usan)
-$costeSeguro     = isset($data["costeSeguro"])    ? (float)$data["costeSeguro"]    : 0;
-$costeReserva    = isset($data["costeReserva"])   ? (float)$data["costeReserva"]   : 0;
-$costeLimpieza   = isset($data["costeLimpieza"])  ? (float)$data["costeLimpieza"]  : 0;
-
-// checkIn / processed ya no se guardan en la nueva tabla; usamos estados nuevos
-//$checkIn      = isset($data["checkIn"]) ? $data["checkIn"] : 5;
-
-// Validar que todos los datos necesarios estén presentes
-if (!$idClient || !$idReserva || !$tipo || !$horaEntrada || !$horaSalida || !$vuelo || !$numeroPersonas) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Datos incompletos."
-    ]);
-    exit;
-}
+$vehiculo       = data_input($data["vehiculo"]);
+$matricula      = data_input($data["matricula"]);
+$vuelo          = data_input($data["vuelo"]);
+$numeroPersonas = (int) data_input($data["numeroPersonas"]);
+$fechaReserva   = date("Y-m-d H:i:s");
 
 // ------------------------
-// CONVERTIR FECHAS
+// DB
 // ------------------------
-
-$diaEntrada = null;
-$diaSalida  = null;
-
-if ($diaEntrada2) {
-    $fecha_objeto = DateTime::createFromFormat("d/m/Y", $diaEntrada2);
-    if ($fecha_objeto !== false) {
-        $diaEntrada = $fecha_objeto->format("Y-m-d");
-    }
-}
-
-if ($diaSalida2) {
-    $fecha_objeto2 = DateTime::createFromFormat("d/m/Y", $diaSalida2);
-    if ($fecha_objeto2 !== false) {
-        $diaSalida = $fecha_objeto2->format("Y-m-d");
-    }
-}
-
-if (!$diaEntrada || !$diaSalida) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Formato de fecha de entrada o salida inválido."
-    ]);
-    exit;
-}
-
-// Montamos DATETIME completos para entrada/salida
-// Asumimos horaEntrada/horaSalida en formato HH:MM
-$entradaPrevista = $diaEntrada . ' ' . $horaEntrada . ':00';
-$salidaPrevista  = $diaSalida  . ' ' . $horaSalida  . ':00';
-
-$fechaReserva = date("Y-m-d H:i:s");
-
-// Mapear tipo string → número
-if ($tipo === "finguer_class") {
-    $tipoNumber = 1;
-} else {
-    $tipoNumber = 2; // Gold Finguer
-}
-
-// ------------------------
-// INSERTAR EN NUEVA BD
-// ------------------------
-
 global $conn;
+/** @var PDO $conn */
 
 try {
+    // 1) leer carrito desde BD
+    $stmtCarro = $conn->prepare("
+        SELECT subtotal_sin_iva, iva_total, total_con_iva, lineas_json
+        FROM carro_compra
+        WHERE session = :session
+        LIMIT 1
+    ");
+    $stmtCarro->execute([':session' => $session]);
+    $carro = $stmtCarro->fetch(PDO::FETCH_ASSOC);
+
+    if (!$carro) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Carrito no encontrado para esta session."
+        ]);
+        exit;
+    }
+
+    $subtotal = (float)$carro['subtotal_sin_iva'];
+    $ivaTotal = (float)$carro['iva_total'];
+    $total    = (float)$carro['total_con_iva'];
+
+    $snapshot = json_decode((string)$carro['lineas_json'], true);
+    if (!is_array($snapshot)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Snapshot del carrito inválido."
+        ]);
+        exit;
+    }
+
+    $seleccion = $snapshot['seleccion'] ?? null;
+    $lineas    = $snapshot['lineas'] ?? null;
+    $diasReserva = $snapshot['diasReserva'] ?? null;
+
+    if (!is_array($seleccion) || !is_array($lineas) || empty($lineas)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Snapshot incompleto (seleccion/lineas)."
+        ]);
+        exit;
+    }
+
+    // 2) fechas previstas desde snapshot (YA viene como "YYYY-MM-DD HH:MM:SS")
+    $entradaPrevista = (string)($seleccion['fechaEntrada'] ?? '');
+    $salidaPrevista  = (string)($seleccion['fechaSalida'] ?? '');
+
+    if ($entradaPrevista === '' || $salidaPrevista === '') {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Faltan fechas en el carrito."
+        ]);
+        exit;
+    }
+
+    // 3) tipo reserva → número (ajusta si en snapshot guardas otros códigos)
+    $tipoStr = (string)($seleccion['tipoReserva'] ?? '');
+    // ejemplos típicos: "RESERVA_FINGUER" o "RESERVA_FINGUER_GOLD" o "finguer_class"
+    $tipoNumber = 1;
+    if (stripos($tipoStr, 'GOLD') !== false || $tipoStr === 'gold_finguer') {
+        $tipoNumber = 2;
+    }
+
+    // ------------------------
+    // INSERTAR RESERVA + SERVICIOS
+    // ------------------------
     $conn->beginTransaction();
 
-    // 1) Insert en parking_reservas
+    // 4) Insert en parking_reservas (totales desde BD)
     $sqlReserva = "
         INSERT INTO epgylzqu_parking_finguer_v2.parking_reservas
         (
@@ -196,57 +187,40 @@ try {
         )
     ";
 
-    /** @var PDO $conn */
     $stmt = $conn->prepare($sqlReserva);
-    $estadoReserva       = 'pendiente';
-    $estadoVehiculo      = 'pendiente_entrada';
 
-    $stmt->bindParam(":usuario_id",      $idClient,        PDO::PARAM_INT);
-    $stmt->bindParam(":localizador",     $idReserva,       PDO::PARAM_STR);
-    $stmt->bindParam(":estado",          $estadoReserva,   PDO::PARAM_STR);
-    $stmt->bindParam(":estado_vehiculo", $estadoVehiculo,  PDO::PARAM_STR);
-    $stmt->bindParam(":fecha_reserva",   $fechaReserva,    PDO::PARAM_STR);
-    $stmt->bindParam(":entrada_prevista", $entradaPrevista, PDO::PARAM_STR);
-    $stmt->bindParam(":salida_prevista", $salidaPrevista,  PDO::PARAM_STR);
-    $stmt->bindParam(":personas",        $numeroPersonas,  PDO::PARAM_INT);
-    $stmt->bindParam(":tipo",            $tipoNumber,      PDO::PARAM_INT);
-    $stmt->bindParam(":vuelo",           $vuelo,           PDO::PARAM_STR);
-    $stmt->bindParam(":vehiculo",        $vehiculo,        PDO::PARAM_STR);
-    $stmt->bindParam(":matricula",       $matricula,       PDO::PARAM_STR);
-    $stmt->bindParam(":subtotal_calculado", $costeSubTotal);
-    $stmt->bindParam(":iva_calculado",     $costeIva);
-    $stmt->bindParam(":total_calculado",   $importe);
+    $estadoReserva  = 'pendiente';
+    $estadoVehiculo = 'pendiente_entrada';
 
-    if (!$stmt->execute()) {
-        throw new Exception("Error al insertar la reserva.");
-    }
+    $stmt->execute([
+        ':usuario_id'        => $idClient,
+        ':localizador'       => $idReserva,
+        ':estado'            => $estadoReserva,
+        ':estado_vehiculo'   => $estadoVehiculo,
+        ':fecha_reserva'     => $fechaReserva,
+        ':entrada_prevista'  => $entradaPrevista,
+        ':salida_prevista'   => $salidaPrevista,
+        ':personas'          => $numeroPersonas,
+        ':tipo'              => $tipoNumber,
+        ':vuelo'             => $vuelo,
+        ':vehiculo'          => $vehiculo,
+        ':matricula'         => $matricula,
+        ':subtotal_calculado' => $subtotal,
+        ':iva_calculado'     => $ivaTotal,
+        ':total_calculado'   => $total,
+    ]);
 
     $reservaId = (int)$conn->lastInsertId();
 
-    // --------------------------------------------------
-    // 2) Insertar servicios en parking_reservas_servicios
-    // --------------------------------------------------
-
-    // Helper para obtener servicio del catálogo
-    $sqlServicio = "
+    // 5) preparar catálogo servicios (mapeo codigo -> id,nombre,iva)
+    $stmtServicio = $conn->prepare("
         SELECT id, nombre, iva_percent
         FROM epgylzqu_parking_finguer_v2.parking_servicios_catalogo
         WHERE codigo = :codigo AND activo = 1
         LIMIT 1
-    ";
-    $stmtServicio = $conn->prepare($sqlServicio);
+    ");
 
-    // 2.1 Servicio de parking (obligatorio)
-    $codigoParking = ($tipoNumber === 1) ? 'RESERVA_FINGUER' : 'RESERVA_FINGUER_GOLD';
-
-    $stmtServicio->execute([':codigo' => $codigoParking]);
-    $servParking = $stmtServicio->fetch(PDO::FETCH_ASSOC);
-
-    if (!$servParking) {
-        throw new Exception("No se ha encontrado el servicio de parking en el catálogo.");
-    }
-
-    $sqlInsertServicio = "
+    $stmtInsertServicio = $conn->prepare("
         INSERT INTO epgylzqu_parking_finguer_v2.parking_reservas_servicios
         (
             reserva_id,
@@ -257,8 +231,7 @@ try {
             impuesto_percent,
             total_base,
             total_impuesto,
-            total_linea,
-            es_coste
+            total_linea
         ) VALUES (
             :reserva_id,
             :servicio_id,
@@ -268,106 +241,47 @@ try {
             :impuesto_percent,
             :total_base,
             :total_impuesto,
-            :total_linea,
-            :es_coste
+            :total_linea
         )
-    ";
+    ");
 
-    $stmtInsertServicio = $conn->prepare($sqlInsertServicio);
+    // 6) Insertar cada línea del snapshot como servicio
+    foreach ($lineas as $l) {
+        if (!is_array($l)) continue;
 
-    // Insert línea de parking
-    $cantidad          = 1;
-    $precioParking     = $costeReserva;       // base parking
-    $ivaParking        = $servParking['iva_percent'];
-    $totalBaseParking  = $precioParking;
-    $totalImpParking   = 0;                   // Opción A: no calculamos IVA aquí
-    $totalLineaParking = $precioParking;
-    $esCoste           = 0;
+        $codigo = (string)($l['codigo'] ?? '');
+        if ($codigo === '') continue;
 
-    $stmtInsertServicio->execute([
-        ':reserva_id'       => $reservaId,
-        ':servicio_id'      => $servParking['id'],
-        ':descripcion'      => $servParking['nombre'],
-        ':cantidad'         => $cantidad,
-        ':precio_unitario'  => $precioParking,
-        ':impuesto_percent' => $ivaParking,
-        ':total_base'       => $totalBaseParking,
-        ':total_impuesto'   => $totalImpParking,
-        ':total_linea'      => $totalLineaParking,
-        ':es_coste'         => $esCoste,
-    ]);
+        $stmtServicio->execute([':codigo' => $codigo]);
+        $serv = $stmtServicio->fetch(PDO::FETCH_ASSOC);
 
-    // 2.2 Servicio de limpieza (si aplica)
-    if ($limpieza && $costeLimpieza > 0) {
-        switch ((int)$limpieza) {
-            case 1:
-                $codigoLimpieza = 'LIMPIEZA_EXT';
-                break;
-            case 2:
-                $codigoLimpieza = 'LIMPIEZA_EXT_INT';
-                break;
-            case 3:
-                $codigoLimpieza = 'LIMPIEZA_PRO';
-                break;
-            default:
-                $codigoLimpieza = null;
+        if (!$serv) {
+            // Si prefieres fallar duro, cambia por throw new Exception(...)
+            throw new Exception("Servicio no encontrado en catálogo: " . $codigo);
         }
 
-        if ($codigoLimpieza) {
-            $stmtServicio->execute([':codigo' => $codigoLimpieza]);
-            $servLimpieza = $stmtServicio->fetch(PDO::FETCH_ASSOC);
+        $cantidad    = (float)($l['cantidad'] ?? 1);
+        $base        = (float)($l['base'] ?? 0);
+        $ivaLinea    = (float)($l['iva'] ?? 0);
+        $totalLinea  = (float)($l['total'] ?? 0);
+        $ivaPercent  = (float)($l['iva_percent'] ?? $serv['iva_percent']);
 
-            if ($servLimpieza) {
-                $precioLimpieza     = $costeLimpieza;
-                $ivaLimpieza        = $servLimpieza['iva_percent'];
-                $totalBaseLimpieza  = $precioLimpieza;
-                $totalImpLimpieza   = 0;
-                $totalLineaLimpieza = $precioLimpieza;
+        // precio_unitario: si cantidad > 0, distribuimos base
+        $precioUnit = ($cantidad > 0) ? round($base / $cantidad, 2) : $base;
 
-                $stmtInsertServicio->execute([
-                    ':reserva_id'       => $reservaId,
-                    ':servicio_id'      => $servLimpieza['id'],
-                    ':descripcion'      => $servLimpieza['nombre'],
-                    ':cantidad'         => 1,
-                    ':precio_unitario'  => $precioLimpieza,
-                    ':impuesto_percent' => $ivaLimpieza,
-                    ':total_base'       => $totalBaseLimpieza,
-                    ':total_impuesto'   => $totalImpLimpieza,
-                    ':total_linea'      => $totalLineaLimpieza,
-                    ':es_coste'         => 0,
-                ]);
-            }
-        }
+        $stmtInsertServicio->execute([
+            ':reserva_id'       => $reservaId,
+            ':servicio_id'      => $serv['id'],
+            ':descripcion'      => (string)($l['descripcion'] ?? $serv['nombre']),
+            ':cantidad'         => $cantidad,
+            ':precio_unitario'  => $precioUnit,
+            ':impuesto_percent' => $ivaPercent,
+            ':total_base'       => $base,
+            ':total_impuesto'   => $ivaLinea,
+            ':total_linea'      => $totalLinea,
+        ]);
     }
 
-    // 2.3 Servicio de seguro de cancelación (si aplica)
-    if ($seguroCancelacion === 1 && $costeSeguro > 0) {
-        $stmtServicio->execute([':codigo' => 'SEGURO_CANCELACION']);
-        $servSeguro = $stmtServicio->fetch(PDO::FETCH_ASSOC);
-
-        if ($servSeguro) {
-            $precioSeguro     = $costeSeguro;
-            $ivaSeguro        = $servSeguro['iva_percent'];
-            $totalBaseSeguro  = $precioSeguro;
-            $totalImpSeguro   = 0;
-            $totalLineaSeguro = $precioSeguro;
-
-            $stmtInsertServicio->execute([
-                ':reserva_id'       => $reservaId,
-                ':servicio_id'      => $servSeguro['id'],
-                ':descripcion'      => $servSeguro['nombre'],
-                ':cantidad'         => 1,
-                ':precio_unitario'  => $precioSeguro,
-                ':impuesto_percent' => $ivaSeguro,
-                ':total_base'       => $totalBaseSeguro,
-                ':total_impuesto'   => $totalImpSeguro,
-                ':total_linea'      => $totalLineaSeguro,
-                ':es_coste'         => 0,
-            ]);
-        }
-    }
-
-    // Si todo fue bien:
     $conn->commit();
 
     echo json_encode([
@@ -376,16 +290,15 @@ try {
         "data" => [
             "reserva_id"  => $reservaId,
             "localizador" => $idReserva,
-            "importe"     => $importe,
-            "subTotal"    => $costeSubTotal,
-            "iva"         => $costeIva
+            "importe"     => $total,
+            "subTotal"    => $subtotal,
+            "iva"         => $ivaTotal,
+            "diasReserva" => $diasReserva,
         ]
     ]);
     exit;
 } catch (Exception $e) {
-    if ($conn->inTransaction()) {
-        $conn->rollBack();
-    }
+    if ($conn && $conn->inTransaction()) $conn->rollBack();
 
     echo json_encode([
         "status" => "error",

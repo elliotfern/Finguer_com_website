@@ -67,7 +67,7 @@ export const seleccionaHoraTipoReserva = () => {
 
   // Función para llenar las opciones de hora en un select específico
   const llenarHoras = (tipo: string, select: HTMLSelectElement, fecha: Date) => {
-    let horas = tipo === 'gold_finguer' ? horasGoldFinguer : horasFinguerClass;
+    let horas = tipo === 'RESERVA_FINGUER_GOLD' ? horasGoldFinguer : horasFinguerClass;
     horas = filtrarHorasPorFecha(fecha, horas);
 
     select.innerHTML = '<option selected value="">Selecciona una hora:</option>';

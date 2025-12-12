@@ -12,7 +12,7 @@ global $conn;
 try {
     $conn->beginTransaction();
 
-    // 1) Leer totales de la reserva
+    // 1) Leer totales
     $sql = "
         SELECT total_calculado
         FROM epgylzqu_parking_finguer_v2.parking_reservas
@@ -30,7 +30,8 @@ try {
 
     $total = (float)$row['total_calculado'];
 
-    // 2) Crear un pago simulado (como si Redsys hubiese dicho OK)
+    // 2) (Opcional) crear pago simulado y marcar reserva pagada
+    /*
     $pedidoFake = 'TEST-' . time();
 
     $sqlPago = "
@@ -46,7 +47,6 @@ try {
         ':pedido'     => $pedidoFake,
     ]);
 
-    // 3) Marcar reserva como pagada
     $sqlUpd = "
         UPDATE epgylzqu_parking_finguer_v2.parking_reservas
         SET estado = 'pagada'
@@ -54,20 +54,19 @@ try {
     ";
     $stmtUpd = $conn->prepare($sqlUpd);
     $stmtUpd->execute([':id' => $idReserva]);
+    */
 
-    // 4) Crear factura REAL usando la función que definimos antes
-    $facturaId = crearFacturaParaReserva($conn, $idReserva);
-    if (!$facturaId) {
-        throw new Exception("No se pudo crear la factura");
+    // 3) Crear factura dentro de la MISMA transacción
+    $facturaId = crearFacturaParaReserva($conn, $idReserva, 'test_script');
+
+    if ($facturaId === null) {
+        throw new Exception('No se pudo generar la factura para la reserva ' . $idReserva);
     }
 
+    // 4) Si todo OK, commit general
     $conn->commit();
 
-    // 5) Enviar emails
-    enviarConfirmacio($idReserva);
-    enviarFactura($facturaId);
-
-    echo "OK: pago simulado, factura $facturaId creada y emails enviados.";
+    echo "OK: factura $facturaId creada.";
 } catch (Exception $e) {
     if ($conn->inTransaction()) {
         $conn->rollBack();

@@ -57,8 +57,8 @@ $reserva = $translations['reserva'] ?? [];
                 <!-- Selección del tipo de reserva -->
                 <label for="tipo_reserva"><?php echo $reserva['tipo_reserva']; ?>:</label>
                 <select id="tipo_reserva" name="tipo_reserva">
-                    <option value="finguer_class"><?php echo $reserva['finguer_class']; ?></option>
-                    <option value="gold_finguer"><?php echo $reserva['gold_finguer']; ?></option>
+                    <option value="RESERVA_FINGUER"><?php echo $reserva['finguer_class']; ?></option>
+                    <option value="RESERVA_FINGUER_GOLD"><?php echo $reserva['gold_finguer']; ?></option>
                 </select>
 
                 <!-- Calendario para elegir fecha de entrada y salida -->
@@ -86,9 +86,9 @@ $reserva = $translations['reserva'] ?? [];
                     <label for="limpieza"><?php echo $reserva['opciones_limpieza']; ?></label>
                     <select id="limpieza" name="limpieza">
                         <option value="0"><?php echo $reserva['sin_limpieza']; ?></option>
-                        <option value="15"><?php echo $reserva['limpieza_exterior']; ?></option>
-                        <option value="35"><?php echo $reserva['lavado_exterior']; ?></option>
-                        <option value="95"><?php echo $reserva['lavado_pro']; ?></option>
+                        <option value="LIMPIEZA_EXT"><?php echo $reserva['limpieza_exterior']; ?></option>
+                        <option value="LIMPIEZA_EXT_INT"><?php echo $reserva['lavado_exterior']; ?></option>
+                        <option value="LIMPIEZA_PRO"><?php echo $reserva['lavado_pro']; ?></option>
                     </select>
 
                     <!-- Opciones de cancelación -->
@@ -151,7 +151,7 @@ $reserva = $translations['reserva'] ?? [];
             <p>Esta es la opción para los que quieren llegar en 3 minutos a su terminal. Llegas a Finguer, aparcas tu coche y en 3 minutos te llevamos en nuestro vehículo privado a tu terminal de salida.</p>
             <p>Y a la vuelta de tu viaje, igual de rápido.</p>
             <p>En cuanto salgas de la terminal te estaremos esperando para llevarte de nuevo con<br>tu querido coche.</p>
-            <strong>Desde 15 €/día</strong>
+            <strong>Desde 100 €/día</strong>
         </div>
 
         <div class="col-12 col-md-3 mx-3 finguer2 mb-4" style="background-color:red">
@@ -160,7 +160,7 @@ $reserva = $translations['reserva'] ?? [];
             <hr>
             <p>Este servicio es el que escogería el mismísimo James Bond.</p>
             <p>Con la Gold Finguer Class solo tienes que llegar con tu coche a la terminal que te haya tocado (muy importante que nos avises 20 minutos antes de llegar), darnos las llaves del coche y disfrutar de tu viaje. Y a tu vuelta, pues lo mismo. Llegas, sales de la terminal y allí te estaremos esperando con tu coche.</p>
-            <strong>Desde 25 €/día</strong>
+            <strong>Desde 140 €/día</strong>
         </div>
 
         <div class="col-12 col-md-3 mx-3 finguer3 mb-4" style="background-color:red">

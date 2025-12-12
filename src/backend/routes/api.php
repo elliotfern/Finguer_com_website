@@ -12,9 +12,13 @@ $base_routes = [
     '/api/intranet/users/get' => 'src/backend/api/intranet/get-users.php',
     '/api/intranet/email/get' => 'src/backend/api/intranet/email/get-email.php',
 
-    // API WEB PUBLICA
-    '/api/carro-compra' => 'src/backend/api/web_publica/carro-compra.php',
-    '/api/carro-compra-session' => 'src/backend/api/web_publica/carro-compra-session.php',
+    // 1 - CARRO DE LA COMPRA
+    '/api/carro-compra/get' => 'src/backend/api/web_publica/carro-compra/get-carro.php',
+    '/api/carro-compra/post' => 'src/backend/api/web_publica/carro-compra/post-carro.php',
+
+    //'/api/carro-compra-session' => 'src/backend/api/web_publica/carro-compra-session.php',
+
+
     '/api/alta-client' => 'src/backend/api/web_publica/crear-usuario.php',
     '/api/alta-reserva' => 'src/backend/api/web_publica/crear-reserva.php',
     '/api/pagamentRedsysTargeta' => 'src/backend/api/web_publica/pagament-redsys-targeta.php',
@@ -46,8 +50,9 @@ $routes = [
 
     // API WEB PUBLICA
 
-    '/api/carro-compra' => ['view' => 'src/backend/api/web_publica/carro-compra.php', 'needs_session' => false, 'no_header_footer' => true],
-    '/api/carro-compra-session' => ['view' => 'src/backend/api/web_publica/carro-compra-session.php', 'needs_session' => false, 'no_header_footer' => true],
+    // 1 - CARRO DE LA COMPRA
+    '/api/carro-compra/get' =>  ['view' => 'src/backend/api/web_publica/carro-compra/get-carro.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/carro-compra/post' => ['view' => 'src/backend/api/web_publica/carro-compra/post-carro.php', 'needs_session' => false, 'no_header_footer' => true],
 
     '/api/alta-client' => ['view' => 'src/backend/api/web_publica/crear-usuario.php', 'needs_session' => false, 'no_header_footer' => true],
 

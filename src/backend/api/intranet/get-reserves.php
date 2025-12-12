@@ -88,12 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                 pr.canal                      AS buscadores,
 
                 -- Codi de neteja (0/1/2/3) derivat dels serveis
-                CASE
-                    WHEN s_l.codigo = 'LIMPIEZA_EXT'      THEN 1
-                    WHEN s_l.codigo = 'LIMPIEZA_EXT_INT'  THEN 2
-                    WHEN s_l.codigo = 'LIMPIEZA_PRO'      THEN 3
-                    ELSE 0
-                END                           AS limpieza,
+                MAX(
+                    CASE
+                        WHEN s_l.codigo = 'LIMPIEZA_EXT'      THEN 1
+                        WHEN s_l.codigo = 'LIMPIEZA_EXT_INT'  THEN 2
+                        WHEN s_l.codigo = 'LIMPIEZA_PRO'      THEN 3
+                        ELSE 0
+                    END
+                ) AS limpieza,
 
                 -- Import: import calculat
                 pr.total_calculado            AS importe,
@@ -138,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
                 -- Filtrar por estado_vehiculo dinámico
                 WHERE pr.estado_vehiculo = :estado_vehiculo
-           
+                GROUP BY pr.id
                 ORDER BY {$orderByField} {$orderDirection}{$limitClause};";
 
                 $stmt = $conn->prepare($query);

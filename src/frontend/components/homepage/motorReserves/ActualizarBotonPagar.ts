@@ -1,73 +1,82 @@
 import { validarFechas } from './ValidarFechas';
 
-// Obtener los elementos del DOM
-const horaEntradaSelect = document.getElementById('horaEntrada') as HTMLSelectElement;
-const horaSalidaSelect = document.getElementById('horaSalida') as HTMLSelectElement;
-const botonPagar = document.getElementById('pagar') as HTMLButtonElement;
-const tipoReservaSelect = document.getElementById('tipo_reserva') as HTMLSelectElement; // Asumiendo que tienes un selector para el tipo de reserva
+const horaEntradaSelect = document.getElementById('horaEntrada') as HTMLSelectElement | null;
+const horaSalidaSelect = document.getElementById('horaSalida') as HTMLSelectElement | null;
+const botonPagar = document.getElementById('pagar') as HTMLButtonElement | null;
+const tipoReservaSelect = document.getElementById('tipo_reserva') as HTMLSelectElement | null;
 
-// Función para verificar si ambos campos de hora están seleccionados
+let backendOk = false; // 👈 se activa cuando /cotizar responde ok
+
 const verificarSelecciones = (): boolean => {
-  const horaEntradaElement = document.querySelector('#horaEntrada') as HTMLInputElement | null;
-  const horaSalidaElement = document.querySelector('#horaSalida') as HTMLInputElement | null;
-
-  const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
-  const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
-
-  return horaEntradaValue !== null && horaEntradaValue !== '' && horaSalidaValue !== null && horaSalidaValue !== '';
+  const horaEntradaValue = horaEntradaSelect?.value ?? '';
+  const horaSalidaValue = horaSalidaSelect?.value ?? '';
+  return horaEntradaValue !== '' && horaSalidaValue !== '';
 };
 
-// Función para validar las horas según el tipo de reserva
-const validarHorasPorTipoReserva = (): boolean => {
-  const horaEntradaElement = document.getElementById('horaEntrada') as HTMLInputElement | null;
-  const horaSalidaElement = document.getElementById('horaSalida') as HTMLInputElement | null;
+const esHoraValida = (hora: string, horaMinima: string, horaMaxima: string): boolean => {
+  const [h, m] = hora.split(':').map(Number);
+  const [minH, minM] = horaMinima.split(':').map(Number);
+  const [maxH, maxM] = horaMaxima.split(':').map(Number);
 
-  // Obtener el valor de los campos, asegurándose de que no sean nulos
-  const horaEntradaValue = horaEntradaElement ? horaEntradaElement.value : null;
-  const horaSalidaValue = horaSalidaElement ? horaSalidaElement.value : null;
-  const tipoReserva = tipoReservaSelect?.value;
+  const minutos = h * 60 + m;
+  const minutosMin = minH * 60 + minM;
+  const minutosMax = maxH * 60 + maxM;
+
+  return minutos >= minutosMin && minutos <= minutosMax;
+};
+
+const validarHorasPorTipoReserva = (): boolean => {
+  const horaEntradaValue = horaEntradaSelect?.value ?? '';
+  const horaSalidaValue = horaSalidaSelect?.value ?? '';
+  const tipoReserva = tipoReservaSelect?.value ?? '';
 
   if (!horaEntradaValue || !horaSalidaValue) return false;
 
-  if (tipoReserva === 'finguer_class') {
-    // Validar horas para 'finguer_class' (entre 05:00 y 23:30)
+  if (tipoReserva === 'RESERVA_FINGUER') {
     return esHoraValida(horaEntradaValue, '05:00', '23:30') && esHoraValida(horaSalidaValue, '05:00', '23:30');
-  } else if (tipoReserva === 'gold_finguer') {
-    // Validar horas para 'gold_finguer' (entre 07:00 y 21:30)
+  }
+
+  if (tipoReserva === 'RESERVA_FINGUER_GOLD') {
     return esHoraValida(horaEntradaValue, '08:00', '21:00') && esHoraValida(horaSalidaValue, '08:00', '21:00');
   }
 
-  // Si el tipo de reserva no coincide con ninguno de los anteriores, retornar false
   return false;
 };
 
-// Función para validar si una hora está dentro de un rango
-const esHoraValida = (hora: string, horaMinima: string, horaMaxima: string): boolean => {
-  const [horaEntradaH, horaEntradaM] = hora.split(':').map(Number);
-  const [horaMinimaH, horaMinimaM] = horaMinima.split(':').map(Number);
-  const [horaMaximaH, horaMaximaM] = horaMaxima.split(':').map(Number);
-
-  const minutosEntrada = horaEntradaH * 60 + horaEntradaM;
-  const minutosMinima = horaMinimaH * 60 + horaMinimaM;
-  const minutosMaxima = horaMaximaH * 60 + horaMaximaM;
-
-  return minutosEntrada >= minutosMinima && minutosEntrada <= minutosMaxima;
+/**
+ * Llama a esto desde scheduleCotizar:
+ * - setBackendOk(true) cuando el backend responde ok
+ * - setBackendOk(false) si error/invalid
+ */
+export const setBackendOk = (ok: boolean): void => {
+  backendOk = ok;
+  actualizarBotonPagar();
 };
 
-// Función para actualizar la visibilidad del botón de pagar
-export const actualizarBotonPagar = () => {
-  // Verificar si las horas están seleccionadas, las fechas son válidas y las horas son válidas para el tipo de reserva
-  if (verificarSelecciones() && validarFechas() && validarHorasPorTipoReserva()) {
-    botonPagar.style.display = 'block'; // Mostrar el botón de pagar si las condiciones se cumplen
-  } else {
-    botonPagar.style.display = 'none'; // Ocultar el botón de pagar si no se cumplen las condiciones
-  }
+// ahora no recibe params: usa backendOk interno
+export const actualizarBotonPagar = (): void => {
+  if (!botonPagar) return;
+
+  const puedePagar = backendOk && verificarSelecciones() && validarFechas() && validarHorasPorTipoReserva();
+
+  botonPagar.style.display = puedePagar ? 'block' : 'none';
 };
 
-// Agregar event listeners a los selectores de hora y tipo de reserva
-horaEntradaSelect.addEventListener('change', actualizarBotonPagar);
-horaSalidaSelect.addEventListener('change', actualizarBotonPagar);
-tipoReservaSelect?.addEventListener('change', actualizarBotonPagar); // Asegúrate de que este selector existe
+// listeners (solo si existen)
+horaEntradaSelect?.addEventListener('change', () => {
+  backendOk = false; // 👈 cambia algo, obligamos a re-cotizar antes de pagar
+  actualizarBotonPagar();
+});
+horaSalidaSelect?.addEventListener('change', () => {
+  backendOk = false;
+  actualizarBotonPagar();
+});
+tipoReservaSelect?.addEventListener('change', () => {
+  backendOk = false;
+  actualizarBotonPagar();
+});
 
-// Inicialmente ocultar el botón de pagar
-botonPagar.style.display = 'none';
+// Inicialmente oculto
+if (botonPagar) {
+  botonPagar.style.display = 'none';
+}

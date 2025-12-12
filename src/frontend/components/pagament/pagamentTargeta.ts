@@ -1,21 +1,27 @@
 // pagamentTargeta.ts
 import { creacioDadesUsuaris } from './creacioDadesUsuari';
 import { fetchData } from '../../services/api/api';
-import { PaymentData, ApiRespostaRedSys } from '../../types/interfaces';
+import type { ApiRespostaRedSys } from '../../types/interfaces';
 
 interface PostRequest {
-  costTotal: number | undefined;
+  session: string;
 }
 
-export const pagamentTargeta = async (dades: PaymentData): Promise<void> => {
-  // trucada a la API de redsys per generar objecte
-  const dataString = dades;
-  let costTotal: number | undefined;
-  if (dataString) {
-    costTotal = dades.precioTotal;
+function getSessionFromUrl(): string | null {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const last = parts[parts.length - 1];
+  return last ? decodeURIComponent(last) : null;
+}
+
+export const pagamentTargeta = async (): Promise<void> => {
+  const session = getSessionFromUrl();
+  if (!session) {
+    console.error('No se pudo determinar la sesión desde la URL.');
+    return;
   }
 
-  const postData: PostRequest = { costTotal: costTotal };
+  // El backend debe leer el total desde carro_compra usando session
+  const postData: PostRequest = { session };
 
   const response = await fetchData<ApiRespostaRedSys, PostRequest>(`https://${window.location.hostname}/api/pagamentRedsysTargeta`, 'POST', postData);
 
@@ -23,35 +29,26 @@ export const pagamentTargeta = async (dades: PaymentData): Promise<void> => {
   let signature = '';
   let idReserva = '';
 
-  if (response) {
-    if (response.status === 'success') {
-      params = response.params;
-      signature = response.signature;
-      idReserva = response.idReserva;
-    }
+  if (response?.status === 'success') {
+    params = response.params;
+    signature = response.signature;
+    idReserva = response.idReserva;
+  } else {
+    console.error('Error en respuesta de Redsys (preparación).', response);
+    return;
   }
 
   try {
-    // Esperamos a que la función creacioDadesUsuaris termine
-    const response = await creacioDadesUsuaris(dades, idReserva);
+    // Crea cliente + reserva usando la session (carrito real en BD)
+    const r = await creacioDadesUsuaris(idReserva);
 
-    // Si la respuesta es exitosa, continuamos con el resto de la función
-    if (response.status === 'success') {
-      console.log('Los datos se han creado correctamente.');
-
-      // Si todo ha ido bien, entonces se envia al usuario a la pasarela de pago de Redsys, targeta:
-
-      // capturar els valors del formulari amb javascript
+    if (r.status === 'success') {
       const version = 'HMAC_SHA256_V1';
-      const params2 = params || '';
-      const signature2 = signature || '';
 
-      // Crear el formulario de forma dinámica
       const form = document.createElement('form');
       form.action = 'https://sis.redsys.es/sis/realizarPago';
       form.method = 'POST';
 
-      // Crear y agregar los campos ocultos al formulario
       const signatureVersionInput = document.createElement('input');
       signatureVersionInput.type = 'hidden';
       signatureVersionInput.name = 'Ds_SignatureVersion';
@@ -61,30 +58,26 @@ export const pagamentTargeta = async (dades: PaymentData): Promise<void> => {
       const merchantParametersInput = document.createElement('input');
       merchantParametersInput.type = 'hidden';
       merchantParametersInput.name = 'Ds_MerchantParameters';
-      merchantParametersInput.value = params2;
+      merchantParametersInput.value = params;
       form.appendChild(merchantParametersInput);
 
       const signatureInput = document.createElement('input');
       signatureInput.type = 'hidden';
       signatureInput.name = 'Ds_Signature';
-      signatureInput.value = signature2;
+      signatureInput.value = signature;
       form.appendChild(signatureInput);
 
-      // Adjuntar el formulario al cuerpo del documento y enviarlo
       document.body.appendChild(form);
       form.submit();
-    } else {
-      // Procesar la respuesta
-      const messageErr = document.querySelector('#messageErr') as HTMLElement;
-      const messageOk = document.querySelector('#messageOk') as HTMLElement;
-
-      if (messageErr && messageOk) {
-        messageErr.style.display = 'block';
-        messageOk.style.display = 'none';
-      }
+      return;
     }
+
+    // Error al crear datos
+    const messageErr = document.querySelector('#messageErr') as HTMLElement | null;
+    const messageOk = document.querySelector('#messageOk') as HTMLElement | null;
+    if (messageErr) messageErr.style.display = 'block';
+    if (messageOk) messageOk.style.display = 'none';
   } catch (error) {
-    // En caso de error en creacioDadesUsuaris
     console.error('Hubo un error al crear los datos:', error);
   }
 };

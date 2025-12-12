@@ -1,87 +1,75 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import { calcularTotalReserva } from './CalcularTotalReserva';
-import { actualizarBotonPagar } from './ActualizarBotonPagar';
-import { showPrice } from './ShowPrice';
 import { resetContadores } from './ResetContadores';
 import { avisEspecialTancamentParking } from './avisEspecialTancamentParking';
+import { scheduleCotizar } from './scheduleCotizar';
 
 export const daterangepicker = () => {
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() + 2); // Fecha de inicio + 2 días
-  //const endDate = new Date(startDate); // Fecha de fin igual a la de inicio
+  startDate.setDate(startDate.getDate() + 2);
 
-  // Seleccionamos el input de fecha y aplicamos flatpickr
-  const fechaReservaElement = document.querySelector('#fecha_reserva') as HTMLElement; // Obtén el elemento como HTMLElement
+  const fechaReservaElement = document.querySelector('#fecha_reserva') as HTMLElement;
 
-  if (fechaReservaElement) {
-    flatpickr(fechaReservaElement, {
-      mode: 'range',
-      altInput: true,
-      altFormat: 'd/m/Y',
-      dateFormat: 'Y-m-d',
-      minDate: startDate,
-      maxDate: '2026-12-31',
-      locale: {
-        firstDayOfWeek: 1, // Primer día de la semana: lunes
-        weekdays: {
-          shorthand: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
-          longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-        },
-        months: {
-          shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-          longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-        },
+  if (!fechaReservaElement) return;
+
+  flatpickr(fechaReservaElement, {
+    mode: 'range',
+    altInput: true,
+    altFormat: 'd/m/Y',
+    dateFormat: 'Y-m-d',
+    minDate: startDate,
+    maxDate: '2026-12-31',
+    locale: {
+      firstDayOfWeek: 1,
+      weekdays: {
+        shorthand: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
+        longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
       },
-      onChange: function (selectedDates: Date[], dateStr, instance) {
-        // Si el usuario selecciona 25 de diciembre como inicio o fin, desactívalo
-        // Verificar si se seleccionaron dos fechas
-        const avisoDiv = document.getElementById('avis_especial') as HTMLElement;
-        const detallesReserva = document.getElementById('importeReserva') as HTMLElement;
+      months: {
+        shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+      },
+    },
+    onChange: (selectedDates: Date[], _dateStr, instance) => {
+      const avisoDiv = document.getElementById('avis_especial') as HTMLElement | null;
+      const detallesReserva = document.getElementById('importeReserva') as HTMLElement | null;
 
-        if (selectedDates.length === 2) {
-          const [startDate, endDate] = selectedDates;
+      if (selectedDates.length === 2) {
+        const [start, end] = selectedDates;
 
-          // Fechas no permitidas
-          const fechasNoPermitidas = [
-            { day: 25, month: 11 }, // 25 diciembre
-            { day: 26, month: 11 }, // 26 diciembre
-            { day: 31, month: 11 }, // 31 diciembre
-            { day: 1, month: 0 }, // 1 enero
-          ];
+        const fechasNoPermitidas = [
+          { day: 25, month: 11 },
+          { day: 26, month: 11 },
+          { day: 31, month: 11 },
+          { day: 1, month: 0 },
+        ];
 
-          // Función para verificar si una fecha es no permitida
-          const esFechaNoPermitida = (fecha: Date) => fechasNoPermitidas.some((f) => fecha.getDate() === f.day && fecha.getMonth() === f.month);
+        const esFechaNoPermitida = (fecha: Date) => fechasNoPermitidas.some((f) => fecha.getDate() === f.day && fecha.getMonth() === f.month);
 
-          if (esFechaNoPermitida(startDate) || esFechaNoPermitida(endDate)) {
-            instance.clear(); // Limpiar selección si la fecha es no permitida
-            resetContadores();
-            avisEspecialTancamentParking(true);
-            if (detallesReserva) {
-              detallesReserva.style.display = 'none';
-            }
-          } else if (avisoDiv) {
-            // Ocultar el aviso si las fechas seleccionadas son válidas
-            avisoDiv.style.display = 'none';
-            if (detallesReserva) {
-              detallesReserva.style.display = 'block';
-            }
-            // Llama a las funciones auxiliares
-            calcularTotalReserva();
-            actualizarBotonPagar();
-            showPrice();
-          }
-        } else if (avisoDiv) {
-          // Ocultar el aviso si la selección se borra o es incompleta
-          avisoDiv.style.display = 'none';
-          if (detallesReserva) {
-            detallesReserva.style.display = 'block';
-          }
-          calcularTotalReserva();
-          actualizarBotonPagar();
-          showPrice();
+        if (esFechaNoPermitida(start) || esFechaNoPermitida(end)) {
+          instance.clear();
+          resetContadores();
+          avisEspecialTancamentParking(true);
+          if (detallesReserva) detallesReserva.style.display = 'none';
+          return;
         }
-      },
-    });
-  }
+
+        if (avisoDiv) avisoDiv.style.display = 'none';
+        if (detallesReserva) detallesReserva.style.display = 'block';
+
+        scheduleCotizar();
+        return;
+      }
+
+      // selección incompleta / borrada
+      if (avisoDiv) avisoDiv.style.display = 'none';
+      if (detallesReserva) detallesReserva.style.display = 'block';
+
+      // aquí puedes elegir:
+      // - no cotizar hasta que haya 2 fechas (mi recomendación),
+      // - o cotizar y que el backend devuelva error.
+      // Yo recomiendo NO cotizar aún:
+      resetContadores();
+    },
+  });
 };

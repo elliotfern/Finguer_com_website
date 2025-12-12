@@ -1,11 +1,8 @@
 import { creacioReserva } from './creacioReserva';
-import { PaymentData } from '../../types/interfaces';
 
-export const creacioDadesUsuaris = async (dades: PaymentData, idReserva: string): Promise<{ status: string; message: string }> => {
+export const creacioDadesUsuaris = async (idReserva: string): Promise<{ status: string; message: string }> => {
   const url = `${window.location.origin}/api/alta-client`;
-  const idReserva2 = idReserva;
 
-  // Obtener los datos del formulario
   const formData = {
     nombre: (document.getElementById('nombre') as HTMLInputElement)?.value || '',
     telefono: (document.getElementById('telefono') as HTMLInputElement)?.value || '',
@@ -19,31 +16,23 @@ export const creacioDadesUsuaris = async (dades: PaymentData, idReserva: string)
   };
 
   try {
-    // Enviar los datos usando POST
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    const data = await response.json(); // Leer la respuesta como JSON
+    const data = await response.json();
 
-    // Limpiar errores previos
     document.querySelectorAll('.invalid-feedback').forEach((el) => (el.textContent = ''));
     document.querySelectorAll('.form-control').forEach((el) => el.classList.remove('is-invalid'));
 
     if (data.status === 'error' && data.errors) {
-      // Mostrar errores en cada campo
       for (const [field, message] of Object.entries(data.errors)) {
         const errorDiv = document.getElementById(`error-${field}`);
         const inputField = document.getElementById(field);
-
         if (errorDiv && inputField) {
           errorDiv.textContent = typeof message === 'string' ? message : '';
           inputField.classList.add('is-invalid');
@@ -52,23 +41,20 @@ export const creacioDadesUsuaris = async (dades: PaymentData, idReserva: string)
       return { status: 'error', message: 'Errores en los datos enviados.' };
     }
 
-    // Procesar la respuesta
     if (data.status === 'success') {
       const clientId = data.idCliente;
 
-      // Llamar a la función creacioReserva
-      const reservaResponse = await creacioReserva(clientId, idReserva2, dades);
+      // 👇 ahora creamos la reserva usando session (carrito real en BD)
+      const reservaResponse = await creacioReserva(clientId, idReserva);
+
       if (reservaResponse?.status === 'success') {
         return { status: 'success', message: 'Reserva creada correctamente' };
-      } else {
-        return { status: 'error', message: 'No se ha creado la reserva' };
       }
-    } else {
-      //console.error('Error en la creación del cliente:', data.message);
-      return { status: 'error', message: `Error en la solicitud` };
+      return { status: 'error', message: 'No se ha creado la reserva' };
     }
+
+    return { status: 'error', message: `Error en la solicitud` };
   } catch (error) {
-    //console.error('Error en la solicitud:', error);
     return { status: 'error', message: `Error en la solicitud ${error}` };
   }
 };

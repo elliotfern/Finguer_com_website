@@ -1,42 +1,31 @@
-//import { pagamentBizum } from './pagamentBizum';
 import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
-import { recuperarDadesLocalStorage } from './recuperarDadesLocalStorage';
-import { PaymentData } from '../../types/interfaces';
+import { recuperarCarroCompra } from './recuperarDadesCarritoCompra';
 
-export const pagament = async () => {
-  const dades = await recuperarDadesLocalStorage(); // Esperar a obtener los datos
-  if (!dades) {
+export const pagament = async (): Promise<void> => {
+  const snapshot = await recuperarCarroCompra(); // <- debe devolver CarroSnapshot | null
+  if (!snapshot) {
     console.error('No se pudo obtener los datos del carrito.');
     return;
   }
 
   botoPagament();
 
-  // Seleccionar los botones directamente
-  //const bizumButton = document.getElementById('pagamentBizum');
-  const targetaButton = document.getElementById('pagamentTargeta');
-  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement;
-  const aviso = document.getElementById('aviso_terminos');
+  const targetaButton = document.getElementById('pagamentTargeta') as HTMLButtonElement | null;
+  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
+  const aviso = document.getElementById('aviso_terminos') as HTMLElement | null;
 
-  const handlePayment = (callback: (dades: PaymentData) => void) => {
+  const handlePayment = (callback: () => void) => {
     if (!checkbox?.checked) {
       if (aviso) aviso.style.display = 'block';
       return;
     }
-
     if (aviso) aviso.style.display = 'none';
-    callback(dades); // Pasar dades a la función de pago
+    callback();
   };
 
-  /*
-    if (bizumButton) {
-      bizumButton.addEventListener('click', () => handlePayment(pagamentBizum));
-    }
-      */
-
   if (targetaButton) {
-    targetaButton.addEventListener('click', () => handlePayment(pagamentTargeta));
+    targetaButton.addEventListener('click', () => handlePayment(() => pagamentTargeta()));
   }
 
   if (checkbox) {
