@@ -1,0 +1,66 @@
+name: Build + Deploy bundle.js (Finguer)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
+
+      - name: Upload bundle.js atomically
+        run: |
+          set -euo pipefail
+
+          # Verifica que existe
+          test -f dist/bundle.js || { echo "dist/bundle.js no existe"; exit 1; }
+
+          REMOTE_DIR="/home/epgylzqu/finguer.com/dist"
+          REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
+
+          # Asegura dir remoto
+          ssh epgylzqu@87.98.230.129 "mkdir -p $REMOTE_DIR"
+
+          # Subir a temporal
+          scp dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
+
+          # Swap atómico + permisos
+          ssh epgylzqu@87.98.230.129 "\
+            mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
+            chmod 644 '$REMOTE_BUNDLE' \
+          "
+
+          # (Opcional) sourcemap si existe
+          if [ -f dist/bundle.js.map ]; then
+            scp dist/bundle.js.map epgylzqu@87.98.230.129:"$REMOTE_DIR/bundle.js.map.tmp"
+            ssh epgylzqu@87.98.230.129 "\
+              mv -f '$REMOTE_DIR/bundle.js.map.tmp' '$REMOTE_DIR/bundle.js.map' && \
+              chmod 644 '$REMOTE_DIR/bundle.js.map' \
+            "
+          fi

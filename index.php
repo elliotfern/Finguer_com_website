@@ -15,6 +15,7 @@ require_once __DIR__ . '/src/backend/utils/registreLogsFactura.php';
 require_once __DIR__ . '/src/backend/utils/cookieUser.php';
 require_once __DIR__ . '/src/backend/utils/calcularHashFactura.php';
 require_once __DIR__ . '/src/backend/utils/creacioFactura.php';
+require_once __DIR__ . '/src/backend/utils/generadorLocalizador.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
 
 // Obtener la ruta solicitada

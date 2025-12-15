@@ -1,5 +1,8 @@
 <?php
 
+// Si no lo tienes ya en bootstrap:
+date_default_timezone_set('Europe/Rome');
+
 if (isset($params['idClient'])) {
     $idClient = $params['idClient'];
 } else {
@@ -10,7 +13,7 @@ global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 
-echo "<div class='container'>";
+echo "<div class='container' style='margin-bottom:50px'>";
 
 if (is_numeric($idClient)) {
     $idClient_old = intval($idClient);
@@ -66,12 +69,6 @@ if (isset($_POST["alta-reserva"])) {
         $notes = data_input($_POST["notes"], ENT_NOQUOTES);
     }
 
-    if (empty($_POST["tipo"])) {
-        $tipo = NULL;
-    } else {
-        $tipo = data_input($_POST["tipo"], ENT_NOQUOTES);
-    }
-
     if (empty($_POST["vehiculo"])) {
         $vehiculo = NULL;
     } else {
@@ -84,11 +81,30 @@ if (isset($_POST["alta-reserva"])) {
         $matricula = data_input($_POST["matricula"], ENT_NOQUOTES);
     }
 
-    $idReserva = 0001;
-    $neteja = NULL;
-    $checkIn = 5;
-    $checkOut = NULL;
-    $fechaReserva = date("Y-m-d H:i:s");
+    $fechaReserva   = date("Y-m-d H:i:s");
+
+    function parseDiaHoraToDatetimeOrNull(?string $dia, ?string $hora): ?string
+    {
+        $dia  = trim((string)($dia ?? ''));
+        $hora = trim((string)($hora ?? ''));
+
+        // Si falta cualquiera de los dos, lo consideramos NULL
+        if ($dia === '' || $hora === '') {
+            return null;
+        }
+
+        // Ajusta si tu input time trae segundos: 'Y-m-d H:i:s'
+        $dt = DateTimeImmutable::createFromFormat('Y-m-d H:i', $dia . ' ' . $hora);
+        if (!$dt) {
+            return null; // o lanza error 400 si prefieres validar fuerte
+        }
+
+        return $dt->format('Y-m-d H:i:s');
+    }
+
+    $entrada_prevista = parseDiaHoraToDatetimeOrNull($diaEntrada ?? null, $horaEntrada ?? null);
+    $salida_prevista = parseDiaHoraToDatetimeOrNull($diaSalida ?? null, $horaSalida ?? null)
+        ?? '2030-01-01 00:00:00';
 
     // Si no hi ha cap error, envia el formulari
     if (!isset($hasError)) {
@@ -98,22 +114,47 @@ if (isset($_POST["alta-reserva"])) {
         echo 'Controla que totes les dades siguin correctes.</div>';
     }
 
-    $sql = "INSERT INTO reserves_parking SET idClient=:idClient, idReserva=:idReserva, diaEntrada=:diaEntrada, horaEntrada=:horaEntrada, diaSalida=:diaSalida, horaSalida=:horaSalida, vuelo=:vuelo, notes=:notes, tipo=:tipo, checkIn=:checkIn, checkOut=:checkOut, matricula=:matricula, vehiculo=:vehiculo, fechaReserva=:fechaReserva";
+    // Construyes el DateTimeImmutable
+    $dtEntrada = DateTimeImmutable::createFromFormat('Y-m-d H:i', trim($diaEntrada) . ' ' . trim($horaEntrada));
+
+    // Si no hay fecha válida, pásale null
+    $localizador = generarLocalizador($conn, $dtEntrada ?: null);
+    $estado = "anual";
+    $estado_vehiculo = "pendiente_entrada";
+    $tipo = 3;
+    $canal = 5;
+
+    $sql = "INSERT INTO parking_reservas 
+            SET 
+            usuario_id = :usuario_id,
+            localizador = :localizador,
+            entrada_prevista= :entrada_prevista,
+            salida_prevista = :salida_prevista,
+            vuelo = :vuelo,
+            notas = :notas,
+            matricula = :matricula, 
+            vehiculo = :vehiculo,
+            fecha_reserva = :fecha_reserva,
+            estado = :estado,
+            estado_vehiculo = :estado_vehiculo,
+            tipo = :tipo,
+            canal = :canal";
+
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":idClient", $idClient, PDO::PARAM_INT);
-    $stmt->bindParam(":idReserva", $idReserva, PDO::PARAM_INT);
-    $stmt->bindParam(":diaEntrada", $diaEntrada, PDO::PARAM_STR);
-    $stmt->bindParam(":horaEntrada", $horaEntrada, PDO::PARAM_STR);
-    $stmt->bindParam(":diaSalida", $diaSalida, PDO::PARAM_STR);
-    $stmt->bindParam(":horaSalida", $horaSalida, PDO::PARAM_STR);
+    $stmt->bindParam(":usuario_id", $idClient, PDO::PARAM_INT);
+    $stmt->bindParam(":localizador", $localizador, PDO::PARAM_INT);
+    $stmt->bindParam(":entrada_prevista", $entrada_prevista, PDO::PARAM_STR);
+    $stmt->bindParam(":salida_prevista", $salida_prevista, PDO::PARAM_STR);
     $stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
-    $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
-    $stmt->bindParam(":tipo", $tipo, PDO::PARAM_INT);
-    $stmt->bindParam(":checkIn", $checkIn, PDO::PARAM_INT);
-    $stmt->bindParam(":checkOut", $checkOut, PDO::PARAM_INT);
+    $stmt->bindParam(":notas", $notas, PDO::PARAM_STR);
     $stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
     $stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
-    $stmt->bindParam(":fechaReserva", $fechaReserva, PDO::PARAM_STR);
+    $stmt->bindParam(":fecha_reserva", $fechaReserva, PDO::PARAM_STR);
+    $stmt->bindParam(":estado", $estado, PDO::PARAM_STR);
+    $stmt->bindParam(":estado_vehiculo", $estado_vehiculo, PDO::PARAM_STR);
+    $stmt->bindParam(":tipo", $tipo, PDO::PARAM_INT);
+    $stmt->bindParam(":canal", $canal, PDO::PARAM_INT);
+
 
     if ($stmt->execute()) {
         $codi_resposta = 1;
@@ -133,8 +174,6 @@ if (isset($_POST["alta-reserva"])) {
 if ($codi_resposta == 2) {
     echo '<form action="" method="post" id="alta-reserva" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
-    echo '<input type="hidden" name="idReserva" value="0001" />';
-
     echo "<h5>Selecciona un client (camp obligatori):</h5>";
 
     echo '<div class="col-md-4">';
@@ -143,7 +182,7 @@ if ($codi_resposta == 2) {
     echo '<option selected disabled>Selecciona el client:</option>';
     // consulta general reserves 
     $sql = "SELECT c.nombre, c.id
-                    FROM usuaris AS c
+                    FROM usuarios AS c
                     WHERE tipoUsuario = 3
                     ORDER BY c.nombre ASC";
 

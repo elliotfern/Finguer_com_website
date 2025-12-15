@@ -25,15 +25,21 @@ $base_routes = [
     '/control/reserva/info/reserva/{id}' => 'public/intranet/form-info/reserva.php',
     '/control/reserva/email/confirmacio/{id}' => 'public/intranet/email/reserva-enviar-email.php',
     '/control/reserva/email/factura/{id}' => 'public/intranet/email/reserva-enviar-factura-pdf.php',
+
+    // RESERVES ANUALS
     '/control/clients-anuals' => 'public/intranet/clients-anuals/clients.php',
     '/control/clients-anuals/pendents' => 'public/intranet/clients-anuals/estat-pendent.php',
     '/control/clients-anuals/parking' => 'public/intranet/clients-anuals/estat-parking.php',
     '/control/clients-anuals/completades' => 'public/intranet/clients-anuals/estat-completades.php',
     '/control/clients-anuals/modificar/client/{idClient}' => 'public/intranet/clients-anuals/modificar-client.php',
     '/control/clients-anuals/eliminar/client/{idClient}' => 'public/intranet/clients-anuals/eliminar-client.php',
+
     '/control/clients-anuals/crear/reserva/' => 'public/intranet/clients-anuals/crear-reserva.php',
     '/control/clients-anuals/crear/reserva/{idClient}' => 'public/intranet/clients-anuals/crear-reserva.php',
+
     '/control/clients-anuals/crear/client' => 'public/intranet/clients-anuals/crear-client.php',
+
+    // 
     '/control/cercador-reserva' => 'public/intranet/motor-cerca/cercador.php',
     '/control/calendari/entrades' => 'public/intranet/calendari-reserves/entrades.php',
     '/control/calendari/entrades/any/{any}/mes/{mes}' => 'public/intranet/calendari-reserves/entrades-mes.php',
@@ -83,6 +89,7 @@ $routes = [
     '/control/reserva/email/confirmacio/{id}' => ['view' => 'public/intranet/email/reserva-enviar-email.php', 'needs_session' => true],
     '/control/reserva/email/factura/{id}' => ['view' => 'public/intranet/email/reserva-enviar-factura-pdf.php', 'needs_session' => true],
 
+    // RESERVES ANUALS
     '/control/clients-anuals' => ['view' => 'public/intranet/clients-anuals/clients.php', 'needs_session' => true],
 
     '/control/clients-anuals/pendents' => ['view' => 'public/intranet/clients-anuals/estat-pendent.php', 'needs_session' => true],
@@ -96,6 +103,8 @@ $routes = [
     '/control/clients-anuals/crear/reserva/{idClient}' => ['view' => 'public/intranet/clients-anuals/crear-reserva.php', 'needs_session' => true],
     '/control/clients-anuals/crear/client' => ['view' => 'public/intranet/clients-anuals/crear-client.php', 'needs_session' => true],
 
+
+    // ALTRES
     '/control/cercador-reserva' => ['view' => 'public/intranet/motor-cerca/cercador.php', 'needs_session' => true],
 
     '/control/calendari/entrades' => ['view' => 'public/intranet/calendari-reserves/entrades.php', 'needs_session' => true],

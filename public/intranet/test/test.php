@@ -1,5 +1,8 @@
 <?php
 
+// URL
+// https://finguer.com/control/test/?reserva_id=6468
+
 $idReserva = isset($_GET['reserva_id']) ? (int)$_GET['reserva_id'] : 0;
 
 if ($idReserva <= 0) {

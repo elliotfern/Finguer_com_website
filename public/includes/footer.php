@@ -1,3 +1,11 @@
+<?php
+$bundleUrl  = BASE_URL . '/dist/bundle.js';       // ruta en URL
+$bundlePath = BASE_URL . '/dist/bundle.js';         // ruta en disco
+
+$v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
+?>
+
+
 <div class="container-fluid" style="background-color: #02164f">
     <div class="container" style="padding:50px;color:white">
         <div class="row justify-content-center">
@@ -32,7 +40,7 @@
     </div>
 </div>
 
-<script type="module" src="<?php APP_ROOT; ?>/dist/bundle.js?v=1.2.7"></script>
+<script type="module" src="<?= htmlspecialchars($bundleUrl, ENT_QUOTES) ?>?v=<?= $v ?>"></script>
 <script src="<?php APP_ROOT; ?>/public/js/cookies.js"></script>
 </body>
 
