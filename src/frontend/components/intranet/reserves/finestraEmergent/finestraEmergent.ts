@@ -127,20 +127,55 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
 
   // Botón Confirmación
   const btnConfirmacio = document.getElementById('enlace1') as HTMLButtonElement | null;
+
   if (btnConfirmacio) {
     btnConfirmacio.textContent = 'Enviar confirmació email';
     btnConfirmacio.disabled = false;
     btnConfirmacio.style.cursor = 'pointer';
     btnConfirmacio.style.opacity = '1';
-    btnConfirmacio.classList.remove('btn-success');
+    btnConfirmacio.classList.remove('btn-success', 'btn-danger');
     btnConfirmacio.classList.add('btn-secondary');
 
+    // Para evitar listeners duplicados
     const nuevoBtnConfirmacio = btnConfirmacio.cloneNode(true) as HTMLButtonElement;
     btnConfirmacio.parentNode?.replaceChild(nuevoBtnConfirmacio, btnConfirmacio);
 
-    nuevoBtnConfirmacio.addEventListener('click', (ev: MouseEvent) => {
+    nuevoBtnConfirmacio.addEventListener('click', async (ev: MouseEvent) => {
       ev.preventDefault();
-      enviarConfirmacioReserva(id);
+
+      // UI loading
+      //const originalText = nuevoBtnConfirmacio.textContent || 'Enviar confirmació email';
+      nuevoBtnConfirmacio.disabled = true;
+      nuevoBtnConfirmacio.textContent = 'Enviant...';
+      nuevoBtnConfirmacio.classList.remove('btn-success', 'btn-danger', 'btn-secondary');
+      nuevoBtnConfirmacio.classList.add('btn-warning');
+
+      try {
+        const r = await enviarConfirmacioReserva(id);
+
+        // OK
+        nuevoBtnConfirmacio.disabled = false; // ✅ permitir reenviar
+        nuevoBtnConfirmacio.textContent = 'Email enviat! (Reenviar)';
+        nuevoBtnConfirmacio.classList.remove('btn-warning', 'btn-danger', 'btn-secondary');
+        nuevoBtnConfirmacio.classList.add('btn-success');
+
+        // Si quieres: mostrar r.message en un toast/alert en tu UI
+        console.log(r.message);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Error enviant email';
+
+        // Error
+        nuevoBtnConfirmacio.disabled = false; // ✅ permitir reintentar
+        nuevoBtnConfirmacio.textContent = 'Error enviant (Reintentar)';
+        nuevoBtnConfirmacio.classList.remove('btn-warning', 'btn-success', 'btn-secondary');
+        nuevoBtnConfirmacio.classList.add('btn-danger');
+
+        console.error(msg);
+        // opcional: alert(msg);
+      } finally {
+        // opcional: si prefieres volver al texto inicial tras X segundos:
+        // setTimeout(() => { nuevoBtnConfirmacio.textContent = originalText; }, 4000);
+      }
     });
   }
 

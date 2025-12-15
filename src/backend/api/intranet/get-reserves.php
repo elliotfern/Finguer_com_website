@@ -301,6 +301,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
                 echo json_encode($rows);
                 exit;
+
+                // Verificar Pagament Redsys
+                // URL : http://finguer.com/api/intranet/reserves/get/?type=verificaPagament
+            } else if (isset($_GET['type']) && $_GET['type'] == 'verificaPagament') {
+                // 2) ID
+                $id = $_GET['id'] ?? null;
+                if ($id === null) {
+                    jsonResponse(vp2_err('Falta parámetro id', 'MISSING_ID'), 400);
+                }
+
+                // 3) Llamada: SOLO punto 2 (sin tocar BD)
+                $result = verificarPagament($id, [
+                    'solo_info'           => true,   // ✅ no efectos secundarios
+                    'actualizar_bd'       => false,
+                    'enviar_confirmacion' => false,
+                    'crear_factura'       => false,
+                    'enviar_factura'      => false,
+                ]);
+
+                // 4) HTTP status
+                $http = ($result['status'] ?? '') === 'success' ? 200 : 400;
+                jsonResponse($result, $http);
             }
         } else {
             // Token inválido

@@ -167,7 +167,8 @@ try {
             matricula,
             subtotal_calculado,
             iva_calculado,
-            total_calculado
+            total_calculado,
+            canal
         ) VALUES (
             :usuario_id,
             :localizador,
@@ -183,7 +184,8 @@ try {
             :matricula,
             :subtotal_calculado,
             :iva_calculado,
-            :total_calculado
+            :total_calculado,
+            :canal
         )
     ";
 
@@ -208,6 +210,7 @@ try {
         ':subtotal_calculado' => $subtotal,
         ':iva_calculado'     => $ivaTotal,
         ':total_calculado'   => $total,
+        ':canal'             => "1",
     ]);
 
     $reservaId = (int)$conn->lastInsertId();

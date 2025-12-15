@@ -25,9 +25,23 @@ if (!function_exists('validarToken') || !validarToken($token)) {
 
 // 1) Enviar confirmació email reserva
 // GET https://finguer.com/control/api/intranet/email/?type=emailConfirmacioReserva&id=11
-    if (isset($_GET['type']) && $_GET['type'] == 'emailConfirmacioReserva' && isset($_GET['id']) && is_numeric($_GET['id'])) {
-        $id = $_GET['id'];
-        enviarConfirmacio($id);
-    }
+if (isset($_GET['type']) && $_GET['type'] == 'emailConfirmacioReserva' && isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $reservaId = (int)$_GET['id'];
 
-?>
+    try {
+        $result = enviarConfirmacionReserva($conn, $reservaId, [
+            'force' => true, // 👈 intranet SIEMPRE puede reenviar
+        ]);
+
+        echo json_encode($result);
+        exit;
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Error interno enviando confirmación',
+            'error'   => $e->getMessage(),
+        ]);
+        exit;
+    }
+}
