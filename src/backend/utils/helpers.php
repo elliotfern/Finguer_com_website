@@ -25,3 +25,17 @@ function vp2_err(string $message, string $code = '', array $extra = []): array
         'message' => $message,
     ], $extra);
 }
+
+function obtenerFacturaIdPorReserva(PDO $conn, int $reservaId): ?int
+{
+    $st = $conn->prepare("
+        SELECT id
+        FROM epgylzqu_parking_finguer_v2.facturas
+        WHERE reserva_id = :rid
+        ORDER BY id DESC
+        LIMIT 1
+    ");
+    $st->execute([':rid' => $reservaId]);
+    $id = $st->fetchColumn();
+    return $id ? (int)$id : null;
+}

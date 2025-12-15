@@ -7,8 +7,7 @@ global $conn;
 
 $now = date('Y-m-d H:i:s');
 
-// 1) Selecciona pendientes canal web (NO solo 5 minutos)
-//    Limita por antigüedad y por lote para no cargar el server
+// 1) Selecciona pendientes canal web
 $sql = "
 SELECT id, localizador, fecha_reserva
 FROM epgylzqu_parking_finguer_v2.parking_reservas
@@ -29,7 +28,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $id = (int)$row['id'];
 
     try {
-        // 2) LOCK atómico: marcamos como "procesando_pago"
+        // 2) Lock atómico
         $lock = $conn->prepare("
             UPDATE epgylzqu_parking_finguer_v2.parking_reservas
             SET estado = 'procesando_pago'
@@ -40,56 +39,78 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $lock->execute([':id' => $id]);
 
         if ($lock->rowCount() === 0) {
-            // ya lo está procesando otro cron, o cambió de estado
             continue;
         }
 
-        // 3) Verificar pago (debe decidir y devolver resultado claro)
-        $result = verificarPagamentRedsys($id, true);
+        // 3) Flujo completo: Redsys + BD + confirmación + factura + envío factura
+        $result = verificarPagament($id, [
+            'solo_info'           => false,
+            'actualizar_bd'       => true,
+            'enviar_confirmacion' => true,
+            'crear_factura'       => true,
+            'enviar_factura'      => true,
+            'origen'              => 'cron',   // si tu verificarPagament lo acepta, mejor
+        ]);
 
-        // 4) Si NO está pagada todavía, vuelve a 'pendiente' (o a 'pendiente_pago')
-        if (is_array($result) && ($result['paid'] ?? false) === false) {
-            $back = $conn->prepare("
+        $status = $result['status'] ?? 'error';
+        $paid   = (bool)($result['data']['redsys']['paid'] ?? false);
+
+        // 4) Error => volver a pendiente
+        if ($status !== 'success') {
+            $errors[] = [
+                'id'   => $id,
+                'step' => $result['step'] ?? null,
+                'code' => $result['code'] ?? null,
+                'msg'  => $result['message'] ?? 'Error desconocido',
+            ];
+
+            $conn->prepare("
                 UPDATE epgylzqu_parking_finguer_v2.parking_reservas
                 SET estado = 'pendiente'
                 WHERE id = :id AND estado = 'procesando_pago'
-            ");
-            $back->execute([':id' => $id]);
+            ")->execute([':id' => $id]);
+
             continue;
         }
 
-        // 5) Si hubo error, registra y vuelve a pendiente (o error_pago)
-        if (is_array($result) && ($result['status'] ?? '') === 'error') {
-            $errors[] = ['id' => $id, 'error' => $result['message'] ?? 'Error desconocido'];
-
-            $back = $conn->prepare("
+        // 5) No pagada => volver a pendiente
+        if ($paid === false) {
+            $conn->prepare("
                 UPDATE epgylzqu_parking_finguer_v2.parking_reservas
                 SET estado = 'pendiente'
                 WHERE id = :id AND estado = 'procesando_pago'
-            ");
-            $back->execute([':id' => $id]);
+            ")->execute([':id' => $id]);
+
             continue;
         }
 
-        // si llegó aquí: pagada y ok
+        // 6) Pagada: registrarCobroConfirmado ya la habrá dejado en 'pagada'
+        // (este update es opcional; lo dejo “por seguridad”)
+        $conn->prepare("
+            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+            SET estado = 'pagada'
+            WHERE id = :id AND estado = 'procesando_pago'
+        ")->execute([':id' => $id]);
+
         $processed++;
     } catch (Throwable $e) {
-        $errors[] = ['id' => $id, 'error' => $e->getMessage()];
+        $errors[] = [
+            'id'   => $id,
+            'step' => 'exception',
+            'code' => null,
+            'msg'  => $e->getMessage(),
+        ];
 
         // rollback de estado si algo revienta
-        $back = $conn->prepare("
+        $conn->prepare("
             UPDATE epgylzqu_parking_finguer_v2.parking_reservas
             SET estado = 'pendiente'
             WHERE id = :id AND estado = 'procesando_pago'
-        ");
-        $back->execute([':id' => $id]);
+        ")->execute([':id' => $id]);
     }
 }
 
-// salida tipo cron (texto)
 echo "[CRON] processed={$processed} errors=" . count($errors) . " at {$now}\n";
-if ($errors) {
-    foreach ($errors as $err) {
-        echo "[ERROR] reserva_id={$err['id']} msg={$err['error']}\n";
-    }
+foreach ($errors as $err) {
+    echo "[ERROR] reserva_id={$err['id']} step=" . ($err['step'] ?? '-') . " code=" . ($err['code'] ?? '-') . " msg={$err['msg']}\n";
 }

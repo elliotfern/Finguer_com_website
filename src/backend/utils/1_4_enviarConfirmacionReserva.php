@@ -198,21 +198,74 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
         $mail->Subject = 'Confirmación de su reserva en Finguer.com';
 
         $mail->Body = '
-            <html lang="es"><body style="font-family:Arial,sans-serif">
-              <p>Estimado/a ' . htmlspecialchars($nombre ?: '') . ',</p>
-              <p>Su reserva de parking ha sido confirmada y marcada como pagada.</p>
-              <ul>
-                <li><strong>Localizador:</strong> ' . htmlspecialchars($localizador) . '</li>
-                <li><strong>Tipo de servicio:</strong> ' . htmlspecialchars($tipoTxt) . '</li>
-                <li><strong>Limpieza:</strong> ' . htmlspecialchars($limpiezaTxt) . '</li>
-                <li><strong>Entrada:</strong> ' . htmlspecialchars($fechaEntrada) . ' - ' . htmlspecialchars($horaEntrada) . '</li>
-                <li><strong>Salida:</strong> ' . htmlspecialchars($fechaSalida) . ' - ' . htmlspecialchars($horaSalida) . '</li>
-                <li><strong>Precio (IVA incluido):</strong> ' . number_format($importe, 2, ',', '') . ' €</li>
-              </ul>
-              <p>Gracias por elegir nuestro servicio.</p>
-              <p>BCN Parking SL - Finguer.com</p>
-            </body></html>
-        ';
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Confirmación de Reserva en Finguer.com</title>
+            </head>
+
+            <body style="font-family: Arial, sans-serif; background-color:#f4f4f4; color:#333; margin:0; padding:0;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"
+                    style="border-collapse:collapse; background-color:#ffffff;">
+                
+                <!-- Logo (fondo blanco) -->
+                <tr>
+                <td align="center" style="padding: 20px 0; background-color:#ffffff;">
+                    <img src="https://finguer.com/public/img/logo-header-sticky.png"
+                        alt="Finguer"
+                        width="220"
+                        style="display:block; border:0; outline:none; text-decoration:none;">
+                </td>
+                </tr>
+
+                <!-- Título (azul) -->
+                <tr>
+                <td align="center" bgcolor="#007bff" style="padding: 22px 20px;">
+                    <h1 style="color:#ffffff; margin:0; font-size:20px; line-height:1.3;">
+                    Confirmación de Reserva de Parking en Finguer.com
+                    </h1>
+                </td>
+                </tr>
+
+                <!-- Contenido -->
+                <tr>
+                <td style="padding: 30px 30px;">
+                    <p>Estimado/a ' . htmlspecialchars($nombre ?: '') . ',</p>
+                    <p>Su reserva de parking ha sido confirmada.</p>
+
+                    <ul style="padding-left:18px; margin: 14px 0;">
+                    <li><strong>Localizador:</strong> ' . htmlspecialchars($localizador) . '</li>
+                    <li><strong>Tipo de servicio:</strong> ' . htmlspecialchars($tipoTxt) . '</li>
+                    <li><strong>Limpieza:</strong> ' . htmlspecialchars($limpiezaTxt) . '</li>
+                    <li><strong>Entrada:</strong> ' . htmlspecialchars($fechaEntrada) . ' - ' . htmlspecialchars($horaEntrada) . '</li>
+                    <li><strong>Salida:</strong> ' . htmlspecialchars($fechaSalida) . ' - ' . htmlspecialchars($horaSalida) . '</li>
+                    <li><strong>Precio (IVA incluido):</strong> ' . number_format($importe, 2, ',', '') . ' €</li>
+                    </li><strong>Lugar de Parking</strong>: Carrer de l\'Alt Camp, 9, 08830 Sant Boi de Llobregat, (Barcelona) España</li>
+                    </ul>
+
+                    <p>Por favor, asegúrese de llegar a tiempo y tener su reserva a mano para su presentación.</p>  
+
+                    <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.</p>
+
+                    <p>Gracias por elegir nuestro servicio.</p>
+                    <p style="margin-bottom:0;">BCN Parking SL - Finguer.com</p>
+                </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                <td align="center" bgcolor="#007bff" style="padding: 16px 20px;">
+                    <p style="color:#ffffff; margin:0; font-size:12px; line-height:1.4;">
+                    Este correo electrónico fue enviado automáticamente. Por favor no respondas a este mensaje.
+                    </p>
+                </td>
+                </tr>
+
+            </table>
+            </body>
+            </html>';
 
         $mail->send();
 

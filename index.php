@@ -11,15 +11,16 @@ require_once __DIR__ . '/src/backend/utils/1_1_lecturaReserva.php';
 require_once __DIR__ . '/src/backend/utils/1_2_consultaPagamentRedsys.php';
 require_once __DIR__ . '/src/backend/utils/1_3_registrarCobroConfirmado.php';
 require_once __DIR__ . '/src/backend/utils/1_4_enviarConfirmacionReserva.php';
+require_once __DIR__ . '/src/backend/utils/1_5_creacionFacturaParaReserva.php';
+require_once __DIR__ . '/src/backend/utils/1_6_generarFacturaPdf.php';
+require_once __DIR__ . '/src/backend/utils/1_7_enviarFacturaEmail.php';
 
 require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
-require_once __DIR__ . '/src/backend/utils/generarFacturaPdf.php';
-//require_once __DIR__ . '/src/backend/utils/verificarRedsys.php';
+
 require_once __DIR__ . '/src/backend/utils/generarNumeroFactura.php';
 require_once __DIR__ . '/src/backend/utils/registreLogsFactura.php';
 require_once __DIR__ . '/src/backend/utils/cookieUser.php';
 require_once __DIR__ . '/src/backend/utils/calcularHashFactura.php';
-require_once __DIR__ . '/src/backend/utils/creacioFactura.php';
 require_once __DIR__ . '/src/backend/utils/generadorLocalizador.php';
 require_once __DIR__ . '/src/backend/utils/helpers.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
