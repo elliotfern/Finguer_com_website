@@ -55,12 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                 pr.localizador,
                 pr.estado,
                 pr.fecha_reserva,
+                pr.canal,
 
                 -- Nom i cognom del client (aproximat a partir de u.nombre)
                 u.nombre,
-
                 u.telefono,
-                pr.canal,
 
                 -- Dates i hores d'entrada/sortida
                 DATE(pr.salida_prevista)      AS dataSortida,
@@ -85,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                 pr.estado_vehiculo,
 
                 pr.notas                      AS notes,
-                pr.canal                      AS buscadores,
 
                 -- Codi de neteja (0/1/2/3) derivat dels serveis
                 MAX(

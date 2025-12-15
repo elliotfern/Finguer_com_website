@@ -178,7 +178,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       // 1 - IdReserva
       html += '<td>';
-      if (Number(data.localizador) === 1) {
+      if (data.estado === 'anual') {
         html += '<button type="button" class="btn btn-primary btn-sm">Client anual</button>';
       } else {
         html += data.localizador + ' // ' + fechaReserva_formateada;
