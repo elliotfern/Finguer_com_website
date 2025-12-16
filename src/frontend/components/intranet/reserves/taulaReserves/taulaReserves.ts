@@ -202,7 +202,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       // 2 - Importe
       if (Number(data.canal) === 5) {
-        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">-</a></td>`;
+        html += `<td> - </td>`;
       } else {
         html += `<td><strong>${formatImporte(data.importe)} €</strong></td>`;
       }
@@ -226,7 +226,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       // 3 - VERIFACTU
       if (Number(data.canal) === 5) {
-        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">-</a></td>`;
+        html += `<td> - </td>`;
       } else {
         html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">NO</a></td>`;
       }
