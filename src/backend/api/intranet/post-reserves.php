@@ -1,89 +1,121 @@
 <?php
 
-// Verificar si el método de la solicitud es GET
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('HTTP/1.1 405 Method Not Allowed');
-    echo json_encode(['error' => 'Method not allowed']);
-    exit();
-} else {
-    // Verificar si el token está presente en las cookies
-    if (isset($_COOKIE['token'])) {
-        $token = $_COOKIE['token'];
+declare(strict_types=1);
 
-        // Verificar el token aquí según tus requerimientos
-        if (validarToken($token)) {
+requireMethod('POST');
+requireAuthTokenCookie();
 
-            // Endpoint: actualizar estado_vehiculo de una reserva
-            if (isset($_GET['type']) && $_GET['type'] === 'update-estado') {
-                header('Content-Type: application/json; charset=utf-8');
-                global $conn;
-                /** @var PDO $conn */
+global $conn;
+/** @var PDO $conn */
+if (!isset($conn) || !($conn instanceof PDO)) {
+    jsonResponse(vp2_err('DB connection not available', 'DB_NOT_AVAILABLE'), 500);
+}
 
-                // Leer JSON del body
-                $input = json_decode(file_get_contents('php://input'), true);
+$type = (string)($_GET['type'] ?? '');
+if ($type !== 'update-estado') {
+    jsonResponse(vp2_err('type inválido', 'BAD_TYPE', ['allowed' => ['update-estado']]), 400);
+}
 
-                $id = isset($input['id']) ? (int)$input['id'] : 0;
-                $nuevoEstado = $input['estado_vehiculo'] ?? null;
+$input = readJsonBody(true);
 
-                $allowedEstados = ['pendiente_entrada', 'dentro', 'salido'];
+$id = isset($input['id']) ? (int)$input['id'] : 0;
+$nuevoEstado = isset($input['estado_vehiculo']) ? (string)$input['estado_vehiculo'] : '';
 
-                if ($id <= 0 || !in_array($nuevoEstado, $allowedEstados, true)) {
-                    http_response_code(400);
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Parámetros inválidos',
-                    ]);
-                    exit;
-                }
+$allowedEstados = ['pendiente_entrada', 'dentro', 'salido'];
 
-                try {
-                    $sql = "UPDATE epgylzqu_parking_finguer_v2.parking_reservas
-                SET estado_vehiculo = :estado_vehiculo
-                WHERE id = :id";
+if ($id <= 0) {
+    jsonResponse(vp2_err('Parámetro id inválido', 'BAD_ID'), 400);
+}
+if (!in_array($nuevoEstado, $allowedEstados, true)) {
+    jsonResponse(vp2_err('Parámetro estado_vehiculo inválido', 'BAD_ESTADO', [
+        'allowed' => $allowedEstados
+    ]), 400);
+}
 
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bindValue(':estado_vehiculo', $nuevoEstado, PDO::PARAM_STR);
-                    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+try {
+    // 1) Leer estado actual (para validar transición y diferenciar 404)
+    $st = $conn->prepare("
+        SELECT estado_vehiculo
+        FROM epgylzqu_parking_finguer_v2.parking_reservas
+        WHERE id = :id
+        LIMIT 1
+    ");
+    $st->execute([':id' => $id]);
+    $estadoActual = $st->fetchColumn();
 
-                    $stmt->execute();
-
-                    if ($stmt->rowCount() > 0) {
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Estado actualizado correctamente',
-                            'id' => $id,
-                            'estado_vehiculo' => $nuevoEstado,
-                        ]);
-                    } else {
-                        // No filas afectadas: o no existe la reserva, o ya tenía ese estado
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Sin cambios (ya tenía este estado o no existe la reserva)',
-                            'id' => $id,
-                            'estado_vehiculo' => $nuevoEstado,
-                        ]);
-                    }
-                } catch (Exception $e) {
-                    http_response_code(500);
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Error al actualizar el estado de la reserva',
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-
-                exit;
-            }
-        } else {
-            // Token inválido
-            header('HTTP/1.1 403 Forbidden');
-            echo json_encode(['error' => 'Invalid token']);
-            exit();
-        }
-    } else {
-        // No se proporcionó un token
-        header('HTTP/1.1 403 Forbidden');
-        echo json_encode(['error' => 'Access not allowed']);
-        exit();
+    if ($estadoActual === false) {
+        jsonResponse(vp2_err('Reserva no encontrada', 'NOT_FOUND'), 404);
     }
+
+    $estadoActual = (string)$estadoActual;
+
+    // 2) Si ya está en el mismo estado, devolvemos OK (idempotente)
+    if ($estadoActual === $nuevoEstado) {
+        jsonResponse(vp2_ok('Sin cambios (ya estaba en ese estado)', [
+            'id' => $id,
+            'estado_vehiculo' => $nuevoEstado,
+            'previous_estado_vehiculo' => $estadoActual,
+        ]), 200);
+    }
+
+    // 3) Validar transición permitida
+    $transiciones = [
+        'pendiente_entrada' => ['dentro'],
+        'dentro'            => ['salido'],
+        'salido'            => [], // no se mueve
+    ];
+
+    $permitidos = $transiciones[$estadoActual] ?? [];
+    if (!in_array($nuevoEstado, $permitidos, true)) {
+        jsonResponse(vp2_err('Transición de estado no permitida', 'INVALID_TRANSITION', [
+            'id' => $id,
+            'from' => $estadoActual,
+            'to' => $nuevoEstado,
+            'allowed_to' => $permitidos,
+        ]), 409);
+    }
+
+    // 4) Update con control de concurrencia (anti doble-click / carreras)
+    $sql = "
+        UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+        SET estado_vehiculo = :nuevo
+        WHERE id = :id
+          AND estado_vehiculo = :esperado
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':nuevo'    => $nuevoEstado,
+        ':id'       => $id,
+        ':esperado' => $estadoActual,
+    ]);
+
+    if ($stmt->rowCount() !== 1) {
+        // Alguien lo cambió entre el SELECT y el UPDATE
+        $st2 = $conn->prepare("
+            SELECT estado_vehiculo
+            FROM epgylzqu_parking_finguer_v2.parking_reservas
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $st2->execute([':id' => $id]);
+        $estadoAhora = $st2->fetchColumn();
+        $estadoAhora = $estadoAhora === false ? null : (string)$estadoAhora;
+
+        jsonResponse(vp2_err('Conflicto: el estado ha cambiado, recarga la tabla', 'CONFLICT', [
+            'id' => $id,
+            'expected' => $estadoActual,
+            'current' => $estadoAhora,
+            'requested' => $nuevoEstado,
+        ]), 409);
+    }
+
+    jsonResponse(vp2_ok('Estado actualizado correctamente', [
+        'id' => $id,
+        'estado_vehiculo' => $nuevoEstado,
+        'previous_estado_vehiculo' => $estadoActual,
+    ]), 200);
+} catch (Throwable $e) {
+    jsonResponse(vp2_err('Error al actualizar el estado de la reserva', 'SERVER_ERROR', [
+        'details' => $e->getMessage(),
+    ]), 500);
 }
