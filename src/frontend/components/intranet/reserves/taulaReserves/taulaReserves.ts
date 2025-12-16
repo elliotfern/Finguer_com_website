@@ -211,11 +211,8 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       html += '<td>';
 
       if (data.factura_id && data.factura_numero && data.factura_serie) {
-        // URL al endpoint que genera / sirve el PDF
-        const urlFacturaPdf = `${window.location.origin}/api/factures/pdf/?type=factura-pdf&id=${data.factura_id}`;
-
-        // Muestra número de factura como enlace
-        html += `<a href="${urlFacturaPdf}" target="_blank" class="btn btn-outline-secondary btn-sm">
+        // Mostrar número de factura como enlace
+        html += `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${data.factura_id}">
             ${data.factura_numero}/${data.factura_serie}
            </a>`;
       } else {
@@ -402,6 +399,37 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
           } catch (error) {
             console.error('Error al hacer check-out:', error);
             alert('Error al hacer check-out');
+          }
+        });
+      }
+
+      // Agregar evento click para generar y mostrar PDF
+      const btnFacturaPdf = fila.querySelector('.factura-pdf') as HTMLAnchorElement | null;
+      if (btnFacturaPdf) {
+        btnFacturaPdf.addEventListener('click', async (e) => {
+          e.preventDefault(); // Prevenir la acción por defecto del enlace
+
+          const facturaId = btnFacturaPdf.getAttribute('data-id');
+          if (facturaId) {
+            try {
+              const response = await fetch(`/api/intranet/factures/post/?type=emitir-factura`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ factura_id: facturaId }),
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                const pdfUrl = `${window.location.origin}/path/to/pdf/facturas/${data.pdf_path}`;
+                window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
+              } else {
+                alert('Error al generar la factura');
+              }
+            } catch (error) {
+              console.error('Error al generar el PDF:', error);
+              alert('Hubo un error al generar la factura. Intenta de nuevo.');
+            }
           }
         });
       }

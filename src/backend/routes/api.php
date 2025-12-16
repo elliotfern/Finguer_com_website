@@ -27,6 +27,7 @@ $base_routes = [
     // API FACTURES
     '/api/factures/pdf' => 'src/backend/api/intranet/factures/generar-factura.php',
     '/api/factures/get' => 'src/backend/api/intranet/factures/get-factura.php',
+    '/api/factures/post' => 'src/backend/api/intranet/factures/post-factura.php',
     //'/api/factures/logs' => 'src/backend/api/intranet/factures/logs.php',
     '/api/factures/hash' => 'src/backend/api/intranet/factures/hash.php',
 ];
@@ -41,7 +42,6 @@ $routes = [
     '/api/intranet/auth/login' => ['view' => 'src/backend/api/intranet/auth/login.php', 'needs_session' => false, 'no_header_footer' => true],
 
     '/api/intranet/reserves/get' => ['view' => 'src/backend/api/intranet/get-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
-
     '/api/intranet/reserves/post' => ['view' => 'src/backend/api/intranet/post-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
 
     '/api/intranet/users/get' => ['view' => 'src/backend/api/intranet/get-users.php', 'needs_session' => true, 'no_header_footer' => true],
@@ -65,6 +65,8 @@ $routes = [
     // API FACTURES
     '/api/factures/pdf' => ['view' => 'src/backend/api/intranet/factures/generar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/get' => ['view' => 'src/backend/api/intranet/factures/get-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/factures/post' => ['view' => 'src/backend/api/intranet/factures/post-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+
     //'/api/factures/logs' => ['view' => 'src/backend/api/intranet/factures/logs.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/hash' => ['view' => 'src/backend/api/intranet/factures/hash.php', 'needs_session' => false, 'no_header_footer' => true],
 
