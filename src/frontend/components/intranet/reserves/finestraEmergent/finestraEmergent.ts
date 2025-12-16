@@ -236,3 +236,9 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
   // Mostrar
   ventana.style.display = 'block';
 };
+
+/** Cierra la ventana emergente. */
+export const tancarFinestra = (): void => {
+  const ventana = document.getElementById('ventanaEmergente') as HTMLElement | null;
+  if (ventana) ventana.style.display = 'none';
+};

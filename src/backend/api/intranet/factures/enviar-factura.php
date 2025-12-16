@@ -52,7 +52,7 @@ try {
         'force_pdf'     => false,    // Si quieres forzar la regeneración del PDF
         'base_dir'      => '/home/epgylzqu/finguer.com',
         'subdir'        => '/pdf/facturas',
-        'from_email'    => 'web@finguer.com',
+        'from_email'    => 'hello@finguer.com',
         'from_name'     => 'Finguer',
         'reply_to'      => null,     // Opcional
         'bcc'           => ['hello@finguer.com', 'elliot@hispantic.com'],
