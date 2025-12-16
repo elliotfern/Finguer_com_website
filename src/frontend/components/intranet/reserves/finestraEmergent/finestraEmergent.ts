@@ -121,11 +121,12 @@ function positionPopupFixed(popup: HTMLElement, sourceRect: DOMRect): void {
  *   obrirFinestra(document.getElementById('miBoton') as HTMLElement, id, deviceInfo)
  *   obrirFinestra(null, id, deviceInfo)  // se centra en pantalla
  */
+
 export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: string, deviceInfo?: DeviceInfoInput): void => {
   const urlWeb = window.location.origin + '/control';
   const ventana = document.getElementById('ventanaEmergente') as HTMLElement | null;
 
-  // Botón Confirmación
+  // Botón Enviar confirmación
   const btnConfirmacio = document.getElementById('enlace1') as HTMLButtonElement | null;
 
   if (btnConfirmacio) {
@@ -144,7 +145,6 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
       ev.preventDefault();
 
       // UI loading
-      //const originalText = nuevoBtnConfirmacio.textContent || 'Enviar confirmació email';
       nuevoBtnConfirmacio.disabled = true;
       nuevoBtnConfirmacio.textContent = 'Enviant...';
       nuevoBtnConfirmacio.classList.remove('btn-success', 'btn-danger', 'btn-secondary');
@@ -152,35 +152,75 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
 
       try {
         const r = await enviarConfirmacioReserva(id);
-
-        // OK
-        nuevoBtnConfirmacio.disabled = false; // ✅ permitir reenviar
+        nuevoBtnConfirmacio.disabled = false;
         nuevoBtnConfirmacio.textContent = 'Email enviat! (Reenviar)';
         nuevoBtnConfirmacio.classList.remove('btn-warning', 'btn-danger', 'btn-secondary');
         nuevoBtnConfirmacio.classList.add('btn-success');
-
-        // Si quieres: mostrar r.message en un toast/alert en tu UI
         console.log(r.message);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Error enviant email';
-
-        // Error
-        nuevoBtnConfirmacio.disabled = false; // ✅ permitir reintentar
+        nuevoBtnConfirmacio.disabled = false;
         nuevoBtnConfirmacio.textContent = 'Error enviant (Reintentar)';
         nuevoBtnConfirmacio.classList.remove('btn-warning', 'btn-success', 'btn-secondary');
         nuevoBtnConfirmacio.classList.add('btn-danger');
-
         console.error(msg);
-        // opcional: alert(msg);
-      } finally {
-        // opcional: si prefieres volver al texto inicial tras X segundos:
-        // setTimeout(() => { nuevoBtnConfirmacio.textContent = originalText; }, 4000);
+      }
+    });
+  }
+
+  // Botón Enviar factura (nuevo)
+  const btnEnviarFactura = document.getElementById('enlace2') as HTMLButtonElement | null;
+  if (btnEnviarFactura) {
+    btnEnviarFactura.textContent = 'Enviar factura';
+    btnEnviarFactura.disabled = false;
+    btnEnviarFactura.style.cursor = 'pointer';
+    btnEnviarFactura.style.opacity = '1';
+    btnEnviarFactura.classList.remove('btn-success', 'btn-danger');
+    btnEnviarFactura.classList.add('btn-secondary');
+
+    // Para evitar listeners duplicados
+    const nuevoBtnEnviarFactura = btnEnviarFactura.cloneNode(true) as HTMLButtonElement;
+    btnEnviarFactura.parentNode?.replaceChild(nuevoBtnEnviarFactura, btnEnviarFactura);
+
+    nuevoBtnEnviarFactura.addEventListener('click', async (ev: MouseEvent) => {
+      ev.preventDefault();
+
+      // UI loading
+      nuevoBtnEnviarFactura.disabled = true;
+      nuevoBtnEnviarFactura.textContent = 'Enviando...';
+      nuevoBtnEnviarFactura.classList.remove('btn-success', 'btn-danger', 'btn-secondary');
+      nuevoBtnEnviarFactura.classList.add('btn-warning');
+
+      try {
+        // Hacer el llamado al endpoint de "emitir-factura-y-enviar"
+        const response = await fetch(`/api/factures/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reserva_id: id }),
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          nuevoBtnEnviarFactura.disabled = false;
+          nuevoBtnEnviarFactura.textContent = 'Factura enviada';
+          nuevoBtnEnviarFactura.classList.remove('btn-warning', 'btn-danger', 'btn-secondary');
+          nuevoBtnEnviarFactura.classList.add('btn-success');
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Error enviando factura';
+        nuevoBtnEnviarFactura.disabled = false;
+        nuevoBtnEnviarFactura.textContent = 'Error enviando (Reintentar)';
+        nuevoBtnEnviarFactura.classList.remove('btn-warning', 'btn-success', 'btn-secondary');
+        nuevoBtnEnviarFactura.classList.add('btn-danger');
+        console.error(msg);
       }
     });
   }
 
   // Enlaces
-  (document.getElementById('enlace2') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/email/factura/${id}`);
   (document.getElementById('enlace3') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/modificar/reserva/${id}`);
   (document.getElementById('enlace4') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/eliminar/reserva/${id}`);
 
@@ -195,10 +235,4 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
 
   // Mostrar
   ventana.style.display = 'block';
-};
-
-/** Cierra la ventana emergente. */
-export const tancarFinestra = (): void => {
-  const ventana = document.getElementById('ventanaEmergente') as HTMLElement | null;
-  if (ventana) ventana.style.display = 'none';
 };

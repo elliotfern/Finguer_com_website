@@ -25,9 +25,9 @@ $base_routes = [
     '/api/pagamentRedsysBizum' => 'src/backend/api/web_publica/pagament-redsys-bizum.php',
 
     // API FACTURES
-    '/api/factures/pdf' => 'src/backend/api/intranet/factures/generar-factura.php',
     '/api/factures/get' => 'src/backend/api/intranet/factures/get-factura.php',
     '/api/factures/post' => 'src/backend/api/intranet/factures/post-factura.php',
+    '/api/factures/send' => 'src/backend/api/intranet/factures/enviar-factura.php',
     //'/api/factures/logs' => 'src/backend/api/intranet/factures/logs.php',
     '/api/factures/hash' => 'src/backend/api/intranet/factures/hash.php',
 ];
@@ -63,7 +63,7 @@ $routes = [
     '/api/pagamentRedsysBizum' => ['view' => 'src/backend/api/web_publica/pagament-redsys-bizum.php', 'needs_session' => false, 'no_header_footer' => true],
 
     // API FACTURES
-    '/api/factures/pdf' => ['view' => 'src/backend/api/intranet/factures/generar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/factures/send' => ['view' => 'src/backend/api/intranet/factures/enviar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/get' => ['view' => 'src/backend/api/intranet/factures/get-factura.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/post' => ['view' => 'src/backend/api/intranet/factures/post-factura.php', 'needs_session' => false, 'no_header_footer' => true],
 
