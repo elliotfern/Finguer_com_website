@@ -212,7 +212,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       if (data.factura_id && data.factura_numero && data.factura_serie) {
         // Mostrar número de factura como enlace
-        html += `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${data.factura_id}">
+        html += `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${data.id}">
             ${data.factura_numero}/${data.factura_serie}
            </a>`;
       } else {
@@ -409,14 +409,14 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
         btnFacturaPdf.addEventListener('click', async (e) => {
           e.preventDefault(); // Prevenir la acción por defecto del enlace
 
-          const facturaId = btnFacturaPdf.getAttribute('data-id');
-          if (facturaId) {
+          const reserva_id = btnFacturaPdf.getAttribute('data-id');
+          if (reserva_id) {
             try {
               const response = await fetch(`/api/factures/post/?type=emitir-factura`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  factura_id: facturaId, // Aseguramos que el ID se pase correctamente
+                  reserva_id: reserva_id, // Aseguramos que el ID se pase correctamente
                 }),
               });
 
