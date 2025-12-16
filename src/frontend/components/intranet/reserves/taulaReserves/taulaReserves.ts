@@ -412,10 +412,12 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
           const facturaId = btnFacturaPdf.getAttribute('data-id');
           if (facturaId) {
             try {
-              const response = await fetch(`/api/factures/post/?type=emitir-factura`, {
+              const response = await fetch(`/api/intranet/factures/post/?type=emitir-factura`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ factura_id: facturaId }),
+                body: JSON.stringify({
+                  factura_id: facturaId, // Aseguramos que el ID se pase correctamente
+                }),
               });
 
               const data = await response.json();
