@@ -48,6 +48,7 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = `
       <th>Núm. Comanda // data</th>
+      <th>Notes</th>
       <th>Import</th>
       <th>Factura</th>
       <th>Veri*factu</th>
@@ -61,7 +62,6 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
       <th>Dades Vehicle</th>
       <th>Vol tornada</th>
       <th>Estat reserva</th>
-      <th>Notes</th>
       <th>Opcions</th>
     `;
     thead.appendChild(headerRow);
@@ -191,8 +191,21 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       }
       html += '</td>';
 
+      // 2 . Notes
+      html += '<td>';
+      if (data.localizador && !data.notes) {
+        html += `<a href="${urlWeb}/reserva/modificar/nota/${data.id}" class="btn btn-info btn-sm" role="button" aria-pressed="true">Crear</a>`;
+      } else if (data.notes) {
+        html += `<button class="btn btn-danger btn-sm" type="button" role="button" aria-pressed="true">${data.notes}</button>`;
+      }
+      html += '</td>';
+
       // 2 - Importe
-      html += `<td><strong>${formatImporte(data.importe)} €</strong></td>`;
+      if (Number(data.canal) === 5) {
+        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">-</a></td>`;
+      } else {
+        html += `<td><strong>${formatImporte(data.importe)} €</strong></td>`;
+      }
 
       // 3 - FACTURA PDF
       html += '<td>';
@@ -212,7 +225,11 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       html += '</td>';
 
       // 3 - VERIFACTU
-      html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">NO</a></td>`;
+      if (Number(data.canal) === 5) {
+        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">-</a></td>`;
+      } else {
+        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">NO</a></td>`;
+      }
 
       // 3 - Pagado
       html += '<td>';
@@ -230,9 +247,8 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       const puedeVerificar = diffDays <= MAX_DIAS_VERIFICACION;
       const estadoHtml = formatEstadoReservaHtml(data.estado);
 
-      if (Number(data.localizador) === 1) {
-        html += `<p><button type="button" class="btn btn-success">SI</button></p>
-        <p>${estadoHtml}</p>`;
+      if (Number(data.localizador) === 1 || data.canal === 5) {
+        html += `<p>${estadoHtml}</p>`;
       } else {
         if (Number(data.processed) === 1) {
           html += `<p><button type="button" class="btn btn-success">SI</button></p>
@@ -351,15 +367,6 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
         html += `<button type="button" class="btn btn-secondary btn-sm js-check-out" data-id="${data.id}">Check-out</button>`;
       } else if (data.estado_vehiculo === 'salido') {
         html += `Salido`;
-      }
-      html += '</td>';
-
-      // 12 - Notes
-      html += '<td>';
-      if (data.localizador && !data.notes) {
-        html += `<a href="${urlWeb}/reserva/modificar/nota/${data.id}" class="btn btn-info btn-sm" role="button" aria-pressed="true">Crear</a>`;
-      } else if (data.notes) {
-        html += `/${data.notes}`;
       }
       html += '</td>';
 
