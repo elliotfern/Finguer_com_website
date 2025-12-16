@@ -42,14 +42,17 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             continue;
         }
 
-        // 3) Flujo completo: Redsys + BD + confirmación + factura + envío factura
+        // 3) Flujo completo (modo CRON)
         $result = verificarPagament($id, [
             'solo_info'           => false,
             'actualizar_bd'       => true,
             'enviar_confirmacion' => true,
             'crear_factura'       => true,
             'enviar_factura'      => true,
-            'origen'              => 'cron',   // si tu verificarPagament lo acepta, mejor
+
+            'origen'              => 'cron',
+            'force_confirmacion'  => false,
+            'force_factura_email' => false,
         ]);
 
         $status = $result['status'] ?? 'error';
@@ -84,8 +87,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             continue;
         }
 
-        // 6) Pagada: registrarCobroConfirmado ya la habrá dejado en 'pagada'
-        // (este update es opcional; lo dejo “por seguridad”)
+        // 6) Pagada: por si acaso, “cerramos” el estado si quedó procesando_pago
         $conn->prepare("
             UPDATE epgylzqu_parking_finguer_v2.parking_reservas
             SET estado = 'pagada'

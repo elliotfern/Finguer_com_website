@@ -1,4 +1,6 @@
+import { ApiResponse } from '../../../../types/api';
 import { Reserva } from '../../../../types/interfaces';
+import { isApiOk } from '../../../../utils/api';
 import { actualizarEstadoReserva } from './actualitzarEstatReserva';
 import { ComptadorReserves, comptadorReserves } from './comptadorReserves';
 
@@ -84,21 +86,25 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
 
 export const carregarDadesTaulaReserves = async (estatParking: string): Promise<void> => {
   try {
-    const url = `${window.location.origin}/api/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
+    const url = `https://finguer.com/api/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
 
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const payload = (await response.json()) as {
-      counts?: ComptadorReserves;
-      rows?: Reserva[];
-      hasRows?: boolean;
-    };
+    const payload = (await response.json()) as ApiResponse<{
+      counts: ComptadorReserves;
+      rows: Reserva[];
+      hasRows: boolean;
+    }>;
 
-    const datos: Reserva[] = payload.rows || [];
-    const counts: ComptadorReserves | undefined = payload.counts;
+    if (!isApiOk(payload)) {
+      throw new Error(`${payload.code ?? 'API_ERROR'}: ${payload.message}`);
+    }
+
+    const datos: Reserva[] = payload.data.rows ?? [];
+    const counts: ComptadorReserves | undefined = payload.data.counts;
 
     // 🔢 Actualizar contador de reservas
     comptadorReserves(estatParking, counts);

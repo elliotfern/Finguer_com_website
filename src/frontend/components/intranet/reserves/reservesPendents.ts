@@ -1,3 +1,4 @@
+import { ApiOk } from '../../../types/api';
 import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent';
 import { carregarDadesTaulaReserves } from './taulaReserves/taulaReserves';
 
@@ -11,6 +12,37 @@ type DeviceInfo = {
 
 type DeviceInfoInput = DeviceInfo[] | DeviceInfo | null;
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function isApiOk<T>(v: unknown): v is ApiOk<T> {
+  if (!isRecord(v)) return false;
+  return v.status === 'success' && 'data' in v;
+}
+
+function isDeviceInfo(v: unknown): v is DeviceInfo {
+  if (!isRecord(v)) return false;
+  const keys: (keyof DeviceInfo)[] = ['dispositiu', 'navegador', 'sistema_operatiu', 'ip'];
+  return keys.every((k) => !(k in v) || typeof v[k] === 'string');
+}
+
+function isDeviceInfoArray(v: unknown): v is DeviceInfo[] {
+  return Array.isArray(v) && v.every(isDeviceInfo);
+}
+
+type ReservaIdData = { rows?: unknown };
+
+function extractRowsFromVp2(json: unknown): DeviceInfo[] | null {
+  if (!isApiOk<ReservaIdData>(json)) return null;
+  const data = json.data;
+  if (!isRecord(data)) return null;
+
+  const rows = data.rows;
+  if (isDeviceInfoArray(rows)) return rows;
+  return null;
+}
+
 const DEVICE_INFO_ENDPOINT = (id: string) => `${window.location.origin}/api/intranet/reserves/get/?type=reservaId&id=${encodeURIComponent(id)}`;
 
 async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
@@ -18,13 +50,14 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
     const url = DEVICE_INFO_ENDPOINT(id);
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const json: unknown = await res.json();
 
-    // 👇 Normalizamos: puede venir como objeto o como array
-    if (Array.isArray(data)) return data as DeviceInfo[];
-    return data as DeviceInfo;
+    // Solo backend nuevo: { status: 'success', data: { rows: [...] } }
+    const rows = extractRowsFromVp2(json);
+    if (rows) return rows;
+
+    return null;
   } catch (e) {
-    // Fallback suave: si falla la API, devolvemos null (el popup mostrará "-")
     console.warn('No se pudo obtener DeviceInfo desde la API:', e);
     return null;
   }
