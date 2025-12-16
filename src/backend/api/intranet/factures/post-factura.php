@@ -34,25 +34,26 @@ try {
     // 2) Generar el PDF
     $pdfRes = generarFacturaPdf($facturaId, [
         'mode'     => 'F', // Guardar en archivo
-        'base_dir' => '/path/to/store/pdf',
-        'subdir'   => '/facturas',
+        'base_dir' => '/home/epgylzqu/finguer.com', // Ruta completa a la raíz de tu servidor
+        'subdir'   => '/pdf/facturas', // Subdirectorio donde se guardará el PDF
         'force'    => false, // No forzar la generación si ya existe
     ]);
 
     if ($pdfRes['status'] !== 'success') {
         jsonResponse(vp2_err('Error al generar el PDF', 'ERROR_GENERACION_PDF', $pdfRes), 500);
     }
+    // 3) Enviar la ruta pública del PDF en la respuesta
+    $pdfUrl = 'https://finguer.com/pdf/facturas/' . basename($pdfRes['path']); // Genera la URL pública
 
-    // 3) Enviar la ruta del PDF en la respuesta
     jsonResponse(vp2_ok('Factura generada correctamente', [
         'factura_id'    => $facturaId,
-        'pdf_path'      => $pdfRes['path'], // Ruta del PDF generado
+        'pdf_url'       => $pdfUrl, // URL pública del PDF generado
     ]), 200);
 
     // Si todo ha ido bien, devolver la respuesta
     jsonResponse(vp2_ok('Factura generada y enviada correctamente', [
         'factura_id'    => $facturaId,
-        'pdf_path'      => $pdfRes['path'],
+        'pdf_url'       => $pdfUrl,
         'email_sent'    => $emailRes['status'] === 'success',
     ]), 200);
 } catch (Throwable $e) {
