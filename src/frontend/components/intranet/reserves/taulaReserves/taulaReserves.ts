@@ -423,7 +423,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
               const data = await response.json();
 
               if (data.status === 'success') {
-                const pdfUrl = `https://finguer.com/pdf/facturas/${data.pdf_url}`;
+                const pdfUrl = data.pdf_url;
                 window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
               } else {
                 alert('Error al generar la factura');
