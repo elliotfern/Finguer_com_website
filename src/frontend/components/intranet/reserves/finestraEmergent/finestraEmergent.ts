@@ -193,7 +193,7 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
 
       try {
         // Hacer el llamado al endpoint de "emitir-factura-y-enviar"
-        const response = await fetch(`/api/factures/send`, {
+        const response = await fetch(`/api/factures/send/?type=emitir-factura-y-enviar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reserva_id: id }),
