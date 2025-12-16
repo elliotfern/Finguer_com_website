@@ -423,8 +423,15 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
               const data = await response.json();
 
               if (data.status === 'success') {
-                const pdfUrl = data.pdf_url;
-                window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
+                // Acceder a la URL completa del PDF generada por el backend
+                const pdfUrl = data.data.pdf_url;
+
+                // Verificamos que la URL es válida antes de intentar abrirla
+                if (pdfUrl && pdfUrl !== '') {
+                  window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
+                } else {
+                  alert('No se pudo generar la URL del PDF');
+                }
               } else {
                 alert('Error al generar la factura');
               }
