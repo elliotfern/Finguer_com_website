@@ -308,7 +308,7 @@ export function initTaulaFacturacio(): void {
       };
       const fechaEmision_format = fechaEmision_date.toLocaleDateString('es-ES', opcionesFormato);
       // URL al endpoint que genera / sirve el PDF
-      const urlFacturaPdf = `${APP_WEB_BASE}/api/factures/pdf/?type=factura-pdf&id=${f.id}`;
+      const urlFacturaPdf = `${APP_WEB_BASE}/api/factures/post/?type=emitir-factura&reserva_id=${f.id}`;
 
       const urlHistorialLogs = `${APP_WEB_BASE}/control/facturacio/historial/${f.id}`;
 
