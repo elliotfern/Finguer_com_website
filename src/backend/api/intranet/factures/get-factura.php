@@ -150,7 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                             f.facturar_a_nombre,
                             f.facturar_a_empresa,
                             f.facturar_a_nif,
-                            f.facturar_a_email
+                            f.facturar_a_email,
+                            f.reserva_id
                         FROM epgylzqu_parking_finguer_v2.facturas f
                         $whereSql
                         ORDER BY f.fecha_emision DESC, f.serie DESC, f.numero DESC
