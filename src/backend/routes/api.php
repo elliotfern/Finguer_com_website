@@ -28,6 +28,7 @@ $base_routes = [
     '/api/factures/get' => 'src/backend/api/intranet/factures/get-factura.php',
     '/api/factures/post' => 'src/backend/api/intranet/factures/post-factura.php',
     '/api/factures/send' => 'src/backend/api/intranet/factures/enviar-factura.php',
+    '/api/factures/post/confirmar-pago-manual' => 'src/backend/api/intranet/factures/post-confirmar-pago-manual.php',
     //'/api/factures/logs' => 'src/backend/api/intranet/factures/logs.php',
     '/api/factures/hash' => 'src/backend/api/intranet/factures/hash.php',
 ];
@@ -66,6 +67,7 @@ $routes = [
     '/api/factures/send' => ['view' => 'src/backend/api/intranet/factures/enviar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/get' => ['view' => 'src/backend/api/intranet/factures/get-factura.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/post' => ['view' => 'src/backend/api/intranet/factures/post-factura.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/factures/post/confirmar-pago-manual' => ['view' => 'src/backend/api/intranet/factures/post-confirmar-pago-manual.php', 'needs_session' => false, 'no_header_footer' => true],
 
     //'/api/factures/logs' => ['view' => 'src/backend/api/intranet/factures/logs.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/hash' => ['view' => 'src/backend/api/intranet/factures/hash.php', 'needs_session' => false, 'no_header_footer' => true],

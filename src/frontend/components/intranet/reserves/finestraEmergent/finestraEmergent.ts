@@ -223,7 +223,7 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
   // Enlaces
   (document.getElementById('enlace3') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/modificar/reserva/${id}`);
   (document.getElementById('enlace4') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/eliminar/reserva/${id}`);
-
+ 
   if (!ventana) return;
 
   // Bloque de Device Info

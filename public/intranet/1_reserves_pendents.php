@@ -13,13 +13,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-12 col-md-12 d-flex flex-column justify-content-between gap-3">
-                        <button id="enlace1" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
+                        <button id="enlace1" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
 
-                        <button id="enlace2" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
+                        <button id="enlace2" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
 
-                        <a href="#" id="enlace3" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
+                        <a href="#" id="enlace3" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
 
-                        <button id="enlace4" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</button>
+                        <a href="#" id="enlace4" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</a>
 
                         <button class="btn btn-danger tancar-finestra-btn w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
                     </div>

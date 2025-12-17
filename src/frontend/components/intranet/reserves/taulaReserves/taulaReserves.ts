@@ -21,6 +21,39 @@ function formatEstadoReservaHtml(estado: string): string {
   }
 }
 
+type FacturaMini = {
+  status: 'success' | 'existing' | 'error';
+  id: number | null;
+};
+
+type ConfirmarPagoManualResponse = {
+  reserva: Record<string, unknown>;
+  pago: Record<string, unknown> | null;
+  factura: FacturaMini | null;
+  envio_factura: unknown | null;
+};
+
+const confirmarPagoManual = async (reservaId: number): Promise<ConfirmarPagoManualResponse> => {
+  const res = await fetch('https://finguer.com/api/factures/post/confirmar-pago-manual', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // ✅ importante (cookie auth)
+    body: JSON.stringify({ reserva_id: reservaId }),
+  });
+
+  const payload = (await res.json()) as ApiResponse<ConfirmarPagoManualResponse>;
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  if (!isApiOk(payload)) {
+    throw new Error(`${payload.code ?? 'API_ERROR'}: ${payload.message}`);
+  }
+
+  return payload.data;
+};
+
 // Crea la tabla completa (div -> table -> thead -> tbody) si no existe y devuelve el <tbody>
 const getOrCreateTableBody = (): HTMLTableSectionElement => {
   // Contenedor donde se pintará la tabla
@@ -210,13 +243,23 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       // 3 - FACTURA PDF
       html += '<td>';
 
-      if (data.factura_id && data.factura_numero && data.factura_serie) {
+      const canal = Number(data.canal);
+      const hasFactura = !!(data.factura_id && data.factura_numero && data.factura_serie);
+
+      if (hasFactura) {
         // Mostrar número de factura como enlace
         html += `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${data.id}">
-            ${data.factura_numero}/${data.factura_serie}
-           </a>`;
-      } else {
+          ${data.factura_numero}/${data.factura_serie}
+        </a>`;
+      } else if (canal === 5) {
         html += '-';
+      } else {
+        // ✅ NO hay factura y NO es canal 5 => mostramos botón
+        html += `<button type="button"
+          class="btn btn-success btn-sm confirmar-pago-manual"
+          data-id="${data.id}">
+          Cobrar y emitir factura
+        </button>`;
       }
 
       html += '</td>';
@@ -439,6 +482,37 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
               console.error('Error al generar el PDF:', error);
               alert('Hubo un error al generar la factura. Intenta de nuevo.');
             }
+          }
+        });
+      }
+      // Botón: Confirmar pago manual + generar factura
+      const btnConfirmarPago = fila.querySelector('.confirmar-pago-manual') as HTMLButtonElement | null;
+
+      if (btnConfirmarPago) {
+        btnConfirmarPago.addEventListener('click', async () => {
+          const reservaId = Number(btnConfirmarPago.getAttribute('data-id') ?? 0);
+          if (!reservaId) return;
+
+          const ok = confirm('¿Confirmar pago manual y generar factura?');
+          if (!ok) return;
+
+          btnConfirmarPago.disabled = true;
+          const oldText = btnConfirmarPago.textContent ?? '';
+          btnConfirmarPago.textContent = 'Procesando...';
+
+          try {
+            const result = await confirmarPagoManual(reservaId);
+
+            const facturaId = result.factura?.id ?? null;
+            alert(facturaId ? `OK. Factura generada (ID ${facturaId}).` : 'OK. Pago confirmado.');
+
+            // ✅ refrescar tabla para que aparezca el número de factura y desaparezca el botón
+            await carregarDadesTaulaReserves(estatParking);
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Error desconocido';
+            alert(`Error: ${msg}`);
+            btnConfirmarPago.disabled = false;
+            btnConfirmarPago.textContent = oldText;
           }
         });
       }
