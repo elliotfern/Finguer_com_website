@@ -21,8 +21,16 @@ try {
     if ($type === 'pagoManual') {
 
         // Body JSON
-        $input = readJsonBody(); // <-- asumo que lo tienes; si no, te lo pongo abajo
-        $reservaId = (int)($input['reserva_id'] ?? 0);
+        $type = (string)($_GET['type'] ?? ($_POST['type'] ?? ''));
+
+        $input = [];
+        try {
+            $input = readJsonBody();
+        } catch (Throwable $e) {
+            $input = [];
+        }
+
+        $reservaId = (int)($input['reserva_id'] ?? ($_POST['reserva_id'] ?? 0));
 
         if ($reservaId <= 0) {
             jsonResponse(vp2_err('Falta reserva_id', 'MISSING_RESERVA_ID'), 400);

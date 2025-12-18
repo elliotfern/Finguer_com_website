@@ -22,38 +22,40 @@ function formatEstadoReservaHtml(estado: string): string {
   }
 }
 
-type FacturaMini = {
-  status: 'success' | 'existing' | 'error';
-  id: number | null;
+type FacturaInfo = { status: string; id: number };
+
+type PagoManualData = {
+  reserva?: unknown;
+  pago?: unknown;
+  factura?: FacturaInfo | null;
+  envio_factura?: unknown;
 };
 
-type ConfirmarPagoManualResponse = {
-  reserva: Record<string, unknown>;
-  pago: Record<string, unknown> | null;
-  factura: FacturaMini | null;
-  envio_factura: unknown | null;
+type PagoManualResponse = {
+  status: 'success' | 'error';
+  message?: string;
+  code?: string;
+  data?: PagoManualData;
 };
 
-const confirmarPagoManual = async (reservaId: number): Promise<ConfirmarPagoManualResponse> => {
-  const res = await fetch(`${apiUrl}/factures/post/confirmar-pago-manual`, {
+export async function confirmarPagoManual(reservaId: number): Promise<PagoManualData> {
+  const res = await fetch(`${apiUrl}/factures/post/confirmar-pago-manual/?type=pagoManual`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reserva_id: reservaId }),
   });
 
-  const payload = (await res.json()) as ApiResponse<ConfirmarPagoManualResponse>;
+  const json = (await res.json()) as PagoManualResponse;
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
+  if (!res.ok || json.status !== 'success') {
+    throw new Error(json.message || json.code || 'Error confirmando pago manual');
   }
 
-  if (!isApiOk(payload)) {
-    throw new Error(`${payload.code ?? 'API_ERROR'}: ${payload.message}`);
-  }
+  return json.data ?? {};
+}
 
-  return payload.data;
-};
+
 
 // Crea la tabla completa (div -> table -> thead -> tbody) si no existe y devuelve el <tbody>
 const getOrCreateTableBody = (): HTMLTableSectionElement => {
