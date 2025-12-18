@@ -5,6 +5,13 @@ declare(strict_types=1);
 requireMethod('POST');
 requireAuthTokenCookie();
 
+function safeRollback(PDO $conn): void
+{
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+}
+
 global $conn;
 /** @var PDO $conn */
 if (!isset($conn) || !($conn instanceof PDO)) {
@@ -98,7 +105,7 @@ try {
             ]);
 
             if (($p3['status'] ?? '') !== 'success') {
-                $conn->rollBack();
+                safeRollback($conn);
                 jsonResponse(array_merge($p3, ['step' => 3]), 400);
             }
 
@@ -114,7 +121,7 @@ try {
             $facturaId = crearFacturaParaReserva($conn, (int)$reserva['id'], 'manual');
 
             if (!$facturaId) {
-                $conn->rollBack();
+                safeRollback($conn);
                 jsonResponse(vp2_err(
                     'Pago registrado, pero falló la creación de factura',
                     'FACTURA_CREATE_FAILED',
@@ -173,10 +180,9 @@ try {
         'allowed' => ['pagoManual']
     ]), 400);
 } catch (Throwable $e) {
-    if ($conn instanceof PDO && $conn->inTransaction()) {
-        $conn->rollBack();
-    }
+    if ($conn instanceof PDO) safeRollback($conn);
     jsonResponse(vp2_err('Error interno', 'SERVER_ERROR', [
         'details' => $e->getMessage(),
     ]), 500);
 }
+

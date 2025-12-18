@@ -2,6 +2,9 @@
 
 function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
 {
+
+     $startedHere = false;
+
     if ($reservaId <= 0) {
         return vp2_err('ID de reserva no válido.', 'RESERVA_ID_INVALID');
     }
@@ -19,6 +22,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
 
     try {
         $conn->beginTransaction();
+          $startedHere = true;
 
         // 1) Cargar reserva + totales (FOR UPDATE para evitar carreras)
         $stmt = $conn->prepare("
@@ -106,7 +110,9 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
             $updRes->execute([':id' => $reservaId]);
         }
 
-        $conn->commit();
+         if ($startedHere) {
+            $conn->commit();
+        }
 
         return vp2_ok('Cobro registrado y reserva marcada como pagada.', [
             'pago' => [
