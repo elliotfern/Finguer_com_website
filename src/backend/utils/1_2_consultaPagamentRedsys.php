@@ -19,7 +19,7 @@ function consultaRedsys(string $order): array
         return vp2_err('Configuración Redsys incompleta (MERCHANTCODE/KEY).', 'REDSYS_CONFIG_MISSING');
     }
 
-    // helper tuyo (si no existe, lo definimos)
+    // helper tuyo
     if (!function_exists('getProtectedPropertyValue')) {
         function getProtectedPropertyValue($object, $propertyName)
         {
