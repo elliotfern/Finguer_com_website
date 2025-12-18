@@ -1,4 +1,4 @@
-import globals from '../../config/globals';
+import { webUrl } from '../../config/globals';
 
 export function deleteCookie(name: string, path?: string, domain?: string): void {
   if (getCookie(name)) {
@@ -52,5 +52,5 @@ export function logout(): void {
   sessionStorage.clear();
 
   // Redirigir a la página de inicio de sesión
-  window.location.href = `${globals.devDirectory}/login`;
+  window.location.href = `${webUrl}/login`;
 }

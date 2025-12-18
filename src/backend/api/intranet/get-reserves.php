@@ -80,24 +80,24 @@ try {
             u.telefono AS tel,
             pr.personas AS numeroPersonas
 
-        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        FROM parking_reservas pr
 
-        LEFT JOIN epgylzqu_parking_finguer_v2.usuarios u
+        LEFT JOIN usuarios u
             ON pr.usuario_id = u.id
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
-            FROM epgylzqu_parking_finguer_v2.pagos
+            FROM pagos
             WHERE estado = 'confirmado'
             GROUP BY reserva_id
         ) px ON px.reserva_id = pr.id
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS factura_id
-            FROM epgylzqu_parking_finguer_v2.facturas
+            FROM facturas
             GROUP BY reserva_id
         ) fx ON fx.reserva_id = pr.id
-        LEFT JOIN epgylzqu_parking_finguer_v2.facturas f
+        LEFT JOIN facturas f
             ON f.id = fx.factura_id
 
         LEFT JOIN (
@@ -111,8 +111,8 @@ try {
                         ELSE 0
                     END
                 ) AS limpieza
-            FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs_l
-            INNER JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s_l
+            FROM parking_reservas_servicios prs_l
+            INNER JOIN parking_servicios_catalogo s_l
                 ON s_l.id = prs_l.servicio_id
             AND s_l.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
             GROUP BY prs_l.reserva_id
@@ -135,7 +135,7 @@ try {
 
         $sqlCounts = "
             SELECT estado_vehiculo, COUNT(*) AS total
-            FROM epgylzqu_parking_finguer_v2.parking_reservas
+            FROM parking_reservas
             GROUP BY estado_vehiculo
         ";
 
@@ -209,28 +209,28 @@ try {
             u.sistema_operatiu,
             u.ip
 
-        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        FROM parking_reservas pr
 
-        LEFT JOIN epgylzqu_parking_finguer_v2.usuarios u
+        LEFT JOIN usuarios u
             ON pr.usuario_id = u.id
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
-            FROM epgylzqu_parking_finguer_v2.pagos
+            FROM pagos
             WHERE estado='confirmado'
             GROUP BY reserva_id
         ) px ON px.reserva_id = pr.id
 
-        LEFT JOIN epgylzqu_parking_finguer_v2.pagos p
+        LEFT JOIN pagos p
             ON p.id = px.pago_id
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS factura_id
-            FROM epgylzqu_parking_finguer_v2.facturas
+            FROM facturas
             GROUP BY reserva_id
         ) fx ON fx.reserva_id = pr.id
 
-        LEFT JOIN epgylzqu_parking_finguer_v2.facturas f
+        LEFT JOIN facturas f
             ON f.id = fx.factura_id
 
         LEFT JOIN (
@@ -244,8 +244,8 @@ try {
                         ELSE 0
                     END
                 ) AS limpieza
-            FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs_l
-            INNER JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s_l
+            FROM parking_reservas_servicios prs_l
+            INNER JOIN parking_servicios_catalogo s_l
                 ON s_l.id = prs_l.servicio_id
             AND s_l.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
             GROUP BY prs_l.reserva_id

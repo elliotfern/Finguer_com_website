@@ -2,11 +2,7 @@
 .DS_Store
 Thumbs.db
 /.vscode/sftp.json
-.gitignore
-error_log
-.env
 finguer-web.code-workspace
-appPizza.ts
 
 # Ignorar logs y archivos temporales
 /logs/
@@ -15,3 +11,13 @@ appPizza.ts
 # Ignorar directorio de dependencias (ejemplo para PHP y Composer)
 /vendor/
 /node_modules/
+/dev/
+/pdf/
+/vendor/
+/dist/
+/pdf/
+/.vscode/
+.env
+error_log
+.ftpquota
+.gitignore

@@ -1,503 +1,524 @@
-// src/intranet/facturacio/llistat.ts
+import { apiUrl, webUrl } from '../../../../config/globals';
+import { ApiResponse } from '../../../../types/api';
+import { Reserva } from '../../../../types/interfaces';
+import { isApiOk } from '../../../../utils/api';
+import { actualizarEstadoReserva } from './actualitzarEstatReserva';
+import { ComptadorReserves, comptadorReserves } from './comptadorReserves';
 
-declare global {
-  interface Window {
-    APP_WEB?: string;
+function formatEstadoReservaHtml(estado: string): string {
+  switch (estado) {
+    case 'pendiente':
+      return '<span class="badge bg-warning text-dark">Pendent de pagament</span>';
+    case 'pago_oficina':
+      return '<span class="badge bg-info text-dark">Pagament a oficina</span>';
+    case 'pagada':
+      return '<span class="badge bg-success">Pagada</span>';
+    case 'cancelada':
+      return '<span class="badge bg-danger">Cancel·lada</span>';
+    case 'anual':
+      return '<span class="badge bg-primary">Client anual</span>';
+    default:
+      return `<span class="badge bg-secondary">${estado}</span>`;
   }
 }
 
-type IntegrityIssue = {
-  factura_id: number;
-  serie: string;
-  numero: string;
-  motivo: string;
-  posicio?: number | null;
-  hash_guardado?: string;
-  hash_esperat?: string;
-  hash_anterior_guardado?: string;
-  hash_anterior_esperat?: string;
-  posicion?: number;
+type FacturaMini = {
+  status: 'success' | 'existing' | 'error';
+  id: number | null;
 };
 
-type IntegrityData = {
-  status: 'ok' | 'error';
-  total_facturas: number;
-  facturas_corruptas: number;
-  issues: IntegrityIssue[];
-  message?: string;
+type ConfirmarPagoManualResponse = {
+  reserva: Record<string, unknown>;
+  pago: Record<string, unknown> | null;
+  factura: FacturaMini | null;
+  envio_factura: unknown | null;
 };
 
-type IntegrityApiResponse = {
-  success: boolean;
-  data?: IntegrityData;
-  error?: string;
-};
-
-const APP_WEB_BASE = 'https://finguer.com';
-const API_URL = `${APP_WEB_BASE}/api/factures/get/`;
-
-// ✅ IMPORTANTE: para poder emitir por POST necesitas reserva_id en el listado.
-// Si tu endpoint facturacioLlistat ya lo devuelve, perfecto.
-// Si no, añádelo en el backend.
-type FacturaListado = {
-  id: number; // factura_id
-  serie: string;
-  numero: string;
-  numeroVisible: string;
-  fechaEmision: string;
-  cliente: string;
-  nif: string;
-  email: string;
-  subtotal: number;
-  iva: number;
-  total: number;
-  estado: string;
-
-  // ✅ necesario para emitir-factura
-  reserva_id?: number | string;
-};
-
-type ApiResponse = {
-  success: boolean;
-  page: number;
-  perPage: number;
-  total: number;
-  totalPages: number;
-  search: string;
-  data: FacturaListado[];
-};
-
-// ====== Respuesta del endpoint POST emitir-factura ======
-type EmitirFacturaSuccess = {
-  status: 'success';
-  data: {
-    pdf_url: string;
-  };
-};
-
-type EmitirFacturaError = {
-  status: string;
-  message?: string;
-  error?: string;
-};
-
-function isEmitirFacturaSuccess(x: unknown): x is EmitirFacturaSuccess {
-  if (typeof x !== 'object' || x === null) return false;
-
-  const obj = x as { status?: unknown; data?: unknown };
-  if (obj.status !== 'success') return false;
-
-  if (typeof obj.data !== 'object' || obj.data === null) return false;
-  const data = obj.data as { pdf_url?: unknown };
-
-  return typeof data.pdf_url === 'string' && data.pdf_url.trim() !== '';
-}
-
-async function emitirFacturaYObtenerPdfUrl(reservaId: string): Promise<string> {
-  const response = await fetch(`/api/factures/post/?type=emitir-factura`, {
+const confirmarPagoManual = async (reservaId: number): Promise<ConfirmarPagoManualResponse> => {
+  const res = await fetch(`${apiUrl}/factures/post/confirmar-pago-manual`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ reserva_id: reservaId }),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+  const payload = (await res.json()) as ApiResponse<ConfirmarPagoManualResponse>;
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
   }
 
-  const raw: unknown = await response.json();
-
-  if (isEmitirFacturaSuccess(raw)) {
-    return raw.data.pdf_url.trim();
+  if (!isApiOk(payload)) {
+    throw new Error(`${payload.code ?? 'API_ERROR'}: ${payload.message}`);
   }
 
-  const errObj = raw as Partial<EmitirFacturaError>;
-  throw new Error(errObj.message ?? errObj.error ?? 'Error al generar la factura');
-}
+  return payload.data;
+};
 
-export function initTaulaFacturacio(): void {
-  const container = document.getElementById('contenidorTaulaFacturacio');
-  if (!container) return;
+// Crea la tabla completa (div -> table -> thead -> tbody) si no existe y devuelve el <tbody>
+const getOrCreateTableBody = (): HTMLTableSectionElement => {
+  // Contenedor donde se pintará la tabla
+  const container = document.getElementById('contenidorTaulaReserves');
+  if (!container) {
+    throw new Error("No se ha encontrado el contenedor con id 'contenidorTaulaReserves'");
+  }
 
-  // ------- VERIFICACION FACTURAS HASH -----
-  async function verificarIntegritat(): Promise<void> {
-    integrityResultDiv.innerHTML = `
-    <span class="text-info">Verificant integritat de les factures...</span>
-  `;
+  // ¿Ya existe la tabla?
+  let table = container.querySelector('#taulaReserves') as HTMLTableElement | null;
+  let tbody: HTMLTableSectionElement | null = null;
 
-    try {
-      const params = new URLSearchParams();
-      params.set('type', 'facturacioVerificarIntegridad');
+  if (!table) {
+    // Crear estructura: div.table-responsive > table#taulaReserves > thead > tbody
+    const divResponsive = document.createElement('div');
+    divResponsive.className = 'table-responsive';
 
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: {
-          Accept: 'application/json',
-        },
-        credentials: 'include',
-      });
+    table = document.createElement('table');
+    table.className = 'table table-striped';
+    table.id = 'taulaReserves';
 
-      if (!response.ok) {
-        throw new Error('Error HTTP ' + response.status);
-      }
+    const thead = document.createElement('thead');
+    thead.className = 'table-dark';
 
-      const json = (await response.json()) as IntegrityApiResponse;
-
-      if (!json.success || !json.data) {
-        integrityResultDiv.innerHTML = `
-        <span class="text-danger">Error verificant la integritat de les factures.</span>
-      `;
-        console.error('Error integritat:', json.error);
-        return;
-      }
-
-      const data = json.data;
-
-      if (data.status === 'ok') {
-        integrityResultDiv.innerHTML = `
-        <span class="text-success">
-          Integritat correcta: ${data.total_facturas} factures, cap manipulació detectada.
-        </span>
-      `;
-      } else {
-        const corruptes = data.facturas_corruptas;
-        let html = `
-        <span class="text-danger">
-          ALERTA: S'han detectat possibles anomalies en ${corruptes} factures
-          (de ${data.total_facturas}).
-        </span>
-      `;
-
-        if (data.issues.length > 0) {
-          const primer = data.issues[0];
-          const pos = primer.posicion ?? primer.posicio ?? null;
-          html += `
-          <br>
-          <span class="text-danger">
-            Ex: factura ID ${primer.factura_id} (${primer.serie}/${primer.numero})${pos !== null ? `, posició ${pos}` : ''} - ${primer.motivo}
-          </span>
-        `;
-          console.warn('Detall anomalies integritat:', data.issues);
-        }
-
-        integrityResultDiv.innerHTML = html;
-      }
-    } catch (error) {
-      console.error(error);
-      integrityResultDiv.innerHTML = `
-      <span class="text-danger">Error inesperat verificant la integritat.</span>
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+      <th>Núm. Comanda // data</th>
+      <th>Notes</th>
+      <th>Import</th>
+      <th>Factura</th>
+      <th>Veri*factu</th>
+      <th>Pagat</th>
+      <th>Canal</th>
+      <th>Tipus</th>
+      <th>Neteja</th>
+      <th>Client // tel.</th>
+      <th>Entrada</th>
+      <th>Sortida</th>
+      <th>Dades Vehicle</th>
+      <th>Vol tornada</th>
+      <th>Estat reserva</th>
+      <th>Opcions</th>
     `;
+    thead.appendChild(headerRow);
+
+    tbody = document.createElement('tbody');
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    divResponsive.appendChild(table);
+    container.appendChild(divResponsive);
+  } else {
+    // Si ya existe, simplemente obtenemos el tbody
+    tbody = table.querySelector('tbody');
+    if (!tbody) {
+      tbody = document.createElement('tbody');
+      table.appendChild(tbody);
     }
   }
 
-  let currentPage = 1;
-  const perPage = 50;
-  let currentSearch = '';
+  return tbody;
+};
 
-  // ----- UI base -----
-  const searchRow = document.createElement('div');
-  searchRow.className = 'row mb-3';
+export const carregarDadesTaulaReserves = async (estatParking: string): Promise<void> => {
+  try {
+    const url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
 
-  searchRow.innerHTML = `
-  <div class="col-md-4">
-    <label for="facturesSearch" class="form-label">Cercar (número, client, NIF, email)</label>
-    <input type="text" id="facturesSearch" class="form-control" placeholder="Ex: 2025/00012, NIF, email...">
-  </div>
-  <div class="col-md-2 d-flex align-items-end">
-    <button type="button" id="facturesSearchBtn" class="btn btn-primary w-100">Cercar</button>
-  </div>
-  <div class="col-md-2 d-flex align-items-end">
-    <button type="button" id="facturesResetBtn" class="btn btn-secondary w-100">Netejar</button>
-  </div>
-  <div class="col-md-2 d-flex align-items-end">
-    <button type="button" id="facturesCsvBtn" class="btn btn-success w-100">Exportar CSV</button>
-  </div>
-  <div class="col-md-2 d-flex align-items-end">
-    <button type="button" id="facturesIntegrityBtn" class="btn btn-outline-warning w-100">Verificar integritat</button>
-  </div>
-  <div class="col-md-12 mt-2 d-flex justify-content-between">
-    <div id="facturesSummary" class="small text-muted"></div>
-    <div id="facturesIntegrityResult" class="small"></div>
-  </div>
-`;
-
-  const tableWrapper = document.createElement('div');
-  tableWrapper.className = 'table-responsive';
-
-  const table = document.createElement('table');
-  table.className = 'table table-striped table-sm align-middle mb-0';
-
-  const thead = document.createElement('thead');
-  thead.className = 'table-dark';
-  thead.innerHTML = `
-    <tr>
-        <th>Sèrie / Número</th>
-        <th>Data emissió</th>
-        <th>Client</th>
-        <th>NIF</th>
-        <th>Email</th>
-        <th class="text-end">Subtotal</th>
-        <th class="text-end">IVA</th>
-        <th class="text-end">Total</th>
-        <th>Estat</th>
-        <th>Historial</th>
-        <th>Factura PDF</th>
-        <th>Enviar email</th>
-    </tr>
-  `;
-
-  const tbody = document.createElement('tbody');
-  table.appendChild(thead);
-  table.appendChild(tbody);
-  tableWrapper.appendChild(table);
-
-  const paginationWrapper = document.createElement('nav');
-  paginationWrapper.className = 'mt-3';
-  const paginationUl = document.createElement('ul');
-  paginationUl.className = 'pagination justify-content-center mb-0';
-  paginationWrapper.appendChild(paginationUl);
-
-  container.appendChild(searchRow);
-  container.appendChild(tableWrapper);
-  container.appendChild(paginationWrapper);
-
-  const searchInput = searchRow.querySelector('#facturesSearch') as HTMLInputElement;
-  const searchBtn = searchRow.querySelector('#facturesSearchBtn') as HTMLButtonElement;
-  const resetBtn = searchRow.querySelector('#facturesResetBtn') as HTMLButtonElement;
-  const summaryDiv = searchRow.querySelector('#facturesSummary') as HTMLDivElement;
-  const csvBtn = searchRow.querySelector('#facturesCsvBtn') as HTMLButtonElement;
-  const integrityBtn = searchRow.querySelector('#facturesIntegrityBtn') as HTMLButtonElement;
-  const integrityResultDiv = searchRow.querySelector('#facturesIntegrityResult') as HTMLDivElement;
-
-  csvBtn.addEventListener('click', () => {
-    const params = new URLSearchParams();
-    params.set('type', 'facturacioLlistat');
-    params.set('export', 'csv');
-    if (currentSearch.trim() !== '') {
-      params.set('q', currentSearch.trim());
-    }
-    window.location.href = `${API_URL}?${params.toString()}`;
-  });
-
-  // ----- Fetch + render -----
-  async function carregarFactures(page: number = 1): Promise<void> {
-    const params = new URLSearchParams();
-    params.set('type', 'facturacioLlistat');
-    params.set('page', page.toString());
-    params.set('per_page', perPage.toString());
-    if (currentSearch.trim() !== '') {
-      params.set('q', currentSearch.trim());
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="12" class="text-center text-muted">Carregant factures...</td>
-      </tr>
-    `;
+    const payload = (await response.json()) as ApiResponse<{
+      counts: ComptadorReserves;
+      rows: Reserva[];
+      hasRows: boolean;
+    }>;
 
-    try {
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: { Accept: 'application/json' },
-        credentials: 'include',
-      });
-
-      if (!response.ok) throw new Error('Error HTTP ' + response.status);
-
-      const json = (await response.json()) as ApiResponse;
-      if (!json.success) throw new Error('Resposta API incorrecta');
-
-      currentPage = json.page;
-      pintarTaula(json);
-      pintarPaginacio(json);
-      pintarResum(json);
-    } catch (error: unknown) {
-      console.error(error);
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="12" class="text-center text-danger">Error carregant les factures.</td>
-        </tr>
-      `;
-      paginationUl.innerHTML = '';
-      summaryDiv.textContent = '';
-    }
-  }
-
-  function pintarTaula(data: ApiResponse): void {
-    const rows = data.data;
-    if (!rows.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="12" class="text-center text-muted">No s'han trobat factures.</td>
-        </tr>
-      `;
-      return;
+    if (!isApiOk(payload)) {
+      throw new Error(`${payload.code ?? 'API_ERROR'}: ${payload.message}`);
     }
 
-    tbody.innerHTML = '';
+    const datos: Reserva[] = payload.data.rows ?? [];
+    const counts: ComptadorReserves | undefined = payload.data.counts;
 
-    rows.forEach((f: FacturaListado) => {
-      const tr = document.createElement('tr');
+    // 🔢 Actualizar contador de reservas
+    comptadorReserves(estatParking, counts);
 
-      const numeroVisible = `${f.serie}/${f.numero}`;
-
-      const fechaEmision_date = new Date(f.fechaEmision);
-      const opcionesFormato: Intl.DateTimeFormatOptions = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      };
-      const fechaEmision_format = fechaEmision_date.toLocaleDateString('es-ES', opcionesFormato);
-
-      const urlHistorialLogs = `${APP_WEB_BASE}/control/facturacio/historial/${f.id}`;
-      const urlEnviarEmail = `${APP_WEB_BASE}/intranet/factura/enviar/${f.id}`;
-
-      const reservaIdRaw = f.reserva_id;
-      const reservaId = reservaIdRaw !== undefined && reservaIdRaw !== null ? String(reservaIdRaw) : '';
-
-      tr.innerHTML = `
-        <td>${escapeHtml(numeroVisible)}</td>
-        <td>${escapeHtml(fechaEmision_format)}</td>
-        <td>${escapeHtml(f.cliente)}</td>
-        <td>${escapeHtml(f.nif)}</td>
-        <td>${escapeHtml(f.email)}</td>
-        <td class="text-end">${formatEuro(f.subtotal)}</td>
-        <td class="text-end">${formatEuro(f.iva)}</td>
-        <td class="text-end"><strong>${formatEuro(f.total)}</strong></td>
-        <td>${escapeHtml(f.estado)}</td>
-        <td><a href="${urlHistorialLogs}" class="btn btn-outline-secondary btn-sm">Veure logs</a></td>
-        <td>
-          ${
-            f.numero && f.serie && reservaId
-              ? `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${escapeHtml(reservaId)}">
-                   ${escapeHtml(f.serie)}/${escapeHtml(f.numero)}
-                 </a>`
-              : '-'
-          }
-        </td>
-        <td>
-          <a href="${urlEnviarEmail}" class="btn btn-sm btn-outline-primary">Enviar</a>
-        </td>
-      `;
-
-      // ✅ Listener por fila (igual que tu otro listado)
-      const btnFacturaPdf = tr.querySelector('.factura-pdf') as HTMLAnchorElement | null;
-      if (btnFacturaPdf) {
-        btnFacturaPdf.addEventListener('click', async (e: MouseEvent) => {
-          e.preventDefault();
-
-          const rid = btnFacturaPdf.getAttribute('data-id');
-          if (!rid) return;
-
-          const oldText = btnFacturaPdf.textContent ?? '';
-          btnFacturaPdf.classList.add('disabled');
-          btnFacturaPdf.setAttribute('aria-disabled', 'true');
-          btnFacturaPdf.textContent = 'Generant...';
-
-          try {
-            const pdfUrl = await emitirFacturaYObtenerPdfUrl(rid);
-            window.open(pdfUrl, '_blank', 'noopener');
-          } catch (error: unknown) {
-            console.error('Error al generar el PDF:', error);
-            alert('Hubo un error al generar la factura. Intenta de nuevo.');
-          } finally {
-            btnFacturaPdf.classList.remove('disabled');
-            btnFacturaPdf.removeAttribute('aria-disabled');
-            btnFacturaPdf.textContent = oldText;
-          }
-        });
-      }
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  function pintarPaginacio(data: ApiResponse): void {
-    const { page, totalPages } = data;
-
-    paginationUl.innerHTML = '';
-    if (totalPages <= 1) return;
-
-    const createPageItem = (label: string, targetPage: number, disabled: boolean, active: boolean = false): HTMLLIElement => {
-      const li = document.createElement('li');
-      li.className = 'page-item';
-      if (disabled) li.classList.add('disabled');
-      if (active) li.classList.add('active');
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'page-link';
-      btn.textContent = label;
-
-      if (!disabled) {
-        btn.addEventListener('click', () => {
-          if (targetPage !== page) carregarFactures(targetPage);
-        });
-      }
-
-      li.appendChild(btn);
-      return li;
+    const opcionesFormato: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     };
 
-    paginationUl.appendChild(createPageItem('«', page - 1, page <= 1));
+    const opcionesFormato2: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    };
 
-    const start = Math.max(1, page - 2);
-    const end = Math.min(totalPages, page + 2);
+    const opcionesFormato3: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+    };
 
-    for (let p = start; p <= end; p++) {
-      paginationUl.appendChild(createPageItem(p.toString(), p, false, p === page));
+    // Obtener (o crear) la tabla y su tbody desde TS
+    const tableBody = getOrCreateTableBody();
+    // Limpiar el cuerpo de la tabla antes de agregar nuevos datos
+    tableBody.innerHTML = '';
+
+    const urlWeb = `${webUrl}/control`;
+
+    function formatImporte(importe: string | number) {
+      const numero = parseFloat(importe as string);
+      if (isNaN(numero)) {
+        return '0,00';
+      } else {
+        const [entero, decimal] = numero.toFixed(2).split('.');
+        return `${entero},${decimal}`;
+      }
     }
 
-    paginationUl.appendChild(createPageItem('»', page + 1, page >= totalPages));
+    datos.forEach((data: Reserva) => {
+      const fila = document.createElement('tr');
+      let html = '';
+
+      // a) Fecha reserva
+      const fechaReservaString = data.fecha_reserva;
+      const fechaReservaDate = new Date(fechaReservaString);
+      const fechaReserva_formateada = fechaReservaDate.toLocaleDateString('es-ES', opcionesFormato);
+
+      // b) Fecha entrada
+      const dataEntradaString = data.dataEntrada;
+      const dataEntradaDate = new Date(dataEntradaString);
+      const dataEntrada2 = dataEntradaDate.toLocaleDateString('es-ES', opcionesFormato2);
+      const dataEntradaAny = dataEntradaDate.toLocaleDateString('es-ES', opcionesFormato3);
+
+      // c) Fecha salida
+      const dataSortidaString = data.dataSortida;
+      const dataSortidaDate = new Date(dataSortidaString);
+      const dataSortida2 = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato2);
+      const dataSortidaAny = dataSortidaDate.toLocaleDateString('es-ES', opcionesFormato3);
+
+      const tipo = data.tipo;
+      const limpieza = data.limpieza;
+      let limpieza2 = '';
+      if (limpieza === 1) {
+        limpieza2 = 'Servicio de limpieza exterior';
+      } else if (limpieza === 2) {
+        limpieza2 = 'Servicio de lavado exterior + aspirado tapicería interior';
+      } else if (limpieza === 3) {
+        limpieza2 = 'Limpieza PRO';
+      } else {
+        limpieza2 = '-';
+      }
+
+      // Construcción del HTML para la fila
+      html += '<tr>';
+
+      // 1 - IdReserva
+      html += '<td>';
+      if (data.estado === 'anual') {
+        html += '<button type="button" class="btn btn-primary btn-sm">Client anual</button>';
+      } else {
+        html += data.localizador + ' // ' + fechaReserva_formateada;
+      }
+      html += '</td>';
+
+      // 2 . Notes
+      html += '<td>';
+      if (data.localizador && !data.notes) {
+        html += `<a href="${urlWeb}/reserva/modificar/nota/${data.id}" class="btn btn-info btn-sm" role="button" aria-pressed="true">Crear</a>`;
+      } else if (data.notes) {
+        html += `<button class="btn btn-danger btn-sm" type="button" role="button" aria-pressed="true">${data.notes}</button>`;
+      }
+      html += '</td>';
+
+      // 2 - Importe
+      if (Number(data.canal) === 5) {
+        html += `<td> - </td>`;
+      } else {
+        html += `<td><strong>${formatImporte(data.importe)} €</strong></td>`;
+      }
+
+      // 3 - FACTURA PDF
+      html += '<td>';
+
+      const canal = Number(data.canal);
+      const hasFactura = !!(data.factura_id && data.factura_numero && data.factura_serie);
+
+      if (hasFactura) {
+        // Mostrar número de factura como enlace
+        html += `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${data.id}">
+          ${data.factura_numero}/${data.factura_serie}
+        </a>`;
+      } else if (canal === 5) {
+        html += '-';
+      } else {
+        // ✅ NO hay factura y NO es canal 5 => mostramos botón
+        html += `<button type="button"
+          class="btn btn-success btn-sm confirmar-pago-manual"
+          data-id="${data.id}">
+          Cobrar y emitir factura
+        </button>`;
+      }
+
+      html += '</td>';
+
+      // 3 - VERIFACTU
+      if (Number(data.canal) === 5) {
+        html += `<td> - </td>`;
+      } else {
+        html += `<td><a href="#" class="btn btn-outline-secondary btn-sm">NO</a></td>`;
+      }
+
+      // 3 - Pagado
+      html += '<td>';
+
+      // === Cálculo antigüedad reserva ===
+      const rawFecha = data.fecha_reserva as string; // ej: "2025-10-21 13:30:47"
+      const fechaReserva = new Date(rawFecha.replace(' ', 'T')); // "2025-10-21T13:30:47"
+      const ahora = new Date();
+
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const diffDays = Math.floor((ahora.getTime() - fechaReserva.getTime()) / MS_PER_DAY);
+
+      // Cambia 45 por el umbral que prefieras (40, 60…)
+      const MAX_DIAS_VERIFICACION = 31;
+      const puedeVerificar = diffDays <= MAX_DIAS_VERIFICACION;
+      const estadoHtml = formatEstadoReservaHtml(data.estado);
+
+      if (Number(data.localizador) === 1 || data.canal === 5) {
+        html += `<p>${estadoHtml}</p>`;
+      } else {
+        if (Number(data.processed) === 1) {
+          html += `<p><button type="button" class="btn btn-success">SI</button></p>
+          <p>${estadoHtml}</p>`;
+
+          // SOLO mostramos el enlace si la reserva aún está dentro del plazo “seguro”
+          if (puedeVerificar) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
+          }
+        } else if (Number(data.canal) === 3) {
+          html += `<p><button type="button" class="btn btn-danger">NO</button></p>
+          <p>${estadoHtml}</p>`;
+        } else {
+          html += `<p><button type="button" class="btn btn-danger">NO</button></p>
+          <p>${estadoHtml}</p>`;
+
+          if (puedeVerificar) {
+            html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
+          }
+        }
+      }
+
+      html += '</td>';
+
+      // 4 - CANAL
+      html += '<td>';
+      if (Number(data.canal) === 1) {
+        html += 'Web';
+      } else if (Number(data.canal) === 2) {
+        html += `Cercador`;
+      } else if (Number(data.canal) === 3) {
+        html += 'Telèfon';
+      } else if (Number(data.canal) === 5) {
+        html += 'Client anual';
+      } else {
+        html += `Altres</p>`;
+      }
+
+      html += '</td>';
+
+      // 4 - Tipus de reserva
+      html += `<td><strong>${tipo}</strong></td>`;
+
+      // 5 - Neteja
+      html += `<td>${limpieza2}</td>`;
+
+      // 6 - Client i telefon
+      html += '<td>';
+      if (data.nombre) {
+        html += `${data.nombre} // ${data.tel}`;
+      } else {
+        html += `${data.clientNom} ${data.clientCognom} // ${data.telefono}`;
+      }
+      html += '</td>';
+
+      // 7 - Entrada (dia i hora) + 8 - Sortida (dia i hora)
+
+      // Construimos primero los textos base (sin strong)
+      let entradaContent = '';
+      if (dataEntradaAny === '1970') {
+        entradaContent = 'Pendent';
+      } else {
+        entradaContent = `${dataEntrada2} // ${data.HoraEntrada}`;
+      }
+
+      let sortidaContent = '';
+      if (dataSortidaAny === '1970') {
+        sortidaContent = 'Pendent';
+      } else {
+        sortidaContent = `${dataSortida2} // ${data.HoraSortida}`;
+      }
+
+      // Aplicar el <strong> según el estado del vehículo
+      if (data.estado_vehiculo === 'pendiente_entrada') {
+        // Resaltar la ENTRADA
+        entradaContent = `<strong>${entradaContent}</strong>`;
+      } else if (data.estado_vehiculo === 'dentro') {
+        // Resaltar la SORTIDA
+        sortidaContent = `<strong>${sortidaContent}</strong>`;
+      }
+      // si es "salido", no se aplica strong en ninguno
+
+      // Pintar las celdas
+      html += `<td>${entradaContent}</td>`;
+      html += `<td>${sortidaContent}</td>`;
+
+      // 9 - Vehicle i matricula
+      html += '<td>';
+      html += data.vehiculo;
+      if (data.matricula) {
+        html += ` // ${data.matricula}`;
+      } else {
+        html += `<p><a href="${urlWeb}/reserva/modificar/vehicle/${data.id}" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Afegir matrícula</a></p>`;
+      }
+      if (data.numeroPersonas) {
+        html += `<p> // ${data.numeroPersonas} personas</p>`;
+      } else {
+        html += ' // -';
+      }
+      html += '</td>';
+
+      // 10 - Dades vol
+      html += '<td>';
+      if (!data.vuelo) {
+        html += `<a href="${urlWeb}/reserva/modificar/vol/${data.id}" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Afegir vol</a>`;
+      } else {
+        html += data.vuelo;
+      }
+      html += '</td>';
+
+      // 11 - CheckIn // CheckOut (versión AJAX)
+      html += '<td>';
+      if (data.estado_vehiculo === 'pendiente_entrada') {
+        html += `<button type="button" class="btn btn-primary btn-sm js-check-in" data-id="${data.id}">Check-In</button>`;
+      } else if (data.estado_vehiculo === 'dentro') {
+        html += `<button type="button" class="btn btn-secondary btn-sm js-check-out" data-id="${data.id}">Check-out</button>`;
+      } else if (data.estado_vehiculo === 'salido') {
+        html += `Salido`;
+      }
+      html += '</td>';
+
+      // 14 - Email confirmacio
+      html += `<td><button class="btn btn-success btn-sm obrir-finestra-btn" role="button" aria-pressed="true" data-id="${data.id}">Obrir</button></td>`;
+
+      html += '</tr>';
+
+      fila.innerHTML = html;
+      tableBody.appendChild(fila);
+
+      // Enganchar eventos a los botones de Check-In / Check-Out
+      const btnCheckIn = fila.querySelector('.js-check-in') as HTMLButtonElement | null;
+      const btnCheckOut = fila.querySelector('.js-check-out') as HTMLButtonElement | null;
+
+      if (btnCheckIn) {
+        btnCheckIn.addEventListener('click', async () => {
+          try {
+            await actualizarEstadoReserva(data.id, 'dentro');
+            await carregarDadesTaulaReserves(estatParking);
+          } catch (error) {
+            console.error('Error al hacer check-in:', error);
+            alert('Error al hacer check-in');
+          }
+        });
+      }
+
+      if (btnCheckOut) {
+        btnCheckOut.addEventListener('click', async () => {
+          try {
+            await actualizarEstadoReserva(data.id, 'salido');
+            await carregarDadesTaulaReserves(estatParking);
+          } catch (error) {
+            console.error('Error al hacer check-out:', error);
+            alert('Error al hacer check-out');
+          }
+        });
+      }
+
+      // Agregar evento click para generar y mostrar PDF
+      const btnFacturaPdf = fila.querySelector('.factura-pdf') as HTMLAnchorElement | null;
+      if (btnFacturaPdf) {
+        btnFacturaPdf.addEventListener('click', async (e) => {
+          e.preventDefault(); // Prevenir la acción por defecto del enlace
+
+          const reserva_id = btnFacturaPdf.getAttribute('data-id');
+          if (reserva_id) {
+            try {
+              const response = await fetch(`/api/factures/post/?type=emitir-factura`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  reserva_id: reserva_id, // Aseguramos que el ID se pase correctamente
+                }),
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                // Acceder a la URL completa del PDF generada por el backend
+                const pdfUrl = data.data.pdf_url;
+
+                // Verificamos que la URL es válida antes de intentar abrirla
+                if (pdfUrl && pdfUrl !== '') {
+                  window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
+                } else {
+                  alert('No se pudo generar la URL del PDF');
+                }
+              } else {
+                alert('Error al generar la factura');
+              }
+            } catch (error) {
+              console.error('Error al generar el PDF:', error);
+              alert('Hubo un error al generar la factura. Intenta de nuevo.');
+            }
+          }
+        });
+      }
+      // Botón: Confirmar pago manual + generar factura
+      const btnConfirmarPago = fila.querySelector('.confirmar-pago-manual') as HTMLButtonElement | null;
+
+      if (btnConfirmarPago) {
+        btnConfirmarPago.addEventListener('click', async () => {
+          const reservaId = Number(btnConfirmarPago.getAttribute('data-id') ?? 0);
+          if (!reservaId) return;
+
+          const ok = confirm('¿Confirmar pago manual y generar factura?');
+          if (!ok) return;
+
+          btnConfirmarPago.disabled = true;
+          const oldText = btnConfirmarPago.textContent ?? '';
+          btnConfirmarPago.textContent = 'Procesando...';
+
+          try {
+            const result = await confirmarPagoManual(reservaId);
+
+            const facturaId = result.factura?.id ?? null;
+            alert(facturaId ? `OK. Factura generada (ID ${facturaId}).` : 'OK. Pago confirmado.');
+
+            // ✅ refrescar tabla para que aparezca el número de factura y desaparezca el botón
+            await carregarDadesTaulaReserves(estatParking);
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Error desconocido';
+            alert(`Error: ${msg}`);
+            btnConfirmarPago.disabled = false;
+            btnConfirmarPago.textContent = oldText;
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error al cargar los datos:', error);
   }
-
-  function pintarResum(data: ApiResponse): void {
-    const { page, perPage, total } = data;
-    if (!total) {
-      summaryDiv.textContent = '0 factures';
-      return;
-    }
-
-    const start = (page - 1) * perPage + 1;
-    const end = Math.min(page * perPage, total);
-
-    summaryDiv.textContent = `Mostrant ${start}-${end} de ${total} factures`;
-  }
-
-  // Helpers
-  function escapeHtml(str: string | null | undefined): string {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function formatEuro(value: number): string {
-    return value.toFixed(2).replace('.', ',') + ' €';
-  }
-
-  // Eventos buscador
-  searchBtn.addEventListener('click', () => {
-    currentSearch = searchInput.value;
-    carregarFactures(1);
-  });
-
-  resetBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    currentSearch = '';
-    carregarFactures(1);
-  });
-
-  searchInput.addEventListener('keyup', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      currentSearch = searchInput.value;
-      carregarFactures(1);
-    }
-  });
-
-  integrityBtn.addEventListener('click', () => {
-    verificarIntegritat();
-  });
-
-  // Carga inicial
-  carregarFactures(currentPage);
-}
+};

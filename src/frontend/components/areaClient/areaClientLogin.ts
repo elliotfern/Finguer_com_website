@@ -1,3 +1,4 @@
+import { apiUrl } from '../../config/globals';
 import { fetchData } from '../../services/api/api';
 
 interface ApiResponse {
@@ -24,7 +25,7 @@ const login = () => {
 
       try {
         // Usamos fetchData para hacer la solicitud
-        const response = await fetchData<ApiResponse, { email: string }>(`https://${window.location.hostname}/api/area-client/login`, 'POST', { email: email });
+        const response = await fetchData<ApiResponse, { email: string }>(`${apiUrl}/area-client/login`, 'POST', { email: email });
 
         if (response) {
           if (response.status === 'success') {

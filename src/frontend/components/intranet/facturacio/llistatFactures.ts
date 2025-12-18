@@ -1,5 +1,7 @@
 // src/intranet/facturacio/llistat.ts
 
+import { apiUrl, webUrl } from '../../../config/globals';
+
 declare global {
   interface Window {
     APP_WEB?: string;
@@ -33,11 +35,13 @@ type IntegrityApiResponse = {
   error?: string;
 };
 
-const APP_WEB_BASE = 'https://finguer.com';
-const API_URL = `${APP_WEB_BASE}/api/factures/get/`;
+const API_URL = `${apiUrl}/factures/get/`;
 
+// ✅ IMPORTANTE: para poder emitir por POST necesitas reserva_id en el listado.
+// Si tu endpoint facturacioLlistat ya lo devuelve, perfecto.
+// Si no, añádelo en el backend.
 type FacturaListado = {
-  id: number;
+  id: number; // factura_id
   serie: string;
   numero: string;
   numeroVisible: string;
@@ -49,6 +53,9 @@ type FacturaListado = {
   iva: number;
   total: number;
   estado: string;
+
+  // ✅ necesario para emitir-factura
+  reserva_id?: number | string;
 };
 
 type ApiResponse = {
@@ -60,6 +67,54 @@ type ApiResponse = {
   search: string;
   data: FacturaListado[];
 };
+
+// ====== Respuesta del endpoint POST emitir-factura ======
+type EmitirFacturaSuccess = {
+  status: 'success';
+  data: {
+    pdf_url: string;
+  };
+};
+
+type EmitirFacturaError = {
+  status: string;
+  message?: string;
+  error?: string;
+};
+
+function isEmitirFacturaSuccess(x: unknown): x is EmitirFacturaSuccess {
+  if (typeof x !== 'object' || x === null) return false;
+
+  const obj = x as { status?: unknown; data?: unknown };
+  if (obj.status !== 'success') return false;
+
+  if (typeof obj.data !== 'object' || obj.data === null) return false;
+  const data = obj.data as { pdf_url?: unknown };
+
+  return typeof data.pdf_url === 'string' && data.pdf_url.trim() !== '';
+}
+
+async function emitirFacturaYObtenerPdfUrl(reservaId: string): Promise<string> {
+  const response = await fetch(`${apiUrl}/factures/post/?type=emitir-factura`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reserva_id: reservaId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const raw: unknown = await response.json();
+
+  if (isEmitirFacturaSuccess(raw)) {
+    return raw.data.pdf_url.trim();
+  }
+
+  const errObj = raw as Partial<EmitirFacturaError>;
+  throw new Error(errObj.message ?? errObj.error ?? 'Error al generar la factura');
+}
 
 export function initTaulaFacturacio(): void {
   const container = document.getElementById('contenidorTaulaFacturacio');
@@ -221,18 +276,13 @@ export function initTaulaFacturacio(): void {
     if (currentSearch.trim() !== '') {
       params.set('q', currentSearch.trim());
     }
-
-    // Navegar directamente → descarga el CSV
     window.location.href = `${API_URL}?${params.toString()}`;
   });
 
   // ----- Fetch + render -----
   async function carregarFactures(page: number = 1): Promise<void> {
     const params = new URLSearchParams();
-
-    // 👇 obligatorio para que entre en tu if ($_GET['type'] == 'facturacioLlistat')
     params.set('type', 'facturacioLlistat');
-
     params.set('page', page.toString());
     params.set('per_page', perPage.toString());
     if (currentSearch.trim() !== '') {
@@ -241,27 +291,20 @@ export function initTaulaFacturacio(): void {
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="11" class="text-center text-muted">Carregant factures...</td>
+        <td colspan="12" class="text-center text-muted">Carregant factures...</td>
       </tr>
     `;
 
     try {
       const response = await fetch(`${API_URL}?${params.toString()}`, {
-        headers: {
-          Accept: 'application/json',
-        },
+        headers: { Accept: 'application/json' },
         credentials: 'include',
       });
 
-      if (!response.ok) {
-        throw new Error('Error HTTP ' + response.status);
-      }
+      if (!response.ok) throw new Error('Error HTTP ' + response.status);
 
       const json = (await response.json()) as ApiResponse;
-
-      if (!json.success) {
-        throw new Error('Resposta API incorrecta');
-      }
+      if (!json.success) throw new Error('Resposta API incorrecta');
 
       currentPage = json.page;
       pintarTaula(json);
@@ -271,7 +314,7 @@ export function initTaulaFacturacio(): void {
       console.error(error);
       tbody.innerHTML = `
         <tr>
-          <td colspan="11" class="text-center text-danger">Error carregant les factures.</td>
+          <td colspan="12" class="text-center text-danger">Error carregant les factures.</td>
         </tr>
       `;
       paginationUl.innerHTML = '';
@@ -284,7 +327,7 @@ export function initTaulaFacturacio(): void {
     if (!rows.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="11" class="text-center text-muted">No s'han trobat factures.</td>
+          <td colspan="12" class="text-center text-muted">No s'han trobat factures.</td>
         </tr>
       `;
       return;
@@ -307,13 +350,11 @@ export function initTaulaFacturacio(): void {
         second: '2-digit',
       };
       const fechaEmision_format = fechaEmision_date.toLocaleDateString('es-ES', opcionesFormato);
-      // URL al endpoint que genera / sirve el PDF
-      const urlFacturaPdf = `${APP_WEB_BASE}/api/factures/pdf/?type=factura-pdf&id=${f.id}`;
 
-      const urlHistorialLogs = `${APP_WEB_BASE}/control/facturacio/historial/${f.id}`;
+      const urlHistorialLogs = `${webUrl}/control/facturacio/historial/${f.id}`;
+      const urlEnviarEmail = `${webUrl}/intranet/factura/enviar/${f.id}`;
 
-      // URL para enviar email (reutilizo tu ruta de antes; ajusta si usas otra)
-      const urlEnviarEmail = `${APP_WEB_BASE}/intranet/factura/enviar/${f.id}`;
+      const reservaId = f.reserva_id;
 
       tr.innerHTML = `
         <td>${escapeHtml(numeroVisible)}</td>
@@ -327,20 +368,46 @@ export function initTaulaFacturacio(): void {
         <td>${escapeHtml(f.estado)}</td>
         <td><a href="${urlHistorialLogs}" class="btn btn-outline-secondary btn-sm">Veure logs</a></td>
         <td>
-            ${
-              f.numero && f.serie
-                ? `<a href="${urlFacturaPdf}" target="_blank" class="btn btn-outline-secondary btn-sm">
-               ${escapeHtml(f.serie)}/${escapeHtml(f.numero)}
-             </a>`
-                : '-'
-            }
+          ${
+            f.numero && f.serie
+              ? `<a href="#" class="btn btn-outline-secondary btn-sm factura-pdf" data-id="${reservaId}">
+                   ${escapeHtml(f.serie)}/${escapeHtml(f.numero)}
+                 </a>`
+              : '-'
+          }
         </td>
         <td>
-             <a href="${urlEnviarEmail}" class="btn btn-sm btn-outline-primary">
-                Enviar
-            </a>
+          <a href="${urlEnviarEmail}" class="btn btn-sm btn-outline-primary">Enviar</a>
         </td>
       `;
+
+      // ✅ Listener por fila (igual que tu otro listado)
+      const btnFacturaPdf = tr.querySelector('.factura-pdf') as HTMLAnchorElement | null;
+      if (btnFacturaPdf) {
+        btnFacturaPdf.addEventListener('click', async (e: MouseEvent) => {
+          e.preventDefault();
+
+          const rid = btnFacturaPdf.getAttribute('data-id');
+          if (!rid) return;
+
+          const oldText = btnFacturaPdf.textContent ?? '';
+          btnFacturaPdf.classList.add('disabled');
+          btnFacturaPdf.setAttribute('aria-disabled', 'true');
+          btnFacturaPdf.textContent = 'Generant...';
+
+          try {
+            const pdfUrl = await emitirFacturaYObtenerPdfUrl(rid);
+            window.open(pdfUrl, '_blank', 'noopener');
+          } catch (error: unknown) {
+            console.error('Error al generar el PDF:', error);
+            alert('Hubo un error al generar la factura. Intenta de nuevo.');
+          } finally {
+            btnFacturaPdf.classList.remove('disabled');
+            btnFacturaPdf.removeAttribute('aria-disabled');
+            btnFacturaPdf.textContent = oldText;
+          }
+        });
+      }
 
       tbody.appendChild(tr);
     });
@@ -350,10 +417,7 @@ export function initTaulaFacturacio(): void {
     const { page, totalPages } = data;
 
     paginationUl.innerHTML = '';
-
-    if (totalPages <= 1) {
-      return;
-    }
+    if (totalPages <= 1) return;
 
     const createPageItem = (label: string, targetPage: number, disabled: boolean, active: boolean = false): HTMLLIElement => {
       const li = document.createElement('li');
@@ -368,9 +432,7 @@ export function initTaulaFacturacio(): void {
 
       if (!disabled) {
         btn.addEventListener('click', () => {
-          if (targetPage !== page) {
-            carregarFactures(targetPage);
-          }
+          if (targetPage !== page) carregarFactures(targetPage);
         });
       }
 
@@ -378,7 +440,6 @@ export function initTaulaFacturacio(): void {
       return li;
     };
 
-    // Anterior
     paginationUl.appendChild(createPageItem('«', page - 1, page <= 1));
 
     const start = Math.max(1, page - 2);
@@ -388,7 +449,6 @@ export function initTaulaFacturacio(): void {
       paginationUl.appendChild(createPageItem(p.toString(), p, false, p === page));
     }
 
-    // Següent
     paginationUl.appendChild(createPageItem('»', page + 1, page >= totalPages));
   }
 

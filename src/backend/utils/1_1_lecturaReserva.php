@@ -14,7 +14,7 @@ function lecturaReserva(PDO $conn, int $reservaId): array
             pr.estado,
             pr.canal,
             pr.fecha_reserva
-        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
+        FROM parking_reservas pr
         WHERE pr.id = :id
         LIMIT 1
     ";

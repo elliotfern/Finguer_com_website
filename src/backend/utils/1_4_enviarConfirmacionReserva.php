@@ -33,8 +33,8 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
             u.email,
             u.nombre,
             u.telefono
-        FROM epgylzqu_parking_finguer_v2.parking_reservas pr
-        LEFT JOIN epgylzqu_parking_finguer_v2.usuarios u
+        FROM parking_reservas pr
+        LEFT JOIN usuarios u
           ON pr.usuario_id = u.id
         WHERE pr.id = :id
         LIMIT 1
@@ -67,7 +67,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
     if (empty($opts['force'])) {
         $stmtPrev = $conn->prepare("
             SELECT id, created_at
-            FROM epgylzqu_parking_finguer_v2.reservas_notificaciones
+            FROM reservas_notificaciones
             WHERE reserva_id = :rid
               AND tipo = :tipo
               AND estado = 'enviada'
@@ -84,7 +84,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
             // log de omisión (opcional)
             if (!empty($opts['registrar_log'])) {
                 $stmtIns = $conn->prepare("
-                    INSERT INTO epgylzqu_parking_finguer_v2.reservas_notificaciones
+                    INSERT INTO reservas_notificaciones
                     (reserva_id, tipo, estado, email, payload_json, error_text)
                     VALUES
                     (:rid, :tipo, 'omitida', :email, :payload, NULL)
@@ -129,8 +129,8 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
     $limpiezaTxt = 'Sin servicio de limpieza';
     $stmtLimp = $conn->prepare("
         SELECT s.codigo, s.nombre
-        FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
-        JOIN epgylzqu_parking_finguer_v2.parking_servicios_catalogo s
+        FROM parking_reservas_servicios prs
+        JOIN parking_servicios_catalogo s
           ON s.id = prs.servicio_id
         WHERE prs.reserva_id = :rid
           AND s.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
@@ -271,7 +271,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
 
         if (!empty($opts['registrar_log'])) {
             $stmtIns = $conn->prepare("
-                INSERT INTO epgylzqu_parking_finguer_v2.reservas_notificaciones
+                INSERT INTO reservas_notificaciones
                 (reserva_id, tipo, estado, email, payload_json, error_text)
                 VALUES
                 (:rid, :tipo, 'enviada', :email, :payload, NULL)
@@ -293,7 +293,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
 
         if (!empty($opts['registrar_log'])) {
             $stmtErr = $conn->prepare("
-                INSERT INTO epgylzqu_parking_finguer_v2.reservas_notificaciones
+                INSERT INTO reservas_notificaciones
                 (reserva_id, tipo, estado, email, payload_json, error_text)
                 VALUES
                 (:rid, :tipo, 'error', :email, :payload, :err)

@@ -1,3 +1,4 @@
+import { apiUrl } from '../../config/globals';
 import { fetchData } from '../../services/api/api';
 
 interface ApiResponse {
@@ -58,7 +59,7 @@ const login = async () => {
   const postData: PostRequest = { email: email };
 
   // Llamada a la API
-  const data = await fetchData<ApiResponse[], PostRequest>(`https://${window.location.hostname}/api/area-client/reservas/?type=reservas&cliente=${email}`, 'POST', postData);
+  const data = await fetchData<ApiResponse[], PostRequest>(`${apiUrl}/area-client/reservas/?type=reservas&cliente=${email}`, 'POST', postData);
 
   // Verificación si no hay datos
   if (!data || !Array.isArray(data)) {

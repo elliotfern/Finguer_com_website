@@ -1,7 +1,8 @@
+import { apiUrl } from '../../config/globals';
 import { creacioReserva } from './creacioReserva';
 
 export const creacioDadesUsuaris = async (idReserva: string): Promise<{ status: string; message: string }> => {
-  const url = `${window.location.origin}/api/alta-client`;
+  const url = `${apiUrl}/alta-client`;
 
   const formData = {
     nombre: (document.getElementById('nombre') as HTMLInputElement)?.value || '',

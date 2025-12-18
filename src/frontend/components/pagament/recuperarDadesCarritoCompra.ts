@@ -1,4 +1,5 @@
 // recuperarDadesCarritoCompra.ts
+import { apiUrl } from '../../config/globals';
 import { imprimirDadesReserva } from './imprimirDadesReserva';
 
 export type CarroLinea = {
@@ -57,7 +58,7 @@ export async function recuperarCarroCompra(): Promise<CarroSnapshot | null> {
   }
 
   try {
-    const resp = await fetch(`/api/carro-compra/get/?session=${encodeURIComponent(sessionCode)}`);
+    const resp = await fetch(`${apiUrl}/carro-compra/get/?session=${encodeURIComponent(sessionCode)}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     const data = (await resp.json()) as CarroGetResponse;

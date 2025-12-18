@@ -151,7 +151,7 @@ try {
 
     // 4) Insert en parking_reservas (totales desde BD)
     $sqlReserva = "
-        INSERT INTO epgylzqu_parking_finguer_v2.parking_reservas
+        INSERT INTO parking_reservas
         (
             usuario_id,
             localizador,
@@ -218,13 +218,13 @@ try {
     // 5) preparar catálogo servicios (mapeo codigo -> id,nombre,iva)
     $stmtServicio = $conn->prepare("
         SELECT id, nombre, iva_percent
-        FROM epgylzqu_parking_finguer_v2.parking_servicios_catalogo
+        FROM parking_servicios_catalogo
         WHERE codigo = :codigo AND activo = 1
         LIMIT 1
     ");
 
     $stmtInsertServicio = $conn->prepare("
-        INSERT INTO epgylzqu_parking_finguer_v2.parking_reservas_servicios
+        INSERT INTO parking_reservas_servicios
         (
             reserva_id,
             servicio_id,

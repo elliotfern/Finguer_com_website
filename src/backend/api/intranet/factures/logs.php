@@ -15,7 +15,7 @@ $sqlFacturas = "
         f.subtotal,
         f.impuesto_total,
         f.total
-    FROM epgylzqu_parking_finguer_v2.facturas f
+    FROM facturas f
     ORDER BY f.id ASC
 ";
 $stmt = $conn->prepare($sqlFacturas);
@@ -26,7 +26,7 @@ echo "Facturas encontradas: " . count($facturas) . PHP_EOL;
 
 // 2) Insertar logs uno a uno
 $sqlInsertLog = "
-    INSERT INTO epgylzqu_parking_finguer_v2.facturas_logs
+    INSERT INTO facturas_logs
     (factura_id, usuario_id, accion, detalles_json, created_at)
     VALUES (:factura_id, NULL, :accion, :detalles_json, :created_at)
 ";

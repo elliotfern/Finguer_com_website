@@ -40,8 +40,8 @@ function enviarFacturaPorEmail(PDO $conn, int $idFactura, array $opts = []): arr
             f.serie,
             u.email,
             u.nombre
-        FROM epgylzqu_parking_finguer_v2.facturas f
-        JOIN epgylzqu_parking_finguer_v2.usuarios u ON u.id = f.usuario_id
+        FROM facturas f
+        JOIN usuarios u ON u.id = f.usuario_id
         WHERE f.id = :id
         LIMIT 1
     ");
@@ -71,7 +71,7 @@ function enviarFacturaPorEmail(PDO $conn, int $idFactura, array $opts = []): arr
         // Ajusta tabla/estructura si es distinta.
         $chk = $conn->prepare("
             SELECT id
-            FROM epgylzqu_parking_finguer_v2.facturas_logs
+            FROM facturas_logs
             WHERE factura_id = :fid
               AND accion = 'envio_email'
             LIMIT 1

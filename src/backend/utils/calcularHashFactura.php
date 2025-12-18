@@ -65,7 +65,7 @@ function verificarIntegridadFacturas(PDO $conn): array
             facturar_a_nif,
             hash_interno,
             hash_interno_anterior
-        FROM epgylzqu_parking_finguer_v2.facturas
+        FROM facturas
         ORDER BY fecha_emision ASC, id ASC
     ";
     $stmt = $conn->prepare($sql);

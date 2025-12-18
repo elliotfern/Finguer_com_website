@@ -17,7 +17,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'comprobar_existente';
         $sqlExist = "
             SELECT id, numero
-            FROM epgylzqu_parking_finguer_v2.facturas
+            FROM facturas
             WHERE reserva_id = :reserva_id
             ORDER BY id ASC
             LIMIT 1
@@ -51,8 +51,8 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 u.ciudad         AS u_ciudad,
                 u.codigo_postal  AS u_cp,
                 u.pais           AS u_pais
-            FROM epgylzqu_parking_finguer_v2.parking_reservas pr
-            INNER JOIN epgylzqu_parking_finguer_v2.usuarios u
+            FROM parking_reservas pr
+            INNER JOIN usuarios u
                 ON u.id = pr.usuario_id
             WHERE pr.id = :id
             LIMIT 1
@@ -112,7 +112,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         $sqlEmisor = "
             SELECT id, nombre_legal, nif, direccion, cp, ciudad, pais
-            FROM epgylzqu_parking_finguer_v2.sociedades_emisoras
+            FROM sociedades_emisoras
             WHERE id = :id
             LIMIT 1
         ";
@@ -156,7 +156,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         // 5) Insert factura
         $fase = 'insertar_factura';
         $sqlInsF = "
-            INSERT INTO epgylzqu_parking_finguer_v2.facturas
+            INSERT INTO facturas
             (
                 numero, serie, reserva_id, usuario_id,
                 emisor_id, emisor_nombre_legal, emisor_nif, emisor_direccion, emisor_cp, emisor_ciudad, emisor_pais,
@@ -220,7 +220,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 prs.total_base,
                 prs.total_impuesto,
                 prs.total_linea
-            FROM epgylzqu_parking_finguer_v2.parking_reservas_servicios prs
+            FROM parking_reservas_servicios prs
             WHERE prs.reserva_id = :reserva_id
             ORDER BY prs.id ASC
         ";
@@ -235,7 +235,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'insertar_lineas';
 
         $sqlLinea = "
-            INSERT INTO epgylzqu_parking_finguer_v2.facturas_lineas
+            INSERT INTO facturas_lineas
             (
                 factura_id,
                 linea,
@@ -314,7 +314,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         // 7) Vincular pago confirmado -> factura_id
         $fase = 'actualizar_pago';
         $sqlPago = "
-            UPDATE epgylzqu_parking_finguer_v2.pagos
+            UPDATE pagos
             SET factura_id = :factura_id
             WHERE reserva_id = :reserva_id
               AND estado = 'confirmado'
@@ -326,7 +326,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'hash_interno_select_prev';
         $sqlLast = "
             SELECT hash_interno
-            FROM epgylzqu_parking_finguer_v2.facturas
+            FROM facturas
             WHERE id <> :id AND hash_interno IS NOT NULL
             ORDER BY fecha_emision DESC, id DESC
             LIMIT 1
@@ -339,7 +339,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'hash_interno_select_factura';
         $sqlFactura = "
             SELECT id, serie, numero, fecha_emision, subtotal, impuesto_total, total, facturar_a_nif
-            FROM epgylzqu_parking_finguer_v2.facturas
+            FROM facturas
             WHERE id = :id
             LIMIT 1
         ";
@@ -353,7 +353,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
             $fase = 'hash_interno_update';
             $sqlUpdHash = "
-                UPDATE epgylzqu_parking_finguer_v2.facturas
+                UPDATE facturas
                 SET hash_interno = :hash_interno,
                     hash_interno_anterior = :hash_interno_anterior
                 WHERE id = :id
@@ -437,7 +437,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             try {
                 $st = $conn->prepare("
                     SELECT id
-                    FROM epgylzqu_parking_finguer_v2.facturas
+                    FROM facturas
                     WHERE reserva_id = :rid
                     ORDER BY id ASC
                     LIMIT 1

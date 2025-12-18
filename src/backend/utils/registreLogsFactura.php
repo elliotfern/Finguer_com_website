@@ -12,7 +12,7 @@
 function registrarLogFactura(PDO $conn, int $facturaId, ?int $usuarioId, string $accion, array $detalles = []): void
 {
     $sql = "
-        INSERT INTO epgylzqu_parking_finguer_v2.facturas_logs
+        INSERT INTO facturas_logs
         (factura_id, usuario_id, accion, detalles_json)
         VALUES (:factura_id, :usuario_id, :accion, :detalles_json)
     ";

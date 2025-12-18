@@ -11,7 +11,7 @@ function consultaRedsys(string $order): array
 
     $merchantCode = (string)($_ENV['MERCHANTCODE'] ?? '');
     $key          = (string)($_ENV['KEY'] ?? '');
-    $url          = 'https://sis.redsys.es/apl02/services/SerClsWSConsulta';
+    $url          = (string)($_ENV['URLREDSYSSOAP'] ?? '');
     $terminal     = '1';
 
     if ($merchantCode === '' || $key === '') {

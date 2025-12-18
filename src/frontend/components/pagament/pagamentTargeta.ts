@@ -2,6 +2,7 @@
 import { creacioDadesUsuaris } from './creacioDadesUsuari';
 import { fetchData } from '../../services/api/api';
 import type { ApiRespostaRedSys } from '../../types/interfaces';
+import { apiUrl, redsysUrl } from '../../config/globals';
 
 interface PostRequest {
   session: string;
@@ -23,7 +24,7 @@ export const pagamentTargeta = async (): Promise<void> => {
   // El backend debe leer el total desde carro_compra usando session
   const postData: PostRequest = { session };
 
-  const response = await fetchData<ApiRespostaRedSys, PostRequest>(`https://${window.location.hostname}/api/pagamentRedsysTargeta`, 'POST', postData);
+  const response = await fetchData<ApiRespostaRedSys, PostRequest>(`${apiUrl}/pagamentRedsysTargeta`, 'POST', postData);
 
   let params = '';
   let signature = '';
@@ -46,7 +47,7 @@ export const pagamentTargeta = async (): Promise<void> => {
       const version = 'HMAC_SHA256_V1';
 
       const form = document.createElement('form');
-      form.action = 'https://sis.redsys.es/sis/realizarPago';
+      form.action = redsysUrl;
       form.method = 'POST';
 
       const signatureVersionInput = document.createElement('input');

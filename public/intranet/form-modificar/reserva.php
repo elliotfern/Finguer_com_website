@@ -31,8 +31,8 @@ if (is_numeric($id)) {
                 r.vuelo             AS vuelo,
                 r.notas             AS notas,
                 r.canal             AS canal
-            FROM epgylzqu_parking_finguer_v2.parking_reservas AS r
-            LEFT JOIN epgylzqu_parking_finguer_v2.usuarios AS u ON r.usuario_id = u.id
+            FROM parking_reservas AS r
+            LEFT JOIN usuarios AS u ON r.usuario_id = u.id
             WHERE r.id = :id
             LIMIT 1
         ";
@@ -115,7 +115,7 @@ if (is_numeric($id)) {
             if (!isset($hasError)) {
 
                 $sqlUpdate = "
-                    UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                    UPDATE parking_reservas
                     SET 
                         total_calculado  = :importe,
                         tipo             = :tipo,

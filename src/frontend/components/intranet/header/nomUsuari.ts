@@ -1,5 +1,7 @@
+import { apiUrl } from '../../../config/globals';
+
 export async function nomUsuari() {
-  const urlAjax = `https://${window.location.hostname}/api/intranet/users/get/?type=user`;
+  const urlAjax = `${apiUrl}/intranet/users/get/?type=user`;
 
   try {
     const response = await fetch(urlAjax);

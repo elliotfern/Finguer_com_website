@@ -10,7 +10,7 @@ $now = date('Y-m-d H:i:s');
 // 1) Selecciona pendientes canal web
 $sql = "
 SELECT id, localizador, fecha_reserva
-FROM epgylzqu_parking_finguer_v2.parking_reservas
+FROM parking_reservas
 WHERE canal = 1
   AND estado = 'pendiente'
   AND fecha_reserva >= NOW() - INTERVAL 1 DAY
@@ -30,7 +30,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     try {
         // 2) Lock atómico
         $lock = $conn->prepare("
-            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+            UPDATE parking_reservas
             SET estado = 'procesando_pago'
             WHERE id = :id
               AND estado = 'pendiente'
@@ -68,7 +68,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             ];
 
             $conn->prepare("
-                UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                UPDATE parking_reservas
                 SET estado = 'pendiente'
                 WHERE id = :id AND estado = 'procesando_pago'
             ")->execute([':id' => $id]);
@@ -79,7 +79,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         // 5) No pagada => volver a pendiente
         if ($paid === false) {
             $conn->prepare("
-                UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                UPDATE parking_reservas
                 SET estado = 'pendiente'
                 WHERE id = :id AND estado = 'procesando_pago'
             ")->execute([':id' => $id]);
@@ -89,7 +89,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
         // 6) Pagada: por si acaso, “cerramos” el estado si quedó procesando_pago
         $conn->prepare("
-            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+            UPDATE parking_reservas
             SET estado = 'pagada'
             WHERE id = :id AND estado = 'procesando_pago'
         ")->execute([':id' => $id]);
@@ -105,7 +105,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
         // rollback de estado si algo revienta
         $conn->prepare("
-            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+            UPDATE parking_reservas
             SET estado = 'pendiente'
             WHERE id = :id AND estado = 'procesando_pago'
         ")->execute([':id' => $id]);

@@ -23,7 +23,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
         // 1) Cargar reserva + totales (FOR UPDATE para evitar carreras)
         $stmt = $conn->prepare("
             SELECT id, estado, subtotal_calculado, iva_calculado, total_calculado
-            FROM epgylzqu_parking_finguer_v2.parking_reservas
+            FROM parking_reservas
             WHERE id = :id
             LIMIT 1
             FOR UPDATE
@@ -48,7 +48,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
         // 2) Buscar pago existente (tu tabla ya fuerza 1 pago por reserva)
         $stmtPago = $conn->prepare("
             SELECT id, estado, factura_id
-            FROM epgylzqu_parking_finguer_v2.pagos
+            FROM pagos
             WHERE reserva_id = :rid
             LIMIT 1
             FOR UPDATE
@@ -61,7 +61,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
 
             // Actualizamos el mismo registro a confirmado
             $updPago = $conn->prepare("
-                UPDATE epgylzqu_parking_finguer_v2.pagos
+                UPDATE pagos
                 SET
                     fecha = NOW(),
                     metodo = :metodo,
@@ -81,7 +81,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
         } else {
             // Insert nuevo pago confirmado
             $ins = $conn->prepare("
-                INSERT INTO epgylzqu_parking_finguer_v2.pagos
+                INSERT INTO pagos
                 (reserva_id, factura_id, fecha, metodo, importe, estado, pasarela, pedido_pasarela)
                 VALUES
                 (:rid, NULL, NOW(), :metodo, :importe, 'confirmado', :pasarela, :ref)
@@ -99,7 +99,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
         // 3) Marcar reserva pagada (idempotente)
         if ($estadoReserva !== 'pagada') {
             $updRes = $conn->prepare("
-                UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+                UPDATE parking_reservas
                 SET estado = 'pagada'
                 WHERE id = :id
             ");

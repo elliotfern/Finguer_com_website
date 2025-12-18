@@ -28,7 +28,7 @@ function generarNumeroFactura(PDO $conn, string $codigoSerie, int $padding = 5):
         // 1) Leer (y bloquear) la fila de la serie
         $sql = "
             SELECT id, siguiente_numero 
-            FROM epgylzqu_parking_finguer_v2.facturas_series 
+            FROM facturas_series 
             WHERE codigo_serie = :serie
             LIMIT 1
             FOR UPDATE
@@ -41,7 +41,7 @@ function generarNumeroFactura(PDO $conn, string $codigoSerie, int $padding = 5):
         if (!$row) {
             // Si no existe la serie, la creamos empezando en 1
             $sqlInsert = "
-                INSERT INTO epgylzqu_parking_finguer_v2.facturas_series
+                INSERT INTO facturas_series
                     (codigo_serie, siguiente_numero)
                 VALUES
                     (:serie, 1)
@@ -62,7 +62,7 @@ function generarNumeroFactura(PDO $conn, string $codigoSerie, int $padding = 5):
 
         // 3) Incrementar para la próxima factura
         $sqlUpdate = "
-            UPDATE epgylzqu_parking_finguer_v2.facturas_series
+            UPDATE facturas_series
             SET siguiente_numero = :nuevo
             WHERE id = :id
         ";

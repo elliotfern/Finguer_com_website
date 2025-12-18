@@ -42,6 +42,9 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 
 <script type="module" src="<?= htmlspecialchars($bundleUrl, ENT_QUOTES) ?>?v=<?= $v ?>"></script>
 <script src="<?php APP_ROOT; ?>/public/js/cookies.js"></script>
+<script>
+    window.APP_REDSYS_URL = "<?= htmlspecialchars($_ENV['URLREDSYS'] ?? '', ENT_QUOTES) ?>";
+</script>
 </body>
 
 </html>

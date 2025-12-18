@@ -25,7 +25,7 @@ function cambiarEstadoReserva(PDO $conn, int $id, string $nuevoEstado): array
     // 1) Estado actual
     $st = $conn->prepare("
         SELECT estado_vehiculo
-        FROM epgylzqu_parking_finguer_v2.parking_reservas
+        FROM parking_reservas
         WHERE id = :id
         LIMIT 1
     ");
@@ -61,7 +61,7 @@ function cambiarEstadoReserva(PDO $conn, int $id, string $nuevoEstado): array
 
     // 4) Update con control concurrencia
     $stmt = $conn->prepare("
-        UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+        UPDATE parking_reservas
         SET estado_vehiculo = :nuevo
         WHERE id = :id
           AND estado_vehiculo = :esperado
@@ -75,7 +75,7 @@ function cambiarEstadoReserva(PDO $conn, int $id, string $nuevoEstado): array
     if ($stmt->rowCount() !== 1) {
         $st2 = $conn->prepare("
             SELECT estado_vehiculo
-            FROM epgylzqu_parking_finguer_v2.parking_reservas
+            FROM parking_reservas
             WHERE id = :id
             LIMIT 1
         ");

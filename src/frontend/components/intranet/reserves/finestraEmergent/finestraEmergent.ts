@@ -1,3 +1,4 @@
+import { apiUrl } from '../../../../config/globals';
 import { enviarConfirmacioReserva } from './enviarConfirmacioReserva';
 
 type DeviceInfo = {
@@ -193,7 +194,7 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
 
       try {
         // Hacer el llamado al endpoint de "emitir-factura-y-enviar"
-        const response = await fetch(`/api/factures/send/?type=emitir-factura-y-enviar`, {
+        const response = await fetch(`${apiUrl}/factures/send/?type=emitir-factura-y-enviar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reserva_id: id }),
@@ -223,7 +224,7 @@ export const obrirFinestra = (opener: MouseEvent | HTMLElement | null, id: strin
   // Enlaces
   (document.getElementById('enlace3') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/modificar/reserva/${id}`);
   (document.getElementById('enlace4') as HTMLAnchorElement | null)?.setAttribute('href', `${urlWeb}/reserva/eliminar/reserva/${id}`);
- 
+
   if (!ventana) return;
 
   // Bloque de Device Info

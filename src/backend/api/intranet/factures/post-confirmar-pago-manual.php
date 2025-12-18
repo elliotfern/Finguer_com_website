@@ -54,7 +54,7 @@ try {
         //    - si ya hay factura, no la duplicamos
         $stmtPago = $conn->prepare("
             SELECT id, factura_id, fecha, metodo, estado, pasarela, importe
-            FROM epgylzqu_parking_finguer_v2.pagos
+            FROM pagos
             WHERE reserva_id = :rid AND estado = 'confirmado'
             ORDER BY id DESC
             LIMIT 1
@@ -120,7 +120,7 @@ try {
         $pagoId = (int)($pagoData['id'] ?? 0);
         if ($pagoId > 0 && $facturaId) {
             $stmtLink = $conn->prepare("
-                UPDATE epgylzqu_parking_finguer_v2.pagos
+                UPDATE pagos
                 SET factura_id = :fid
                 WHERE id = :pid AND (factura_id IS NULL OR factura_id = 0)
             ");
@@ -134,7 +134,7 @@ try {
         //     Tú tienes enum estado con 'pago_oficina...' (truncado en tu captura).
         //     Ajusta exactamente el literal correcto.
         $stmtUpd = $conn->prepare("
-            UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+            UPDATE parking_reservas
             SET estado = 'pago_oficina'
             WHERE id = :rid
         ");

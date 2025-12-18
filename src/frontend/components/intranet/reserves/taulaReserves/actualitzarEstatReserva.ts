@@ -1,3 +1,4 @@
+import { apiUrl } from '../../../../config/globals';
 import { ApiConflictError, ApiRequestError, parseApiResponse } from '../../../../utils/api';
 
 type UpdateEstadoData = {
@@ -7,7 +8,7 @@ type UpdateEstadoData = {
 };
 
 export const actualizarEstadoReserva = async (id: number, nuevoEstado: string): Promise<UpdateEstadoData> => {
-  const url = `${window.location.origin}/api/intranet/reserves/post/?type=update-estado`;
+  const url = `${apiUrl}/intranet/reserves/post/?type=update-estado`;
 
   const response = await fetch(url, {
     method: 'POST',

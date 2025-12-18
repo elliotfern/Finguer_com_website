@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                 // --- Contar total ---
                 $sqlCount = "
                     SELECT COUNT(*) AS total
-                    FROM epgylzqu_parking_finguer_v2.facturas f
+                    FROM facturas f
                     $whereSql
                 ";
                 $stmtCount = $conn->prepare($sqlCount);
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                                 f.facturar_a_empresa,
                                 f.facturar_a_nif,
                                 f.facturar_a_email
-                            FROM epgylzqu_parking_finguer_v2.facturas f
+                            FROM facturas f
                             $whereSql
                             ORDER BY f.fecha_emision ASC, f.serie ASC, f.numero ASC
                         ";
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                             f.facturar_a_nif,
                             f.facturar_a_email,
                             f.reserva_id
-                        FROM epgylzqu_parking_finguer_v2.facturas f
+                        FROM facturas f
                         $whereSql
                         ORDER BY f.fecha_emision DESC, f.serie DESC, f.numero DESC
                         LIMIT :limit OFFSET :offset
@@ -192,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
                         'iva'        => (float)$f['impuesto_total'],
                         'total'      => (float)$f['total'],
                         'estado'     => $f['estado'],
+                        'reserva_id'     => $f['reserva_id'],
                     ];
                 }
 

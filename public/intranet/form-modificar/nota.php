@@ -11,7 +11,7 @@ if (is_numeric($id)) {
 
         // consulta general reserves 
         $sql = "SELECT r.localizador, r.notas, r.id
-        FROM epgylzqu_parking_finguer_v2.parking_reservas AS r
+        FROM parking_reservas AS r
         WHERE r.id = $id_old";
 
         $pdo_statement = $conn->prepare($sql);
@@ -47,7 +47,7 @@ if (is_numeric($id)) {
                 echo 'Controla que totes les dades siguin correctes.</div>';
             }
 
-            $sql = "UPDATE epgylzqu_parking_finguer_v2.parking_reservas SET notas=:notas
+            $sql = "UPDATE parking_reservas SET notas=:notas
                     WHERE id=:id";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":notas", $notas, PDO::PARAM_STR);

@@ -18,7 +18,7 @@ try {
     // 1) Leer totales
     $sql = "
         SELECT total_calculado
-        FROM epgylzqu_parking_finguer_v2.parking_reservas
+        FROM parking_reservas
         WHERE id = :id
         LIMIT 1
     ";
@@ -38,7 +38,7 @@ try {
     $pedidoFake = 'TEST-' . time();
 
     $sqlPago = "
-        INSERT INTO epgylzqu_parking_finguer_v2.pagos
+        INSERT INTO pagos
         (reserva_id, factura_id, fecha, metodo, importe, estado, pasarela, pedido_pasarela)
         VALUES
         (:reserva_id, NULL, NOW(), 'tarjeta', :importe, 'confirmado', 'REDSYS_TEST', :pedido)
@@ -51,7 +51,7 @@ try {
     ]);
 
     $sqlUpd = "
-        UPDATE epgylzqu_parking_finguer_v2.parking_reservas
+        UPDATE parking_reservas
         SET estado = 'pagada'
         WHERE id = :id
     ";

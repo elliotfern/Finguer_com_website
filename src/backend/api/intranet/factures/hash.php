@@ -20,7 +20,7 @@ $sql = "
         impuesto_total,
         total,
         facturar_a_nif
-    FROM epgylzqu_parking_finguer_v2.facturas
+    FROM facturas
     ORDER BY fecha_emision ASC, id ASC
 ";
 $stmt = $conn->prepare($sql);
@@ -41,7 +41,7 @@ try {
     $actualitzades = 0;
 
     $sqlUpdate = "
-        UPDATE epgylzqu_parking_finguer_v2.facturas
+        UPDATE facturas
         SET hash_interno = :hash_interno,
             hash_interno_anterior = :hash_interno_anterior
         WHERE id = :id

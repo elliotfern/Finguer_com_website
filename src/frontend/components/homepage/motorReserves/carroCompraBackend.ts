@@ -1,7 +1,8 @@
 // src/pages/home/motorReserves/carroCompraBackend.ts
+import { apiUrl } from '../../../config/globals';
 import type { CotizarResponse } from './renderPrecio';
 
-const API_URL = 'https://finguer.com/api/carro-compra/post';
+const API_URL = `${apiUrl}/carro-compra/post`;
 
 function getOrCreateSessionKey(): string {
   const key = 'carro_session';

@@ -11,7 +11,7 @@ if (isset($_GET['session'])) {
     /** @var PDO $conn */
     $stmt = $conn->prepare("SELECT
 	id, precioTotal, costeSeguro, precioReserva, costeIva, precioSubtotal, costoLimpiezaSinIva, fechaEntrada, fechaSalida, horaEntrada,	horaSalida,limpieza, tipoReserva, diasReserva, seguroCancelacion
-            FROM epgylzqu_parking_finguer_v2.carro_compra
+            FROM carro_compra
             WHERE session = :session");
 
     $stmt->execute(['session' => $session]);

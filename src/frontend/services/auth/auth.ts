@@ -1,4 +1,4 @@
-import globals from '../../config/globals';
+import { apiUrl, webUrl } from '../../config/globals';
 
 interface LoginResponse {
   status: string;
@@ -7,7 +7,7 @@ interface LoginResponse {
 }
 
 export async function login(userName: string, password: string): Promise<void> {
-  const urlAjax = `${globals.devDirectory}/api/auth/login`;
+  const urlAjax = `${apiUrl}/auth/login`;
 
   try {
     const response = await fetch(urlAjax, {
@@ -35,7 +35,7 @@ export async function login(userName: string, password: string): Promise<void> {
 
       // Redirigir después de un pequeño retraso
       setTimeout(() => {
-        window.location.href = `${globals.devDirectory}/admin`;
+        window.location.href = `${webUrl}/admin`;
       }, 1300);
     } else {
       // Mostrar mensaje de error

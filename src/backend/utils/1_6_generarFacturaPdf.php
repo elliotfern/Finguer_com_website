@@ -62,8 +62,8 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             pr.vuelo,
             pr.tipo
 
-        FROM epgylzqu_parking_finguer_v2.facturas f
-        JOIN epgylzqu_parking_finguer_v2.parking_reservas pr
+        FROM facturas f
+        JOIN parking_reservas pr
           ON f.reserva_id = pr.id
         WHERE f.id = :id
         LIMIT 1
@@ -94,7 +94,7 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             total_base,
             total_impuesto,
             total_linea
-        FROM epgylzqu_parking_finguer_v2.facturas_lineas
+        FROM facturas_lineas
         WHERE factura_id = :fid
         ORDER BY linea ASC
     ";
@@ -105,7 +105,7 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
   // 3) Informacion sobre el pago
   $sqlPago = "
     SELECT fecha, metodo, pasarela, estado, codigo_autorizacion, id_transaccion
-    FROM epgylzqu_parking_finguer_v2.pagos
+    FROM pagos
     WHERE factura_id = :fid
     ORDER BY fecha DESC, id DESC
     LIMIT 1

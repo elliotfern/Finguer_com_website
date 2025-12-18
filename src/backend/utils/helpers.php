@@ -32,7 +32,7 @@ function obtenerFacturaIdPorReserva(PDO $conn, int $reservaId): ?int
 {
     $st = $conn->prepare("
         SELECT id
-        FROM epgylzqu_parking_finguer_v2.facturas
+        FROM facturas
         WHERE reserva_id = :rid
         ORDER BY id DESC
         LIMIT 1
