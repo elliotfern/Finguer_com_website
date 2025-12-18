@@ -23,3 +23,6 @@ error_log
 .gitignore
 /dist/
 
+
+.vscode/
+.husky/
