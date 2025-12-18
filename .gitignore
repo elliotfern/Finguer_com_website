@@ -11,18 +11,13 @@ finguer-web.code-workspace
 # Ignorar directorio de dependencias (ejemplo para PHP y Composer)
 /vendor/
 /node_modules/
-/dev/
-/pdf/
-/vendor/
-/dist/
-/pdf/
-/.vscode/
+dev/
+vendor/
+pdf/
 .env
 error_log
 .ftpquota
 .gitignore
-/dist/
-
-
+dist/
 .vscode/
 .husky/
