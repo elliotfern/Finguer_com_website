@@ -2,6 +2,7 @@
 
 use RedsysConsultasPHP\Client\Client;
 
+// Funció per comunicarse via SOAP amb redsys
 function consultaRedsys(string $order): array
 {
     $order = trim($order);
