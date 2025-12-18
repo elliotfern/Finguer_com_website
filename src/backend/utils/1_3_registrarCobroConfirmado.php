@@ -3,7 +3,7 @@
 function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
 {
 
-     $startedHere = false;
+    $startedHere = false;
 
     if ($reservaId <= 0) {
         return vp2_err('ID de reserva no válido.', 'RESERVA_ID_INVALID');
@@ -21,8 +21,10 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
     }
 
     try {
-        $conn->beginTransaction();
-          $startedHere = true;
+        if (!$conn->inTransaction()) {
+            $conn->beginTransaction();
+            $startedHere = true;
+        }
 
         // 1) Cargar reserva + totales (FOR UPDATE para evitar carreras)
         $stmt = $conn->prepare("
@@ -36,7 +38,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
         $r = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$r) {
-            $conn->rollBack();
+           if ($startedHere && $conn->inTransaction()) $conn->rollBack();
             return vp2_err('No se encontró la reserva.', 'RESERVA_NOT_FOUND', [
                 'data' => ['reserva_id' => $reservaId],
             ]);
@@ -110,7 +112,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
             $updRes->execute([':id' => $reservaId]);
         }
 
-         if ($startedHere) {
+        if ($startedHere) {
             $conn->commit();
         }
 
@@ -129,7 +131,7 @@ function registrarCobroConfirmado(PDO $conn, int $reservaId, array $pago): array
             ],
         ]);
     } catch (\Throwable $e) {
-        if ($conn->inTransaction()) $conn->rollBack();
+        if ($startedHere && $conn->inTransaction()) $conn->rollBack();
 
         return vp2_err('Error registrando cobro.', 'PAGO_DB_ERROR', [
             'data' => [
