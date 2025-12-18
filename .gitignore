@@ -21,3 +21,5 @@ finguer-web.code-workspace
 error_log
 .ftpquota
 .gitignore
+/dist/
+

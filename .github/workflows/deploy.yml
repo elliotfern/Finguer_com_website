@@ -1,4 +1,4 @@
-name: Build + Deploy (bundle.js + git pull + composer) Finguer
+name: Build + Deploy (git pull + composer + bundle.js) Finguer
 
 on:
   push:
@@ -28,7 +28,6 @@ jobs:
         id: target
         run: |
           set -euo pipefail
-
           if [ "${GITHUB_REF_NAME}" = "main" ]; then
             echo "env_name=PROD" >> "$GITHUB_OUTPUT"
             echo "branch=main" >> "$GITHUB_OUTPUT"
@@ -51,40 +50,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
 
-      - name: Upload bundle.js atomically
-        run: |
-          set -euo pipefail
-
-          echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
-          echo "Remote dist dir:       ${{ steps.target.outputs.remote_dist_dir }}"
-
-          # Verifica que existe
-          test -f dist/bundle.js || { echo "dist/bundle.js no existe"; exit 1; }
-
-          REMOTE_DIR="${{ steps.target.outputs.remote_dist_dir }}"
-          REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
-
-          # Asegura dir remoto
-          ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIR'"
-
-          # Subir a temporal
-          scp dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
-
-          # Swap atómico + permisos
-          ssh epgylzqu@87.98.230.129 "\
-            mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
-            chmod 644 '$REMOTE_BUNDLE' \
-          "
-
-          # (Opcional) sourcemap si existe
-          if [ -f dist/bundle.js.map ]; then
-            scp dist/bundle.js.map epgylzqu@87.98.230.129:"$REMOTE_DIR/bundle.js.map.tmp"
-            ssh epgylzqu@87.98.230.129 "\
-              mv -f '$REMOTE_DIR/bundle.js.map.tmp' '$REMOTE_DIR/bundle.js.map' && \
-              chmod 644 '$REMOTE_DIR/bundle.js.map' \
-            "
-          fi
-
+      # ✅ 1) BACKEND FIRST: git pull + composer (sin que bundle.js lo ensucie antes)
       - name: Deploy BACKEND (git pull) + vendor (composer install)
         run: |
           set -euo pipefail
@@ -100,15 +66,17 @@ jobs:
             BRANCH=\"${{ steps.target.outputs.branch }}\"
 
             cd \"\$APP_DIR\"
-
-            # Seguridad: si no es repo git, fallar con mensaje claro
             test -d .git || { echo \"ERROR: \$APP_DIR no es un repo git (no existe .git)\"; exit 2; }
+
+            # 🔒 Por si dist está trackeado: descarta cambios locales SOLO de dist antes del pull
+            if [ -f dist/bundle.js ]; then
+              git checkout -- dist/bundle.js || true
+            fi
 
             git fetch origin
             git checkout \"\$BRANCH\"
             git pull origin \"\$BRANCH\"
 
-            # vendor (si composer existe)
             if command -v composer >/dev/null 2>&1; then
               composer install --no-dev --prefer-dist --optimize-autoloader
             else
@@ -116,3 +84,33 @@ jobs:
               exit 3
             fi
           '"
+
+      # ✅ 2) FRONTEND AFTER: upload bundle.js atómico
+      - name: Upload bundle.js atomically
+        run: |
+          set -euo pipefail
+
+          echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
+          echo "Remote dist dir:       ${{ steps.target.outputs.remote_dist_dir }}"
+
+          test -f dist/bundle.js || { echo "dist/bundle.js no existe"; exit 1; }
+
+          REMOTE_DIR="${{ steps.target.outputs.remote_dist_dir }}"
+          REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
+
+          ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIR'"
+
+          scp dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
+
+          ssh epgylzqu@87.98.230.129 "\
+            mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
+            chmod 644 '$REMOTE_BUNDLE' \
+          "
+
+          if [ -f dist/bundle.js.map ]; then
+            scp dist/bundle.js.map epgylzqu@87.98.230.129:"$REMOTE_DIR/bundle.js.map.tmp"
+            ssh epgylzqu@87.98.230.129 "\
+              mv -f '$REMOTE_DIR/bundle.js.map.tmp' '$REMOTE_DIR/bundle.js.map' && \
+              chmod 644 '$REMOTE_DIR/bundle.js.map' \
+            "
+          fi
