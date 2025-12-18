@@ -13,7 +13,10 @@ function lecturaReserva(PDO $conn, int $reservaId): array
             pr.usuario_id,
             pr.estado,
             pr.canal,
-            pr.fecha_reserva
+            pr.fecha_reserva,
+            pr.subtotal_calculado,
+            pr.iva_calculado,
+            pr.total_calculado
         FROM parking_reservas pr
         WHERE pr.id = :id
         LIMIT 1
@@ -45,6 +48,9 @@ function lecturaReserva(PDO $conn, int $reservaId): array
             'estado'        => (string)($reserva['estado'] ?? ''),
             'canal'         => (int)($reserva['canal'] ?? 0),
             'fecha_reserva' => (string)($reserva['fecha_reserva'] ?? ''),
+            'subtotal_calculado' => $reserva['subtotal_calculado'] ?? null,
+            'iva_calculado' => $reserva['iva_calculado'] ?? null,
+            'total_calculado' => $reserva['total_calculado'] ?? null,
         ],
     ];
 
