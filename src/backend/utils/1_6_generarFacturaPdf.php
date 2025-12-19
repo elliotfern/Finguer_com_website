@@ -11,11 +11,6 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
   require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
   require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
 
-  function fmtCantidad(float $x): string
-  {
-    return (abs($x - round($x)) < 0.00001) ? (string)(int)round($x) : rtrim(rtrim(number_format($x, 2, ',', ''), '0'), ',');
-  }
-
   // Defaults opts
   $opts = array_merge([
     'mode'     => 'F',      // 'I' navegador, 'F' fichero

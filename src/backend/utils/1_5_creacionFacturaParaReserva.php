@@ -65,7 +65,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             WHERE pr.id = :id
             LIMIT 1
         ");
-        
+
         $stJ->execute([':id' => $reservaId]);
         $j0 = $stJ->fetch(PDO::FETCH_ASSOC);
         error_log('[FINGUER][DEBUG] join=' . json_encode($j0, JSON_UNESCAPED_UNICODE));
@@ -264,6 +264,29 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         ";
         $stmtServ = $conn->prepare($sqlServ);
         $stmtServ->execute([':reserva_id' => $reservaId]);
+
+        // DEBUG servicios (antes de fetchAll)
+        $stCnt = $conn->prepare("SELECT COUNT(*) FROM parking_reservas_servicios WHERE reserva_id = :rid");
+        $stCnt->execute([':rid' => $reservaId]);
+        $cnt = (int)$stCnt->fetchColumn();
+
+        error_log("[FINGUER][DEBUG] servicios_count(reserva_id={$reservaId})={$cnt}");
+
+        if ($cnt > 0) {
+            $stOne = $conn->prepare("
+        SELECT id, reserva_id, descripcion, total_linea
+        FROM parking_reservas_servicios
+        WHERE reserva_id = :rid
+        ORDER BY id ASC
+        LIMIT 3
+    ");
+            $stOne->execute([':rid' => $reservaId]);
+            $rows = $stOne->fetchAll(PDO::FETCH_ASSOC);
+            error_log('[FINGUER][DEBUG] servicios_sample=' . json_encode($rows, JSON_UNESCAPED_UNICODE));
+        }
+
+
+
         $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$servicios) {
