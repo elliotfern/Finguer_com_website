@@ -451,61 +451,45 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
       const btnFacturaPdf = fila.querySelector('.factura-pdf') as HTMLAnchorElement | null;
 
       if (btnFacturaPdf) {
-        btnFacturaPdf.addEventListener('click', (e) => {
+        btnFacturaPdf.addEventListener('click', async (e) => {
           e.preventDefault();
 
           const reserva_id = btnFacturaPdf.getAttribute('data-id');
           if (!reserva_id) return;
 
-          const w = window.open('about:blank', '_blank', 'noopener');
-          if (!w) {
-            alert('El navegador ha bloqueado la apertura del PDF. Permite popups para finguer.com e inténtalo de nuevo.');
-            return;
-          }
+          btnFacturaPdf.classList.add('disabled');
+          btnFacturaPdf.textContent = 'Generando…';
 
           try {
-            w.document.write('<p style="font-family:system-ui">Generando factura…</p>');
-          } catch {
-            console.log();
-          }
+            const response = await fetch(`${apiUrl}/factures/post/?type=emitir-factura`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reserva_id }),
+            });
 
-          (async () => {
-            try {
-              const response = await fetch(`${apiUrl}/factures/post/?type=emitir-factura`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reserva_id }),
-              });
+            const payload: {
+              status?: string;
+              message?: string;
+              data?: { pdf_url?: string };
+            } = await response.json();
 
-              const payload: {
-                status?: string;
-                message?: string;
-                data?: { pdf_url?: string };
-              } = await response.json();
-
-              if (payload.status === 'success') {
-                const pdfUrlRaw = payload.data?.pdf_url ?? null;
-
-                if (pdfUrlRaw && pdfUrlRaw.trim() !== '') {
-                  const pdfUrl = pdfUrlRaw.replace(/\\\//g, '/'); // por si acaso
-
-                  w.location.href = pdfUrl;
-                  return;
-                }
-
-                w.close();
-                alert('No se pudo obtener la URL del PDF.');
+            if (payload.status === 'success') {
+              const pdfUrl = payload.data?.pdf_url?.replace(/\\\//g, '/');
+              if (pdfUrl) {
+                window.location.href = pdfUrl; // ✅ abre el PDF en la misma pestaña
                 return;
               }
-
-              w.close();
+              alert('No se pudo obtener la URL del PDF.');
+            } else {
               alert(payload.message || 'Error al generar la factura.');
-            } catch (err) {
-              console.error('Error al generar el PDF:', err);
-              w.close();
-              alert('Hubo un error al generar la factura. Intenta de nuevo.');
             }
-          })();
+          } catch (err) {
+            console.error(err);
+            alert('Hubo un error al generar la factura.');
+          } finally {
+            btnFacturaPdf.classList.remove('disabled');
+            btnFacturaPdf.textContent = `${data.factura_numero}/${data.factura_serie}`; // o restaura como quieras
+          }
         });
       }
 
