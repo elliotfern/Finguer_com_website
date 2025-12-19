@@ -33,6 +33,44 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         }
 
         // 1) Cargar reserva + usuario (snapshot cliente)
+
+        // DEBUG HARD: huella de conexión y checks sin JOIN
+        try {
+            $who = $conn->query("
+        SELECT DATABASE() db, @@hostname host, @@port port, CONNECTION_ID() cid
+    ")->fetch(PDO::FETCH_ASSOC);
+            error_log('[FINGUER][DEBUG] crearFacturaParaReserva CONN=' . json_encode($who, JSON_UNESCAPED_UNICODE));
+        } catch (Throwable $e) {
+            error_log('[FINGUER][DEBUG] crearFacturaParaReserva CONN=ERROR ' . $e->getMessage());
+        }
+
+        // ¿Existe reserva sin join?
+        $stR = $conn->prepare("SELECT id, usuario_id FROM parking_reservas WHERE id = :id LIMIT 1");
+        $stR->execute([':id' => $reservaId]);
+        $r0 = $stR->fetch(PDO::FETCH_ASSOC);
+        error_log('[FINGUER][DEBUG] pr=' . json_encode($r0, JSON_UNESCAPED_UNICODE));
+
+        // ¿Existe el usuario por id?
+        $uid = (int)($r0['usuario_id'] ?? 0);
+        $stU = $conn->prepare("SELECT id, nombre, email FROM usuarios WHERE id = :uid LIMIT 1");
+        $stU->execute([':uid' => $uid]);
+        $u0 = $stU->fetch(PDO::FETCH_ASSOC);
+        error_log('[FINGUER][DEBUG] u=' . json_encode($u0, JSON_UNESCAPED_UNICODE));
+
+        // ¿Y el join exacto?
+        $stJ = $conn->prepare("
+            SELECT pr.id pr_id, pr.usuario_id, u.id u_id
+            FROM parking_reservas pr
+            INNER JOIN usuarios u ON u.id = pr.usuario_id
+            WHERE pr.id = :id
+            LIMIT 1
+        ");
+        
+        $stJ->execute([':id' => $reservaId]);
+        $j0 = $stJ->fetch(PDO::FETCH_ASSOC);
+        error_log('[FINGUER][DEBUG] join=' . json_encode($j0, JSON_UNESCAPED_UNICODE));
+
+
         $fase = 'cargar_reserva_usuario';
         $sql = "
             SELECT
@@ -52,7 +90,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 u.codigo_postal  AS u_cp,
                 u.pais           AS u_pais
             FROM parking_reservas pr
-            INNER JOIN usuarios u
+            LEFT JOIN usuarios u
                 ON u.id = pr.usuario_id
             WHERE pr.id = :id
             LIMIT 1
