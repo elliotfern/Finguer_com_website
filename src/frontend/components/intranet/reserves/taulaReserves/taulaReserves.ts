@@ -55,8 +55,6 @@ export async function confirmarPagoManual(reservaId: number): Promise<PagoManual
   return json.data ?? {};
 }
 
-
-
 // Crea la tabla completa (div -> table -> thead -> tbody) si no existe y devuelve el <tbody>
 const getOrCreateTableBody = (): HTMLTableSectionElement => {
   // Contenedor donde se pintará la tabla
@@ -451,43 +449,66 @@ export const carregarDadesTaulaReserves = async (estatParking: string): Promise<
 
       // Agregar evento click para generar y mostrar PDF
       const btnFacturaPdf = fila.querySelector('.factura-pdf') as HTMLAnchorElement | null;
+
       if (btnFacturaPdf) {
-        btnFacturaPdf.addEventListener('click', async (e) => {
-          e.preventDefault(); // Prevenir la acción por defecto del enlace
+        btnFacturaPdf.addEventListener('click', (e) => {
+          e.preventDefault();
 
           const reserva_id = btnFacturaPdf.getAttribute('data-id');
-          if (reserva_id) {
+          if (!reserva_id) return;
+
+          const w = window.open('about:blank', '_blank', 'noopener');
+          if (!w) {
+            alert('El navegador ha bloqueado la apertura del PDF. Permite popups para finguer.com e inténtalo de nuevo.');
+            return;
+          }
+
+          try {
+            w.document.write('<p style="font-family:system-ui">Generando factura…</p>');
+          } catch {
+            console.log();
+          }
+
+          (async () => {
             try {
-              const response = await fetch(`/api/factures/post/?type=emitir-factura`, {
+              const response = await fetch(`${apiUrl}/factures/post/?type=emitir-factura`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  reserva_id: reserva_id, // Aseguramos que el ID se pase correctamente
-                }),
+                body: JSON.stringify({ reserva_id }),
               });
 
-              const data = await response.json();
+              const payload: {
+                status?: string;
+                message?: string;
+                data?: { pdf_url?: string };
+              } = await response.json();
 
-              if (data.status === 'success') {
-                // Acceder a la URL completa del PDF generada por el backend
-                const pdfUrl = data.data.pdf_url;
+              if (payload.status === 'success') {
+                const pdfUrlRaw = payload.data?.pdf_url ?? null;
 
-                // Verificamos que la URL es válida antes de intentar abrirla
-                if (pdfUrl && pdfUrl !== '') {
-                  window.open(pdfUrl, '_blank'); // Abre el PDF en una nueva pestaña
-                } else {
-                  alert('No se pudo generar la URL del PDF');
+                if (pdfUrlRaw && pdfUrlRaw.trim() !== '') {
+                  const pdfUrl = pdfUrlRaw.replace(/\\\//g, '/'); // por si acaso
+
+                  w.location.href = pdfUrl;
+                  return;
                 }
-              } else {
-                alert('Error al generar la factura');
+
+                w.close();
+                alert('No se pudo obtener la URL del PDF.');
+                return;
               }
-            } catch (error) {
-              console.error('Error al generar el PDF:', error);
+
+              w.close();
+              alert(payload.message || 'Error al generar la factura.');
+            } catch (err) {
+              console.error('Error al generar el PDF:', err);
+              w.close();
               alert('Hubo un error al generar la factura. Intenta de nuevo.');
             }
-          }
+          })();
         });
       }
+
       // Botón: Confirmar pago manual + generar factura
       const btnConfirmarPago = fila.querySelector('.confirmar-pago-manual') as HTMLButtonElement | null;
 
