@@ -49,7 +49,7 @@ if ($email === false) {
     exit;
 }
 
-$query = "SELECT u.id, u.email, u.password, u.tipoUsuario
+$query = "SELECT u.id, u.email, u.password, u.tipo_rol
     FROM usuarios AS u
     WHERE u.email = :email";
 
@@ -69,10 +69,10 @@ if ($stmt->rowCount() === 0) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $hash = $row['password'];
     $id = $row['id'];
-    $tipoUsuario = $row['tipoUsuario'];
+    $tipoUsuario = $row['tipo_rol'];
 
     // Verificar si el tipoUsuario es 1
-    if ($tipoUsuario != 1) {
+    if ($tipoUsuario != 'admin') {
         // Si el tipoUsuario no es 1
         $response = array(
             "status" => "error",

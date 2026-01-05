@@ -32,7 +32,7 @@ $pdo_statement = $conn->prepare("SELECT rc1.idReserva,
     c.telefono
     FROM reserves_parking AS rc1
     LEFT JOIN usuaris AS c ON rc1.idClient = c.id
-    WHERE rc1.checkIn = 5 AND rc1.idReserva = 1 AND c.tipoUsuario = 3
+    WHERE rc1.checkIn = 5 AND rc1.idReserva = 1 AND c.tipo_rol = 'cliente_anual'
     ORDER BY rc1.diaEntrada ASC, rc1.horaEntrada ASC");
 $pdo_statement->execute();
 $result = $pdo_statement->fetchAll();

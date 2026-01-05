@@ -28,7 +28,7 @@ if (isset($_POST["alta-client"])) {
         $anualitat = data_input($_POST["anualitat"], ENT_NOQUOTES);
     }
 
-    $tipoUsuario = 3;
+    $tipoUsuario = 'cliente_anual';
 
     // Si no hi ha cap error, envia el formulari
     if (!isset($hasError)) {
@@ -38,12 +38,12 @@ if (isset($_POST["alta-client"])) {
         echo 'Controla que totes les dades siguin correctes.</div>';
     }
 
-    $sql = "INSERT INTO usuaris SET nombre=:nombre, telefono=:telefono, anualitat=:anualitat, tipoUsuario=:tipoUsuario";
+    $sql = "INSERT INTO usuaris SET nombre=:nombre, telefono=:telefono, anualitat=:anualitat, tipo_rol=:tipo_rol";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
     $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
     $stmt->bindParam(":anualitat", $anualitat, PDO::PARAM_STR);
-    $stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+    $stmt->bindParam(":tipo_rol", $tipoUsuario, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
         $codi_resposta = 1;

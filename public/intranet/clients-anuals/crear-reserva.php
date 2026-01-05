@@ -183,7 +183,7 @@ if ($codi_resposta == 2) {
     // consulta general reserves 
     $sql = "SELECT c.nombre, c.id
                     FROM usuarios AS c
-                    WHERE tipoUsuario = 3
+                    WHERE tipo_rol = 'cliente_anual'
                     ORDER BY c.nombre ASC";
 
     $pdo_statement = $conn->prepare($sql);

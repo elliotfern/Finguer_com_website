@@ -9,7 +9,7 @@ echo "<h3>Clients amb Abonament anual</h3>";
 // consulta general clients
 $sql = "SELECT c.nombre AS nom, c.telefono AS telefon, c.id, c.anualitat
     FROM usuarios AS c
-    WHERE c.tipoUsuario = 3
+    WHERE c.tipo_rol = 'cliente_anual'
     ORDER BY c.nombre ASC";
 
 $pdo_statement = $conn->prepare($sql);

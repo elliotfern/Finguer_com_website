@@ -164,7 +164,8 @@ $ciudad = !empty($data["ciudad"]) ? data_input($data["ciudad"]) : null;
 $codigo_postal = !empty($data["codigo_postal"]) ? data_input($data["codigo_postal"]) : null;
 $pais = !empty($data["pais"]) ? data_input($data["pais"]) : null;
 
-$tipoUsuario = 2; // Asignar tipo de usuario por defecto
+$tipoUsuario = 'cliente'; // Asignar tipo de usuario por defecto
+$locale = 'es';
 
 // informacion tecnica usuario
 $info = getUserInfo();
@@ -186,7 +187,7 @@ if ($hasError) {
 global $conn;
 
 // 🔁 CAMBIO IMPORTANTE: nueva BD + nueva tabla
-$sql = "INSERT INTO usuarios SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipoUsuario=:tipoUsuario, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+$sql = "INSERT INTO usuarios SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
 $stmt->bindParam(":email", $email, PDO::PARAM_STR);
@@ -197,7 +198,8 @@ $stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
 $stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
 $stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
 $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
-$stmt->bindParam(":tipoUsuario", $tipoUsuario, PDO::PARAM_INT);
+$stmt->bindParam(":tipo_rol", $tipoUsuario, PDO::PARAM_STR);
+$stmt->bindParam(":locale", $locale, PDO::PARAM_STR);
 $stmt->bindParam(":dispositiu", $dispositiu, PDO::PARAM_STR);
 $stmt->bindParam(":navegador", $navegador, PDO::PARAM_STR);
 $stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
