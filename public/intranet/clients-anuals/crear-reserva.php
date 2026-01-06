@@ -2,7 +2,20 @@
 
 date_default_timezone_set('Europe/Rome');
 
-$idClient = $params['idClient'] ?? "";
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+$idClient = null;
+
+// Coincide SOLO si hay /crear-reserva/{id}
+if (preg_match('#/crear-reserva/([0-9]+)$#', $path, $matches)) {
+    $idClient = (int)$matches[1];
+
+    if ($idClient <= 0) {
+        http_response_code(400);
+        die('ID de cliente inválido');
+    }
+}
+
 $idClient_old = is_numeric($idClient) ? (int)$idClient : null;
 
 global $conn;
@@ -220,9 +233,13 @@ if ($codi_resposta == 2) {
     echo '<input type="text" class="form-control" id="notes" name="notes" value="' . htmlspecialchars($post['notes'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo "<div class='col-12'>";
-    echo "<button id='alta-reserva' name='alta-reserva' type='submit' class='btn btn-primary'>Alta reserva</button> ";
+
+    // BOTO ENVIAR FORM
+    echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
+
     echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+
+    echo "<button id='alta-reserva' name='alta-reserva' type='submit' class='btn btn-primary'>Alta reserva</button>";
     echo "</div>";
 
     echo "</form>";

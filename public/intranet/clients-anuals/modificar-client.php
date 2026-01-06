@@ -263,6 +263,7 @@ echo '<label>País:</label>';
 echo '<input type="text" class="form-control" id="pais" name="pais" value="' . htmlspecialchars((string)($pais_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
+// BOTO ENVIAR FORM
 echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
 
 echo "<a href='" . APP_WEB . "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
