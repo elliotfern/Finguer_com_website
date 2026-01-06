@@ -1,5 +1,5 @@
 <?php
-
+ 
 function generarLocalizador(PDO $conn, ?DateTimeInterface $fechaReserva = null): string
 {
     $tz = new DateTimeZone('Europe/Rome');
