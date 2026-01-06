@@ -186,10 +186,17 @@ if ($codi_resposta == 2) {
     echo '<input type="text" class="form-control" id="pais" name="pais" value="' . htmlspecialchars($_POST["pais"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo "<div class='md-12'>";
-    echo "<button id='alta-client' name='alta-client' type='submit' class='btn btn-primary'>Alta client</button>
-          <a href='" . APP_WEB . "/control/clients-anuals/crear-client/'></a>
-          </div>";
+    echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
+
+    echo "<a href='" . APP_WEB . "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
+        Tornar
+      </a>";
+
+    echo "<button id='alta-client' name='alta-client' type='submit' class='btn btn-primary'>
+        Alta client
+      </button>";
+
+    echo "</div>";
 
     echo "</form>";
 } else {

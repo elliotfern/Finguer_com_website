@@ -23,6 +23,12 @@ try {
         $allowedEstados = ['pendiente_entrada', 'dentro', 'salido'];
         $estadoVehiculo = getEnumParam('estado_vehiculo', $allowedEstados, 'pendiente_entrada');
 
+        $allowedTipos = ['1', '2', '3']; // de momento
+        $tipo = isset($_GET['tipo']) ? trim((string)$_GET['tipo']) : '';
+        $tipo = ($tipo !== '' && in_array($tipo, $allowedTipos, true)) ? $tipo : null;
+
+        $tipoWhere = $tipo ? " AND pr.tipo = :tipo " : "";
+
         // Si es "salido", limitamos resultados a 20
         $limitClause = ($estadoVehiculo === 'salido') ? ' LIMIT 20' : '';
 
@@ -119,10 +125,14 @@ try {
         ) lx ON lx.reserva_id = pr.id
 
         WHERE pr.estado_vehiculo = :estado_vehiculo
+        {$tipoWhere}
         ORDER BY {$orderByField} {$orderDirection}{$limitClause};";
 
         $stmt = $conn->prepare($query);
         $stmt->bindValue(':estado_vehiculo', $estadoVehiculo, PDO::PARAM_STR);
+        if ($tipo !== null) {
+            $stmt->bindValue(':tipo', $tipo, PDO::PARAM_STR);
+        }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -134,12 +144,18 @@ try {
         ];
 
         $sqlCounts = "
-            SELECT estado_vehiculo, COUNT(*) AS total
-            FROM parking_reservas
-            GROUP BY estado_vehiculo
+            SELECT pr.estado_vehiculo, COUNT(*) AS total
+            FROM parking_reservas pr
+            WHERE 1=1
+            " . ($tipo !== null ? " AND pr.tipo = :tipo " : "") . "
+            GROUP BY pr.estado_vehiculo
         ";
-
-        $stmtCounts = $conn->query($sqlCounts);
+        
+        $stmtCounts = $conn->prepare($sqlCounts);
+        if ($tipo !== null) {
+            $stmtCounts->bindValue(':tipo', $tipo, PDO::PARAM_STR);
+        }
+        $stmtCounts->execute();
         $rowsCounts = $stmtCounts->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rowsCounts as $row) {

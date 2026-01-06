@@ -118,9 +118,14 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
   return tbody;
 };
 
-export const carregarDadesTaulaReserves = async (estatParking: string): Promise<void> => {
+export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: string): Promise<void> => {
   try {
-    const url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
+    let url = '';
+    if (tipo) {
+      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}&tipo=${tipo}`;
+    } else {
+      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
+    }
 
     const response = await fetch(url);
     if (!response.ok) {

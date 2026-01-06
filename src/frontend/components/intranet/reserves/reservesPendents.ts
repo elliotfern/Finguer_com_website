@@ -3,7 +3,7 @@ import { ApiOk } from '../../../types/api';
 import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent';
 import { carregarDadesTaulaReserves } from './taulaReserves/taulaReserves';
 
-// TIPADO (mismo shape que usa tu popup)
+// TIPADO (mismo shape que usa tu popup) 
 type DeviceInfo = {
   dispositiu?: string;
   navegador?: string;
@@ -64,8 +64,8 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
   }
 }
 
-export const reserves = (estatParking: string) => {
-  carregarDadesTaulaReserves(estatParking);
+export const reserves = (estatParking: string, tipo?: string) => {
+  carregarDadesTaulaReserves(estatParking, tipo);
 
   // 👇 HAZ EL HANDLER ASYNC
   document.addEventListener('click', async (event: MouseEvent) => {
