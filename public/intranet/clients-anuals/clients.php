@@ -44,7 +44,7 @@ $result = $pdo_statement->fetchAll();
                 echo "<td>" . $anualitat . "</td>";
                 echo "<td><a href='" . APP_WEB . "/control/clients-anuals/modificar/client/" . $id . "' class='btn btn-warning btn-sm' role='button' aria-pressed='true'>Actualitzar dades</a></td>";
                 echo "<td><a href='" . APP_WEB . "/control/clients-anuals/eliminar/client/" . $id . "' class='btn btn-danger btn-sm' role='button' aria-pressed='true'>Eliminar client</a></td>";
-                echo "<td><a href='" . APP_WEB . "/control/clients-anuals/crear/reserva/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear reserva</a></td>";
+                echo "<td><a href='" . APP_WEB . "/control/clients-anuals/crear-reserva/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear reserva</a></td>";
                 echo "</tr>";
             }
             echo "</tbody>";

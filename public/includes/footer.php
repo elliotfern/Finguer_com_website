@@ -27,7 +27,7 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
             </div>
 
             <div class="col-12 col-md-2">
-                <h6><strong>AUTO GESTIOFERCAR SL</strong></h6>
+                <h6><strong>AUTO GESTIO FERCAR SL</strong></h6>
                 <p>Carrer de l'Alt Camp 9<br>08830 Sant Boi de Llobregat (Barcelona)<br>NIF B64768997</p>
             </div>
 

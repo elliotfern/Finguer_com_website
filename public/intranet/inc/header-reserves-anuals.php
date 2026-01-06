@@ -1,5 +1,5 @@
 <div class="container">
-    <h2>Reserves clients abonament anual</h2>
+    <h2>Menú Clients amb abonament anual</h2>
 
     <div class="row" style="margin-top:20px;margin-bottom:20px">
 
@@ -8,11 +8,11 @@
         </div>
 
         <div class="col-sm">
-            <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear/client" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear client</a>
+            <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear-client" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear client</a>
         </div>
 
         <div class="col-sm">
-            <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear/reserva" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear reserva</a>
+            <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear-reserva" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear reserva</a>
         </div>
 
         <div class="col-sm">
