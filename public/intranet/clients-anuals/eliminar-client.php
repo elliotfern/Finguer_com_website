@@ -59,7 +59,7 @@ if (is_numeric($idClient)) {
             echo '<form method="post" action="">';
 
             echo "<div class='md-12'>";
-            echo "<button id='remove-client' name='remove-client' type='submit' class='btn btn-primary'>Eliminar client</button><a href='" . APP_WEB . "/clients-anuals/eliminar/client/" . $idClient_old . "'></a>
+            echo "<button id='remove-client' name='remove-client' type='submit' class='btn btn-primary'>Eliminar client</button><a href='" . APP_WEB . "/control/clients-anuals/eliminar/client/" . $idClient_old . "'></a>
                             </div>";
 
             echo "</form>";

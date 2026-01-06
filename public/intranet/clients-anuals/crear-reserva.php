@@ -169,7 +169,7 @@ if ($codi_resposta == 2) {
     echo "</div>";
 
     echo '<div class="col-md-4">';
-    echo '<label>Tipus de reserva:</label>';
+    echo '<label>Tipus de reserva (anual):</label>';
     echo '<select class="form-select" name="tipo_ui" id="tipo_ui" disabled>';
     echo "<option value='3' selected>Client anual</option>";
     echo '</select>';
@@ -222,7 +222,7 @@ if ($codi_resposta == 2) {
 
     echo "<div class='col-12'>";
     echo "<button id='alta-reserva' name='alta-reserva' type='submit' class='btn btn-primary'>Alta reserva</button> ";
-    echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+    echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
     echo "</div>";
 
     echo "</form>";

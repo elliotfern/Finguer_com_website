@@ -180,7 +180,7 @@ if ($codi_resposta == 2) {
 
     echo "<div class='md-12'>";
     echo "<button id='alta-client' name='alta-client' type='submit' class='btn btn-primary'>Alta client</button>
-          <a href='" . APP_WEB . "/clients-anuals/crear/client/'></a>
+          <a href='" . APP_WEB . "/control/clients-anuals/crear-client/'></a>
           </div>";
 
     echo "</form>";
