@@ -20,7 +20,7 @@ function verificarSesion()
     }
 
     // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] != 1) {
+    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] != 'admin') {
         header('Location: /control/login'); // Redirige a login si no hay token válido
         exit();
     }
