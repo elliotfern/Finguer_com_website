@@ -121,8 +121,9 @@ const getOrCreateTableBody = (): HTMLTableSectionElement => {
 export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: string): Promise<void> => {
   try {
     let url = '';
-    if (tipo) {
-      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}&tipo=${encodeURIComponent(tipo)}`;
+    const tipo_int = tipo;
+    if (tipo_int) {
+      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}&tipo=${encodeURIComponent(tipo_int)}`;
     } else {
       url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}`;
     }
@@ -293,7 +294,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
       const puedeVerificar = diffDays <= MAX_DIAS_VERIFICACION;
       const estadoHtml = formatEstadoReservaHtml(data.estado);
 
-      if (Number(data.localizador) === 1 || data.canal === 5) {
+      if (data.canal === "5") {
         html += `<p>${estadoHtml}</p>`;
       } else {
         if (Number(data.processed) === 1) {
@@ -304,7 +305,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
           if (puedeVerificar) {
             html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
           }
-        } else if (Number(data.canal) === 3) {
+        } else if (Number(data.canal) === 3 ) {
           html += `<p><button type="button" class="btn btn-danger">NO</button></p>
           <p>${estadoHtml}</p>`;
         } else {
@@ -432,7 +433,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         btnCheckIn.addEventListener('click', async () => {
           try {
             await actualizarEstadoReserva(data.id, 'dentro');
-            await carregarDadesTaulaReserves(estatParking, tipo);
+            await carregarDadesTaulaReserves(estatParking, tipo_int);
           } catch (error) {
             console.error('Error al hacer check-in:', error);
             alert('Error al hacer check-in');
@@ -444,7 +445,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         btnCheckOut.addEventListener('click', async () => {
           try {
             await actualizarEstadoReserva(data.id, 'salido');
-            await carregarDadesTaulaReserves(estatParking, tipo);
+            await carregarDadesTaulaReserves(estatParking, tipo_int);
           } catch (error) {
             console.error('Error al hacer check-out:', error);
             alert('Error al hacer check-out');
@@ -520,7 +521,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
             alert(facturaId ? `OK. Factura generada (ID ${facturaId}).` : 'OK. Pago confirmado.');
 
             // ✅ refrescar tabla para que aparezca el número de factura y desaparezca el botón
-            await carregarDadesTaulaReserves(estatParking, tipo);
+            await carregarDadesTaulaReserves(estatParking, tipo_int);
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : 'Error desconocido';
             alert(`Error: ${msg}`);
