@@ -143,7 +143,6 @@ if (isset($_POST["update-client"])) {
             $ciudad_old = $ciudad;
             $codigo_postal_old = $codigo_postal;
             $pais_old = $pais;
-
         } else {
             $codi_resposta = 2;
         }
@@ -155,7 +154,6 @@ if (isset($_POST["update-client"])) {
             echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
             echo 'Les dades no s\'han transmès correctament.</div>';
         }
-
     } else {
         echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</strong></h4>';
         echo 'Controla que totes les dades obligatòries siguin correctes (Nom + Idioma).</div>';
@@ -165,23 +163,38 @@ if (isset($_POST["update-client"])) {
 // 3) Formulario (siempre mostrarlo; si quieres ocultarlo al guardar, cambia esta condición)
 echo '<form action="" method="post" id="update-client" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
+echo '<h5>Dades obligatòries del client:</h5>';
+
 // nombre
-echo '<div class="col-md-6">';
-echo '<label>Nom i cognoms client (*):</label>';
+echo '<div class="col-md-3">';
+echo '<label>Nom i cognoms(obligatori):</label>';
 echo '<input type="text" class="form-control" id="nombre" name="nombre" required value="' . htmlspecialchars((string)$nom_old, ENT_QUOTES) . '">';
 echo '</div>';
 
+// telefono
+echo '<div class="col-md-3">';
+   echo '<label>Telèfon (obligatori):</label>';
+echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars((string)($telefon_old ?? ''), ENT_QUOTES) . '">';
+echo '</div>';
+
+// anualitat
+echo '<div class="col-md-3">';
+  echo '<label>Anualitat client dia/mes/any (obligatori):</label>';
+echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars((string)($anualitat_old ?? ''), ENT_QUOTES) . '">';
+echo '</div>';
+
+
 // locale
 echo '<div class="col-md-3">';
-echo '<label>Idioma (*):</label>';
+    echo '<label>Idioma preferit del client (obligatori):</label>';
 echo '<select class="form-control" id="locale" name="locale" required>';
 
 $locales = [
     'ca' => 'Català',
-    'es' => 'Español',
-    'fr' => 'Français',
-    'en' => 'English',
-    'it' => 'Italiano'
+    'es' => 'Espanyol',
+    'fr' => 'Francès',
+    'en' => 'Anglès',
+    'it' => 'Italià'
 ];
 foreach ($locales as $code => $label) {
     $selected = ($locale_old === $code) ? 'selected' : '';
@@ -190,63 +203,60 @@ foreach ($locales as $code => $label) {
 echo '</select>';
 echo '</div>';
 
-// telefono
-echo '<div class="col-md-3">';
-echo '<label>Telèfon:</label>';
-echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars((string)($telefon_old ?? ''), ENT_QUOTES) . '">';
-echo '</div>';
 
-// anualitat
-echo '<div class="col-md-3">';
-echo '<label>Anualitat:</label>';
-echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars((string)($anualitat_old ?? ''), ENT_QUOTES) . '">';
-echo '</div>';
 
 // email
-echo '<div class="col-md-4">';
-echo '<label>Email:</label>';
+echo '<div class="col-md-3">';
+    echo '<label>Email (obligatori):</label>';
 echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars((string)($email_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
+    echo '<hr>';
+    echo '<h5>Dades del client opcionals:</h5>';
+
 // empresa
-echo '<div class="col-md-4">';
+echo '<div class="col-md-3">';
 echo '<label>Empresa:</label>';
 echo '<input type="text" class="form-control" id="empresa" name="empresa" value="' . htmlspecialchars((string)($empresa_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
 // nif
-echo '<div class="col-md-4">';
+echo '<div class="col-md-3">';
 echo '<label>NIF:</label>';
 echo '<input type="text" class="form-control" id="nif" name="nif" value="' . htmlspecialchars((string)($nif_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
 // direccion
-echo '<div class="col-md-8">';
+echo '<div class="col-md-3">';
 echo '<label>Direcció:</label>';
 echo '<input type="text" class="form-control" id="direccion" name="direccion" value="' . htmlspecialchars((string)($direccion_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
 // ciudad
-echo '<div class="col-md-4">';
+echo '<div class="col-md-3">';
 echo '<label>Ciutat:</label>';
 echo '<input type="text" class="form-control" id="ciudad" name="ciudad" value="' . htmlspecialchars((string)($ciudad_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
 // codigo_postal
-echo '<div class="col-md-4">';
+echo '<div class="col-md-3">';
 echo '<label>Codi postal:</label>';
 echo '<input type="text" class="form-control" id="codigo_postal" name="codigo_postal" value="' . htmlspecialchars((string)($codigo_postal_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
 // pais
-echo '<div class="col-md-4">';
+echo '<div class="col-md-3">';
 echo '<label>País:</label>';
 echo '<input type="text" class="form-control" id="pais" name="pais" value="' . htmlspecialchars((string)($pais_old ?? ''), ENT_QUOTES) . '">';
 echo '</div>';
 
-echo "<div class='col-12'>";
+echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
+
+echo "<a href='" . APP_WEB . "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
+        Tornar
+      </a>";
+
 echo "<button id='update-client' name='update-client' type='submit' class='btn btn-primary'>Modifica client</button> ";
-echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
 echo "</div>";
 
 echo "</form>";

@@ -110,22 +110,24 @@ if (isset($_POST["alta-client"])) {
 if ($codi_resposta == 2) {
     echo '<form action="" method="post" id="alta-client" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
-    echo '<div class="col-md-4">';
-    echo '<label>Nom i cognoms client (obligatori):</label>';
+    echo '<h5>Dades obligatòries del client:</h5>';
+
+    echo '<div class="col-md-3">';
+    echo '<label>Nom i cognoms (obligatori):</label>';
     echo '<input type="text" class="form-control" id="nombre" name="nombre" value="' . htmlspecialchars($_POST["nombre"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
-    echo '<label>Telèfon client (obligatori):</label>';
+    echo '<div class="col-md-3">';
+    echo '<label>Telèfon (obligatori):</label>';
     echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars($_POST["telefono"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-6">';
-    echo '<label>Anualitat client (obligatori):</label>';
+    echo '<div class="col-md-3">';
+    echo '<label>Anualitat client dia/mes/any (obligatori):</label>';
     echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars($_POST["anualitat"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Idioma preferit del client (obligatori):</label>';
     echo '<select class="form-select" id="locale" name="locale" required>';
 
@@ -147,31 +149,31 @@ if ($codi_resposta == 2) {
     echo '</select>';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Email (obligatori):</label>';
     echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars($_POST["email"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
     echo '<hr>';
-    echo '<h5>Dades del client opcionals</h5>';
+    echo '<h5>Dades del client opcionals:</h5>';
 
     // --- Nuevos inputs (opcionales) ---
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Empresa:</label>';
     echo '<input type="text" class="form-control" id="empresa" name="empresa" value="' . htmlspecialchars($_POST["empresa"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>NIF:</label>';
     echo '<input type="text" class="form-control" id="nif" name="nif" value="' . htmlspecialchars($_POST["nif"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-8">';
+    echo '<div class="col-md-3">';
     echo '<label>Direcció:</label>';
     echo '<input type="text" class="form-control" id="direccion" name="direccion" value="' . htmlspecialchars($_POST["direccion"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Ciutat:</label>';
     echo '<input type="text" class="form-control" id="ciudad" name="ciudad" value="' . htmlspecialchars($_POST["ciudad"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
