@@ -156,7 +156,7 @@ if ($codi_resposta == 2) {
     echo '<form action="" method="post" id="alta-reserva" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
     echo '<div class="col-md-4">';
-    echo '<label>Selecciona un client anual (obligatori):</label>';
+    echo '<label>Selecciona un client anual <span class="text-danger">*</span></label>';
     echo '<select class="form-select" name="idClient" id="idClient" required>';
     echo '<option value="" disabled ' . (empty($post['idClient']) ? 'selected' : '') . '>Selecciona el client:</option>';
 
@@ -179,25 +179,37 @@ if ($codi_resposta == 2) {
     }
 
     echo '</select>';
+     echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo "</div>";
 
     echo '<div class="col-md-4">';
-    echo '<label>Tipus de reserva (anual):</label>';
+    echo '<label>Tipus de reserva (anual) <span class="text-danger">*</span></label>';
     echo '<select class="form-select" name="tipo_ui" id="tipo_ui" disabled>';
     echo "<option value='3' selected>Client anual</option>";
     echo '</select>';
+     echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo "</div>";
 
     echo "<hr>";
 
     echo '<div class="col-md-3">';
-    echo '<label>Data entrada (obligatori):</label>';
+    echo '<label>Data entrada <span class="text-danger">*</span></label>';
     echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" required value="' . htmlspecialchars($post['diaEntrada'] ?? '', ENT_QUOTES) . '">';
+     echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Hora entrada (obligatori):</label>';
+    echo '<label>Hora entrada <span class="text-danger">*</span></label>';
     echo '<input type="time" class="form-control" id="horaEntrada" name="horaEntrada" required value="' . htmlspecialchars($post['horaEntrada'] ?? '', ENT_QUOTES) . '">';
+     echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo "<hr>";

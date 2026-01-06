@@ -1,5 +1,7 @@
 <?php
 
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
 if (!preg_match('#/client/([0-9]+)$#', $path, $matches)) {
     http_response_code(400);
     die('ID de cliente no encontrado');
