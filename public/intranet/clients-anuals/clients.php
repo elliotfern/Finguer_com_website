@@ -3,7 +3,7 @@ global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 
-echo "<div class='container'>";
+echo "<div class='container' style='margin-bottom:100px'>";
 echo "<h3>Clients amb Abonament anual</h3>";
 
 // consulta general clients
@@ -50,8 +50,7 @@ $result = $pdo_statement->fetchAll();
             echo "</tbody>";
             echo "</table>";
             echo "</div>";
+ ?>
+            </div>
 
-            echo "</div>";
-
-
-            ?>
+           

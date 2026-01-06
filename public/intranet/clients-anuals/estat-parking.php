@@ -3,7 +3,7 @@ global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 
-echo "<div class='container'>";
+echo "<div class='container' style='margin-bottom:100px'>";
 ?>
 
 <h2>Estat 2: Reserves clients anuals al parking</h2>

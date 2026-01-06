@@ -9,7 +9,7 @@ global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 
-echo "<div class='container' style='margin-bottom:50px'>";
+echo "<div class='container' style='margin-bottom:100px'>";
 echo "<h3>Creació reserva de client Abonament anual</h3>";
 
 $codi_resposta = 2;
