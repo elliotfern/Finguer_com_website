@@ -122,9 +122,9 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
   try {
     let url = '';
     if (tipo) {
-      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}&tipo=${tipo}`;
+      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}&tipo=${encodeURIComponent(tipo)}`;
     } else {
-      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${estatParking}`;
+      url = `${apiUrl}/intranet/reserves/get/?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}`;
     }
 
     const response = await fetch(url);
@@ -432,7 +432,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         btnCheckIn.addEventListener('click', async () => {
           try {
             await actualizarEstadoReserva(data.id, 'dentro');
-            await carregarDadesTaulaReserves(estatParking);
+            await carregarDadesTaulaReserves(estatParking, tipo);
           } catch (error) {
             console.error('Error al hacer check-in:', error);
             alert('Error al hacer check-in');
@@ -444,7 +444,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         btnCheckOut.addEventListener('click', async () => {
           try {
             await actualizarEstadoReserva(data.id, 'salido');
-            await carregarDadesTaulaReserves(estatParking);
+            await carregarDadesTaulaReserves(estatParking, tipo);
           } catch (error) {
             console.error('Error al hacer check-out:', error);
             alert('Error al hacer check-out');
@@ -520,7 +520,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
             alert(facturaId ? `OK. Factura generada (ID ${facturaId}).` : 'OK. Pago confirmado.');
 
             // ✅ refrescar tabla para que aparezca el número de factura y desaparezca el botón
-            await carregarDadesTaulaReserves(estatParking);
+            await carregarDadesTaulaReserves(estatParking, tipo);
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : 'Error desconocido';
             alert(`Error: ${msg}`);
