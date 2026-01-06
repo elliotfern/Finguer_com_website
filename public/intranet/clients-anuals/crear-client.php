@@ -17,6 +17,12 @@ if (isset($_POST["alta-client"])) {
         $nombre = data_input($_POST["nombre"], ENT_NOQUOTES);
     }
 
+    if (empty($_POST["email"])) {
+        $hasError = true;
+    } else {
+        $email = data_input($_POST["email"], ENT_NOQUOTES);
+    }
+
     // --- Locale obligatorio ---
     $localesPermitidos = ['ca', 'es', 'fr', 'en', 'it'];
 
@@ -32,7 +38,7 @@ if (isset($_POST["alta-client"])) {
     $anualitat = empty($_POST["anualitat"]) ? null : data_input($_POST["anualitat"], ENT_NOQUOTES);
 
     // Campos nuevos opcionales
-    $email         = empty($_POST["email"]) ? null : data_input($_POST["email"], ENT_NOQUOTES);
+
     $empresa       = empty($_POST["empresa"]) ? null : data_input($_POST["empresa"], ENT_NOQUOTES);
     $nif           = empty($_POST["nif"]) ? null : data_input($_POST["nif"], ENT_NOQUOTES);
     $direccion     = empty($_POST["direccion"]) ? null : data_input($_POST["direccion"], ENT_NOQUOTES);
@@ -63,6 +69,7 @@ if (isset($_POST["alta-client"])) {
         $stmt = $conn->prepare($sql);
 
         $stmt->bindValue(":nombre", $nombre, PDO::PARAM_STR);
+        $stmt->bindValue(":email", $email, PDO::PARAM_STR);
 
         // si son NULL, pasamos PDO::PARAM_NULL
         $stmt->bindValue(":telefono", $telefono, $telefono === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
@@ -71,7 +78,7 @@ if (isset($_POST["alta-client"])) {
         $stmt->bindValue(":tipo_rol", $tipoUsuario, PDO::PARAM_STR);
         $stmt->bindValue(":locale", $locale, PDO::PARAM_STR);
 
-        $stmt->bindValue(":email", $email, $email === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+
         $stmt->bindValue(":empresa", $empresa, $empresa === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
         $stmt->bindValue(":nif", $nif, $nif === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
         $stmt->bindValue(":direccion", $direccion, $direccion === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
@@ -92,7 +99,6 @@ if (isset($_POST["alta-client"])) {
             echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
             echo 'Les dades no s\'han transmès correctament.</div>';
         }
-
     } else {
         // Error > bloqueja i mostra avis
         echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</strong></h4>';
@@ -119,15 +125,15 @@ if ($codi_resposta == 2) {
     echo '</div>';
 
     echo '<div class="col-md-4">';
-    echo '<label>Idioma (obligatori):</label>';
-    echo '<select class="form-control" id="locale" name="locale" required>';
+    echo '<label>Idioma preferit del client (obligatori):</label>';
+    echo '<select class="form-select" id="locale" name="locale" required>';
 
     $locales = [
         'ca' => 'Català',
-        'es' => 'Español',
-        'fr' => 'Français',
-        'en' => 'English',
-        'it' => 'Italiano'
+        'es' => 'Espanyol',
+        'fr' => 'Francès',
+        'en' => 'Anglès',
+        'it' => 'Italià'
     ];
 
     $localeActual = $_POST["locale"] ?? 'es';
@@ -140,15 +146,16 @@ if ($codi_resposta == 2) {
     echo '</select>';
     echo '</div>';
 
-    echo '<hr>';
-
-    // --- Nuevos inputs (opcionales) ---
-    echo '<div class="col-md-6">';
-    echo '<label>Email:</label>';
+    echo '<div class="col-md-4">';
+    echo '<label>Email (obligatori):</label>';
     echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars($_POST["email"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-6">';
+    echo '<hr>';
+    echo '<h5>Dades del client opcionals</h5>';
+
+    // --- Nuevos inputs (opcionales) ---
+    echo '<div class="col-md-4">';
     echo '<label>Empresa:</label>';
     echo '<input type="text" class="form-control" id="empresa" name="empresa" value="' . htmlspecialchars($_POST["empresa"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
@@ -168,12 +175,12 @@ if ($codi_resposta == 2) {
     echo '<input type="text" class="form-control" id="ciudad" name="ciudad" value="' . htmlspecialchars($_POST["ciudad"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Codi postal:</label>';
     echo '<input type="text" class="form-control" id="codigo_postal" name="codigo_postal" value="' . htmlspecialchars($_POST["codigo_postal"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>País:</label>';
     echo '<input type="text" class="form-control" id="pais" name="pais" value="' . htmlspecialchars($_POST["pais"] ?? "", ENT_QUOTES) . '">';
     echo '</div>';
