@@ -1,5 +1,15 @@
 <?php
-$idClient = $params['idClient'];
+
+if (!preg_match('#/client/([0-9]+)$#', $path, $matches)) {
+    http_response_code(400);
+    die('ID de cliente no encontrado');
+}
+
+$idClient = (int)$matches[1];
+if ($idClient <= 0) {
+    http_response_code(400);
+    die('ID de cliente inválido');
+}
 
 global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';

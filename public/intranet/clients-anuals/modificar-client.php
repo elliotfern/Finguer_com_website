@@ -196,7 +196,7 @@ echo '</div>';
 // locale
 echo '<div class="col-md-3">';
     echo '<label>Idioma preferit del client <span class="text-danger">*</span></label>';
-echo '<select class="form-control" id="locale" name="locale" required>';
+echo '<select class="form-select" id="locale" name="locale" required>';
 
 $locales = [
     'ca' => 'Català',
