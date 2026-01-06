@@ -4,12 +4,12 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 ?>
 
-<div class='container' style='margin-bottom:100px'>
-
-
+<div class='container'>
     <h2>Estat 1: Reserves clients anuals pendents d'entrar al parking</h2>
     <h4>Ordenat segons data entrada vehicle</h4>
+</div>
 
+<div class="container-fluid" style='margin-bottom:100px'>
     <div id="contenidorTaulaReserves"></div>
 
     <!-- Ventana emergente -->
@@ -36,7 +36,6 @@ require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
     <div class="container" style="margin-bottom:50px">
         <h5 id="numReserves"></h5>
     </div>
-
 </div>
 
 <style>
