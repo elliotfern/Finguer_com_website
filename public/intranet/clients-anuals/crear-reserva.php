@@ -10,7 +10,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
 
 echo "<div class='container' style='margin-bottom:100px'>";
-echo "<h3>Creació reserva de client Abonament anual</h3>";
+echo "<h3>Creació reserva de client amb abonament anual</h3>";
 
 $codi_resposta = 2;
 
@@ -130,7 +130,6 @@ if (isset($_POST["alta-reserva"])) {
             echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
             echo 'Les dades no s\'han transmès correctament.</div>';
         }
-
     } else {
         echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</strong></h4>';
         echo 'Controla que el client i la data/hora d\'entrada siguin correctes (obligatoris).</div>';
@@ -143,10 +142,8 @@ if ($codi_resposta == 2) {
 
     echo '<form action="" method="post" id="alta-reserva" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
 
-    echo "<h5>Selecciona un client (camp obligatori):</h5>";
-
-    echo '<div class="col-md-6">';
-    echo '<label>Nom client (*):</label>';
+    echo '<div class="col-md-4">';
+    echo '<label>Selecciona un client anual (obligatori):</label>';
     echo '<select class="form-select" name="idClient" id="idClient" required>';
     echo '<option value="" disabled ' . (empty($post['idClient']) ? 'selected' : '') . '>Selecciona el client:</option>';
 
@@ -171,46 +168,41 @@ if ($codi_resposta == 2) {
     echo '</select>';
     echo "</div>";
 
-    echo "<hr>";
-    echo "<h5>Aquests camps són opcionals, els pots modificar més endavant:</h5>";
-
-    // Mantenemos el select solo a nivel UI si lo quieres, pero NO lo usaremos en backend (siempre tipo=3)
-    // Si prefieres ocultarlo, lo quitamos.
     echo '<div class="col-md-4">';
-    echo '<label>Tipo reserva:</label>';
+    echo '<label>Tipus de reserva:</label>';
     echo '<select class="form-select" name="tipo_ui" id="tipo_ui" disabled>';
-    echo "<option value='3' selected>Client anual (3)</option>";
+    echo "<option value='3' selected>Client anual</option>";
     echo '</select>';
     echo "</div>";
 
-    echo '<div class="col-md-4">';
-    echo '<label>Data entrada (*):</label>';
+    echo "<hr>";
+
+    echo '<div class="col-md-3">';
+    echo '<label>Data entrada (obligatori):</label>';
     echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" required value="' . htmlspecialchars($post['diaEntrada'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
-    echo '<label>Hora entrada (*):</label>';
+    echo '<div class="col-md-3">';
+    echo '<label>Hora entrada (obligatori):</label>';
     echo '<input type="time" class="form-control" id="horaEntrada" name="horaEntrada" required value="' . htmlspecialchars($post['horaEntrada'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo "<hr>";
+    echo "<h5>Aquests camps són opcionals, els pots modificar més endavant:</h5>";
+
+    echo '<div class="col-md-3">';
     echo '<label>Data sortida:</label>';
     echo '<input type="date" class="form-control" id="diaSalida" name="diaSalida" value="' . htmlspecialchars($post['diaSalida'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Hora sortida:</label>';
     echo '<input type="time" class="form-control" id="horaSalida" name="horaSalida" value="' . htmlspecialchars($post['horaSalida'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
-    echo '<div class="col-md-4">';
+    echo '<div class="col-md-3">';
     echo '<label>Vol:</label>';
     echo '<input type="text" class="form-control" id="vuelo" name="vuelo" value="' . htmlspecialchars($post['vuelo'] ?? '', ENT_QUOTES) . '">';
-    echo '</div>';
-
-    echo '<div class="col-md-6">';
-    echo '<label>Notes:</label>';
-    echo '<input type="text" class="form-control" id="notes" name="notes" value="' . htmlspecialchars($post['notes'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
     echo '<div class="col-md-3">';
@@ -223,15 +215,19 @@ if ($codi_resposta == 2) {
     echo '<input type="text" class="form-control" id="matricula" name="matricula" value="' . htmlspecialchars($post['matricula'] ?? '', ENT_QUOTES) . '">';
     echo '</div>';
 
+    echo '<div class="col-md-12">';
+    echo '<label>Notes:</label>';
+    echo '<input type="text" class="form-control" id="notes" name="notes" value="' . htmlspecialchars($post['notes'] ?? '', ENT_QUOTES) . '">';
+    echo '</div>';
+
     echo "<div class='col-12'>";
     echo "<button id='alta-reserva' name='alta-reserva' type='submit' class='btn btn-primary'>Alta reserva</button> ";
     echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
     echo "</div>";
 
     echo "</form>";
-
 } else {
-    echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+    echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
 }
 
 echo '</div></div>';

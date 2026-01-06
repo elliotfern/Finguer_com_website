@@ -185,7 +185,7 @@ if ($codi_resposta == 2) {
 
     echo "</form>";
 } else {
-    echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+    echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
 }
 
 echo '</div>

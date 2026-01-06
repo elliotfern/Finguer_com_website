@@ -16,7 +16,7 @@ if (is_numeric($idClient)) {
 
         // consulta general reserves 
         $sql = "SELECT c.nombre
-        FROM usuaris AS c
+        FROM usuarios AS c
         WHERE c.id=$idClient_old";
 
         $pdo_statement = $conn->prepare($sql);
@@ -27,11 +27,11 @@ if (is_numeric($idClient)) {
         }
 
         echo "<h4>Client: " . $nom_old . " </h4>";
-        echo "<h5>Eliminació del client</h5>";
+        echo "<h5>Eliminació del client abonament anual</h5>";
 
         if (isset($_POST["remove-client"])) {
             $emailSent = true;
-            $sql = "DELETE FROM usuaris
+            $sql = "DELETE FROM usuarios
                             WHERE id=:id";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":id", $idClient_old, PDO::PARAM_INT);
@@ -64,7 +64,7 @@ if (is_numeric($idClient)) {
 
             echo "</form>";
         } else {
-            echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+            echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
         }
     } else {
         echo "Error: aquest ID no és vàlid";

@@ -246,7 +246,7 @@ echo '</div>';
 
 echo "<div class='col-12'>";
 echo "<button id='update-client' name='update-client' type='submit' class='btn btn-primary'>Modifica client</button> ";
-echo '<a href="' . APP_WEB . '/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
+echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
 echo "</div>";
 
 echo "</form>";
