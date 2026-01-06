@@ -10,30 +10,51 @@ echo "<div class='container'>";
 <h4>Ordenat segons data sortida vehicle</h4>
 
 <?php
-// consulta general reserves 
-$pdo_statement = $conn->prepare("SELECT rc1.idReserva,
-    rc1.diaSalida AS 'dataSortida',
-    rc1.horaEntrada AS 'HoraEntrada',
-    rc1.horaSalida AS 'HoraSortida',
-    rc1.diaEntrada AS 'dataEntrada',
-    rc1.matricula AS 'matricula',
-    rc1.vehiculo AS 'modelo',
-    rc1.vuelo AS 'vuelo',
-    rc1.tipo AS 'tipo',
-    rc1.checkIn,
-    rc1.checkOut,
-    rc1.notes,
-    rc1.limpieza,
-    rc1.id,
-    c.nombre,
-    c.telefono
-    FROM reserves_parking AS rc1
-    LEFT JOIN usuaris AS c ON rc1.idClient = c.id
-    WHERE rc1.checkIn = 1 AND rc1.idReserva = 1 AND c.tipo_rol = 'cliente_anual'
-    GROUP BY rc1.id
-    ORDER BY rc1.diaSalida ASC, rc1.horaSalida  ASC");
+
+$sql = "
+SELECT
+    r.id,
+    r.localizador,
+    r.entrada_prevista,
+    r.salida_prevista,
+    r.vehiculo,
+    r.matricula,
+    r.vuelo,
+    r.tipo,
+    r.canal,
+    r.notas,
+    r.estado,
+    r.estado_vehiculo,
+    u.nombre AS client_nombre,
+    u.telefono AS client_telefono
+FROM parking_reservas r
+LEFT JOIN usuarios u ON u.id = r.usuario_id
+WHERE
+    u.tipo_rol = 'cliente_anual'
+    AND r.estado = 'anual'
+    AND r.estado_vehiculo = 'dentro'
+ORDER BY r.salida_prevista ASC
+";
+
+$pdo_statement = $conn->prepare($sql);
 $pdo_statement->execute();
-$result = $pdo_statement->fetchAll();
+$result = $pdo_statement->fetchAll(PDO::FETCH_ASSOC);
+
+function fmtFechaHora(?string $dt): array
+{
+    $dt = trim((string)($dt ?? ''));
+    if ($dt === '' || $dt === '0000-00-00 00:00:00') {
+        return ['Pendent', ''];
+    }
+
+    $ts = strtotime($dt);
+    if (!$ts) {
+        return ['Pendent', ''];
+    }
+
+    return [date('d-m-Y', $ts), date('H:i', $ts)];
+}
+
 if (!empty($result)) {
 ?>
     <div class="container">
@@ -55,133 +76,98 @@ if (!empty($result)) {
                     </tr>
                 </thead>
                 <tbody>
-
-                    <?php
-
-                    foreach ($result as $row) {
-                        $matricula1 = $row['matricula'];
-                        $modelo1 = $row['modelo'];
-                        $vuelo1 = $row['vuelo'];
-
-                        $horaEntrada2 = $row['HoraEntrada'];
-                        $horaSortida2 = $row['HoraSortida'];
-
-                        $dataEntrada = $row['dataEntrada'];
-                        $anyEntrada = date('Y', strtotime($dataEntrada));
-                        $dataEntrada4 = date("d-m-Y", strtotime($dataEntrada));
-
-                        $dataSortida = $row['dataSortida'];
-                        $anySortida = date('Y', strtotime($dataSortida));
-                        $dataSortida4 = date("d-m-Y", strtotime($dataSortida));
-
-                        $tipo = $row['tipo'];
-                        if ($tipo == 1) {
-                            $tipoReserva2 = "Finguer Class";
-                        } elseif ($tipo == 2) {
-                            $tipoReserva2 = "Gold Finguer Class";
-                        } else {
-                            $tipoReserva2 = "Finguer Class";
-                        }
-                        $limpieza = $row['limpieza'];
-                        if ($limpieza == 1) {
-                            $limpieza2 = "Servicio de limpieza exterior";
-                        } elseif ($limpieza == 2) {
-                            $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-                        } elseif ($limpieza == 3) {
-                            $limpieza2 = "Limpieza PRO";
-                        } else {
-                            $limpieza2 = "-";
-                        }
-
-                        $idReserva = $row['idReserva'];
-                        $checkIn = $row['checkIn'];
-                        $checkOut = $row['checkOut'];
-                        $notes = $row['notes'];
-                        $nom = $row['nombre'];
-                        $telefon = $row['telefono'];
-                        $id = $row['id'];
-                        echo "<tr>";
-                        echo "<td>";
-                        if ($idReserva == 1) {
-                            echo "<button type='button' class='btn btn-primary btn-sm'>Client anual</button>";
-                        } else {
-                            echo "" . $idReserva . "</a>";
-                        }
-
-                        echo "<td>" . $tipoReserva2 . "</td>";
-                        echo "<td>";
-                        if ($idReserva == 1) {
-                            echo " " . $nom . " // " . $telefon . " ";
-                        }
-                        echo "</td>";
-                        echo "<td>";
-                        if ($anyEntrada == 1970) {
-                            echo "Pendent";
-                        } else {
-                            echo "" . $dataEntrada4 . " // " . $horaEntrada2 . "";
-                        }
-                        echo "</td>";
-                        echo "<td>";
-                        if ($anySortida == 1970) {
-                            echo "Pendent";
-                        } else {
-                            echo "" . $dataSortida4 . " // " . $horaSortida2 . "";
-                        }
-                        echo "</td>";
-                        echo "<td>" . $modelo1 . " // <a href='" . APP_WEB . "/reserva/modificar/vehicle/" . $id . "'>" . $matricula1 . "</a></td>";
-                        echo "<td>";
-                        if (empty($vuelo1)) {
-                            echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $id . "'>Afegir vol</a>";
-                        } else {
-                            echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $id . "'>" . $vuelo1 . "</a>";
-                        }
-                        echo "</td>";
-                        echo "<td>" . $limpieza2 . "</td>";
-                        echo "<td>";
-                        if ($checkIn == 1) {
-                            echo "<a href='" . APP_WEB . "/reserva/fer/check-out/" . $id . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Check-Out</a>";
-                        }
-                        echo "</td>";
-                        echo "<td>";
-                        if (empty($idReserva)) {
-                            echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear notes</a>";
-                        } elseif (!empty($idReserva) && empty($notes)) {
-                            echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear notes</a>";
-                        } elseif (!empty($notes)) {
-                            echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-danger btn-sm' role='button' aria-pressed='true'>Veure notes</a>";
-                        }
-
-                        echo "</td>";
-                        echo "<td>";
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/reserva/" . $id . "' class='btn btn-dark btn-sm' role='button' aria-pressed='true'>Modificar reserva</a>";
-                        echo "</td>";
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    echo "</div>";
-
-
-
-                    ?>
                 <?php
-                $sql2 = "SELECT COUNT(r.idReserva) AS numero
-        FROM reserves_parking as r
-        WHERE r.checkIn = 1 AND r.idReserva = 1";
-
-                $pdo_statement = $conn->prepare($sql2);
-                $pdo_statement->execute();
-                $result = $pdo_statement->fetchAll();
                 foreach ($result as $row) {
-                    $numero = $row['numero'];
-                }
 
-                echo "<h5>Total reserves actualment al parking: " . $numero . " </h5>";
-                echo "</div>";
-            } else {
-                echo "En aquests moments no hi ha cap reserva de client anual al parking";
-            }
+                    $reservaId   = (int)$row['id'];
+                    $localizador = (string)($row['localizador'] ?? '');
 
-            echo "</div>";
+                    $matricula1 = (string)($row['matricula'] ?? '');
+                    $modelo1    = (string)($row['vehiculo'] ?? '');
+                    $vuelo1     = (string)($row['vuelo'] ?? '');
 
-                ?>
+                    [$dataEntrada, $horaEntrada] = fmtFechaHora($row['entrada_prevista'] ?? null);
+                    [$dataSortida, $horaSortida] = fmtFechaHora($row['salida_prevista'] ?? null);
+
+                    // tipo ahora varchar; anual suele ser "3"
+                    $tipoRaw = (string)($row['tipo'] ?? '');
+                    if ($tipoRaw === '2') {
+                        $tipoReserva2 = "Gold Finguer Class";
+                    } elseif ($tipoRaw === '1') {
+                        $tipoReserva2 = "Finguer Class";
+                    } elseif ($tipoRaw === '3') {
+                        $tipoReserva2 = "Client anual";
+                    } else {
+                        $tipoReserva2 = $tipoRaw !== '' ? $tipoRaw : "Client anual";
+                    }
+
+                    $limpieza2 = "-"; // ya no existe en la tabla nueva
+                    $notes = (string)($row['notas'] ?? '');
+
+                    $nom = (string)($row['client_nombre'] ?? '');
+                    $telefon = (string)($row['client_telefono'] ?? '');
+
+                    $estadoVehiculo = (string)($row['estado_vehiculo'] ?? '');
+
+                    echo "<tr>";
+
+                    // Reserva
+                    echo "<td>";
+                    echo "<button type='button' class='btn btn-primary btn-sm'>Client anual</button>";
+                    if ($localizador !== '') {
+                        echo "<div style='font-size:12px;opacity:.8'>Loc: " . htmlspecialchars($localizador, ENT_QUOTES) . "</div>";
+                    }
+                    echo "</td>";
+
+                    // Tipus
+                    echo "<td>" . htmlspecialchars($tipoReserva2, ENT_QUOTES) . "</td>";
+
+                    // Client // tel
+                    echo "<td>" . htmlspecialchars($nom, ENT_QUOTES) . " // " . htmlspecialchars($telefon, ENT_QUOTES) . "</td>";
+
+                    // Entrada
+                    echo "<td>";
+                    if ($dataEntrada === 'Pendent') {
+                        echo "Pendent";
+                    } else {
+                        echo htmlspecialchars($dataEntrada, ENT_QUOTES) . " // " . htmlspecialchars($horaEntrada, ENT_QUOTES);
+                    }
+                    echo "</td>";
+
+                    // Sortida
+                    echo "<td>";
+                    if ($dataSortida === 'Pendent') {
+                        echo "Pendent";
+                    } else {
+                        echo htmlspecialchars($dataSortida, ENT_QUOTES) . " // " . htmlspecialchars($horaSortida, ENT_QUOTES);
+                    }
+                    echo "</td>";
+
+                    // Vehicle // matricula
+                    echo "<td>" . htmlspecialchars($modelo1, ENT_QUOTES) . " // <a href='" . APP_WEB . "/reserva/modificar/vehicle/" . $reservaId . "'>" . htmlspecialchars($matricula1, ENT_QUOTES) . "</a></td>";
+
+                    // Vuelo
+                    echo "<td>";
+                    if ($vuelo1 === '') {
+                        echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $reservaId . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Afegir vol</a>";
+                    } else {
+                        echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $reservaId . "'>" . htmlspecialchars($vuelo1, ENT_QUOTES) . "</a>";
+                    }
+                    echo "</td>";
+
+                    // Neteja
+                    echo "<td>" . htmlspecialchars($limpieza2, ENT_QUOTES) . "</td>";
+
+                    // Accions (Check-Out)
+                    echo "<td>";
+                    if ($estadoVehiculo === 'dentro') {
+                        echo "<a href='" . APP_WEB . "/reserva/fer/check-out/" . $reservaId . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Check-Out</a>";
+                    }
+                    echo "</td>";
+
+                    // Notes
+                    echo "<td>";
+                    if ($notes === '') {
+                        echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $reservaId . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear notes</a>";
+                    } else {
+                        echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $reservaId . "' class='btn btn-danger btn-sm' role='button' aria-pressed='true'>Veure_
