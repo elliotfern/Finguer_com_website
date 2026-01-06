@@ -2,187 +2,64 @@
 global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
-
-echo "<div class='container'>";
 ?>
 
-<h2>Estat 1: Reserves clients anuals pendents d'entrar al parking</h2>
-<h4>Ordenat segons data entrada vehicle</h4>
+<div class='container' style='margin-bottom:100px'>
 
-<?php
-// consulta general reserves 
-$pdo_statement = $conn->prepare("SELECT rc1.idReserva,
-    rc1.firstName AS 'clientNom',
-    rc1.lastName AS 'clientCognom',
-    rc1.tel AS 'telefono',
-    rc1.diaSalida AS 'dataSortida',
-    rc1.horaEntrada AS 'HoraEntrada',
-    rc1.horaSalida AS 'HoraSortida',
-    rc1.diaEntrada AS 'dataEntrada',
-    rc1.matricula AS 'matricula',
-    rc1.vehiculo AS 'modelo',
-    rc1.vuelo AS 'vuelo',
-    rc1.tipo AS 'tipo',
-    rc1.checkIn,
-    rc1.checkOut,
-    rc1.notes,
-    rc1.limpieza,
-    rc1.id,
-    c.nombre,
-    c.telefono
-    FROM reserves_parking AS rc1
-    LEFT JOIN usuaris AS c ON rc1.idClient = c.id
-    WHERE rc1.checkIn = 5 AND rc1.idReserva = 1 AND c.tipo_rol = 'cliente_anual'
-    ORDER BY rc1.diaEntrada ASC, rc1.horaEntrada ASC");
-$pdo_statement->execute();
-$result = $pdo_statement->fetchAll();
 
-if (!empty($result)) {
-?>
-    <div class="container">
-        <div class='table-responsive'>
-            <table class='table table-striped'>
-                <thead class="table-dark">
-                    <tr>
-                        <th>Reserva</th>
-                        <th>Tipus</th>
-                        <th>Client // tel.</th>
-                        <th>Entrada &darr;</th>
-                        <th>Sortida</th>
-                        <th>Vehicle</th>
-                        <th>Vol tornada</th>
-                        <th>Neteja</th>
-                        <th>Accions</th>
-                        <th>Notes</th>
-                        <th>Modifica reserva</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach ($result as $row) {
-                    $matricula1 = $row['matricula'];
-                    $modelo1 = $row['modelo'];
-                    $vuelo1 = $row['vuelo'];
+    <h2>Estat 1: Reserves clients anuals pendents d'entrar al parking</h2>
+    <h4>Ordenat segons data entrada vehicle</h4>
 
-                    $horaEntrada2 = $row['HoraEntrada'];
-                    $horaSortida2 = $row['HoraSortida'];
+    <div id="contenidorTaulaReserves"></div>
 
-                    $dataEntrada = $row['dataEntrada'];
-                    $anyEntrada = date('Y', strtotime($dataEntrada));
-                    $dataEntrada4 = date("d-m-Y", strtotime($dataEntrada));
+    <!-- Ventana emergente -->
+    <div id="ventanaEmergente" class="ventana" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+        <div class="contenidoVentana">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-12 d-flex flex-column justify-content-between gap-3">
+                        <button id="enlace1" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
 
-                    $dataSortida = $row['dataSortida'];
-                    $anySortida = date('Y', strtotime($dataSortida));
-                    $dataSortida4 = date("d-m-Y", strtotime($dataSortida));
+                        <button id="enlace2" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
 
-                    $tipo = $row['tipo'];
-                    if ($tipo == 1) {
-                        $tipoReserva2 = "Finguer Class";
-                    } elseif ($tipo == 2) {
-                        $tipoReserva2 = "Gold Finguer Class";
-                    } else {
-                        $tipoReserva2 = "Finguer Class";
-                    }
-                    $limpieza = $row['limpieza'];
-                    if ($limpieza == 1) {
-                        $limpieza2 = "Servicio de limpieza exterior";
-                    } elseif ($limpieza == 2) {
-                        $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-                    } elseif ($limpieza == 3) {
-                        $limpieza2 = "Limpieza PRO";
-                    } else {
-                        $limpieza2 = "-";
-                    }
+                        <a href="#" id="enlace3" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
 
-                    $idReserva = $row['idReserva'];
-                    $checkIn = $row['checkIn'];
-                    $checkOut = $row['checkOut'];
-                    $notes = $row['notes'];
+                        <a href="#" id="enlace4" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</a>
 
-                    $telefono = $row['telefono'];
-                    $nom = $row['nombre'];
-                    $id = $row['id'];
+                        <button class="btn btn-danger tancar-finestra-btn w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    echo "<tr>";
-                    echo "<td>";
-                    if ($idReserva == 1) {
-                        echo "<button type='button' class='btn btn-primary btn-sm'>Client anual</button>";
-                    } else {
-                        echo "" . $idReserva . "</a>";
-                    }
+    <div class="container" style="margin-bottom:50px">
+        <h5 id="numReserves"></h5>
+    </div>
 
-                    echo "</td>";
-                    echo "<td>" . $tipoReserva2 . "</td>";
-                    echo "<td>";
-                    if ($idReserva == 1) {
-                        echo " " . $nom . " // " . $telefono . " ";
-                    }
-                    echo "</td>";
-                    echo "<td>";
-                    if ($anyEntrada == 1970) {
-                        echo "Pendent";
-                    } else {
-                        echo "" . $dataEntrada4 . " // " . $horaEntrada2 . "";
-                    }
-                    echo "</td>";
-                    echo "<td>";
-                    if ($anySortida == 1970) {
-                        echo "Pendent";
-                    } else {
-                        echo "" . $dataSortida4 . " // " . $horaSortida2 . "";
-                    }
-                    echo "</td>";
-                    echo "<td>" . $modelo1 . " // <a href='" . APP_WEB . "/reserva/modificar/vehicle/" . $id . "'>" . $matricula1 . "</a></td>";
-                    echo "<td>";
-                    if (empty($vuelo1)) {
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $id . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Afegir vol</a>";
-                    } else {
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/vol/" . $id . "'>" . $vuelo1 . "</a>";
-                    }
-                    echo "</td>";
-                    echo "<td>" . $limpieza2 . "</td>";
-                    echo "<td>";
-                    if ($checkIn == 5) {
-                        echo "<a href='" . APP_WEB . "/reserva/fer/check-in/" . $id . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Check-In</a>";
-                    }
-                    echo "</td>";
-                    echo "<td>";
-                    if (empty($idReserva)) {
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear notes</a>";
-                    } elseif (!empty($idReserva) && empty($notes)) {
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear notes</a>";
-                    } elseif (!empty($notes)) {
-                        echo "<a href='" . APP_WEB . "/reserva/modificar/nota/" . $id . "' class='btn btn-danger btn-sm' role='button' aria-pressed='true'>Veure notes</a>";
-                    }
+</div>
 
-                    echo "</td>";
-                    echo "<td>";
-                    echo "<a href='" . APP_WEB . "/reserva/modificar/reserva/" . $id . "' class='btn btn-dark btn-sm' role='button' aria-pressed='true'>Modificar reserva</a>";
-                    echo "</td>";
-                    echo "</tr>";
-                }
-                echo "</tbody>";
-                echo "</table>";
-                echo "</div>";
-            }
-                ?>
+<style>
+    /* Contenedor con scroll vertical si la tabla es muy alta */
+    .table-responsive {
+        max-height: 90vh;
+        /* ajusta la altura que quieras */
+        overflow-y: auto;
+        /* scroll vertical */
+    }
 
-                <?php
-                $sql2 = "SELECT COUNT(r.idReserva) AS numero
-            FROM reserves_parking as r
-            WHERE r.checkIn = 5 AND r.idReserva = 1";
+    /* Cabecera fija */
+    .table-responsive thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        /* para que quede por encima del contenido */
+    }
 
-                $pdo_statement = $conn->prepare($sql2);
-                $pdo_statement->execute();
-                $result = $pdo_statement->fetchAll();
-                foreach ($result as $row) {
-                    $numero = $row['numero'];
-                }
-
-                echo "<h5>Total reserves pendents d'entrar al parking: " . $numero . " </h5>";
-
-                echo "</div>";
-
-                echo "</div>";
-
-                ?>
+    /* Aseguramos fondo para que no se vea el texto de atrás al hacer scroll */
+    .table-responsive thead th {
+        background-color: #212529;
+        /* mismo color que .table-dark de Bootstrap */
+        color: #fff;
+    }
+</style>

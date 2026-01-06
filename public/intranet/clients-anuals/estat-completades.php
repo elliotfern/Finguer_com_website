@@ -2,174 +2,64 @@
 global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
-
-echo "<div class='container'>";
 ?>
 
-<h2>Estat 3: Reserves clients anuals completades amb check-out del parking</h2>
-<h4>Ordenat segons data sortida vehicle</h4>
+<div class='container' style='margin-bottom:100px'>
 
-<?php
-// consulta general reserves 
-$pdo_statement = $conn->prepare("SELECT rc1.idReserva,
-    rc1.firstName AS 'clientNom',
-    rc1.lastName AS 'clientCognom',
-    rc1.tel AS 'telefono',
-    rc1.diaSalida AS 'dataSortida',
-    rc1.horaEntrada AS 'HoraEntrada',
-    rc1.horaSalida AS 'HoraSortida',
-    rc1.diaEntrada AS 'dataEntrada',
-    rc1.matricula AS 'matricula',
-    rc1.vehiculo AS 'modelo',
-    rc1.vuelo AS 'vuelo',
-    rc1.tipo AS 'tipo',
-    rc1.checkIn,
-    rc1.checkOut,
-    rc1.notes,
-    rc1.limpieza,
-    rc1.id,
-    c.nombre,
-    c.telefono
-    FROM parking_reservas AS rc1
-    LEFT JOIN usuarios AS c ON rc1.idClient = c.id
-    WHERE rc1.checkOut = 2 AND rc1.idReserva = 1 AND c.tipo_rol = 'cliente_anual'
-    GROUP BY rc1.id
-    ORDER BY rc1.diaSalida DESC");
-$pdo_statement->execute();
-$result = $pdo_statement->fetchAll();
 
-if (!empty($result)) {
-?>
-    <div class="container">
-        <div class='table-responsive'>
-            <table class='table table-striped'>
-                <thead class="table-dark">
-                    <tr>
-                        <th>Reserva</th>
-                        <th>Tipus</th>
-                        <th>Client // tel.</th>
-                        <th>Entrada</th>
-                        <th>Sortida &darr;</th>
-                        <th>Vehicle</th>
-                        <th>Vol tornada</th>
-                        <th>Neteja</th>
-                        <th>Accions</th>
-                    </tr>
-                </thead>
-                <tbody>
+    <h2>Estat 3: Reserves clients anuals completades amb check-out del parking</h2>
+    <h4>Ordenat segons data sortida vehicle</h4>
 
-                <?php
-                foreach ($result as $row) {
-                    $matricula1 = $row['matricula'];
-                    $modelo1 = $row['modelo'];
-                    $vuelo1 = $row['vuelo'];
+    <div id="contenidorTaulaReserves"></div>
 
-                    $horaEntrada2 = $row['HoraEntrada'];
-                    $horaSortida2 = $row['HoraSortida'];
+    <!-- Ventana emergente -->
+    <div id="ventanaEmergente" class="ventana" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+        <div class="contenidoVentana">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-12 d-flex flex-column justify-content-between gap-3">
+                        <button id="enlace1" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
 
-                    if (isset($row['dataEntrada'])) {
-                        $dataEntrada = $row['dataEntrada'];
-                        $anyEntrada = date('Y', strtotime($dataEntrada));
-                        $dataEntrada4 = date("d-m-Y", strtotime($dataEntrada));
-                    } else {
-                        $dataEntrada4 = "";
-                    }
+                        <button id="enlace2" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
 
-                    if (isset($row['dataSortida'])) {
-                        $dataSortida = $row['dataSortida'];
-                        $anySortida = date('Y', strtotime($dataSortida));
-                        $dataSortida4 = date("d-m-Y", strtotime($dataSortida));
-                    } else {
-                        $dataSortida4 = "";
-                    }
+                        <a href="#" id="enlace3" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
 
-                    $tipo = $row['tipo'];
-                    if ($tipo == 1) {
-                        $tipoReserva2 = "Finguer Class";
-                    } elseif ($tipo == 2) {
-                        $tipoReserva2 = "Gold Finguer Class";
-                    } else {
-                        $tipoReserva2 = "Finguer Class";
-                    }
-                    $limpieza = $row['limpieza'];
-                    if ($limpieza == 1) {
-                        $limpieza2 = "Servicio de limpieza exterior";
-                    } elseif ($limpieza == 2) {
-                        $limpieza2 = "Servicio de lavado exterior + aspirado tapicería interior";
-                    } elseif ($limpieza == 3) {
-                        $limpieza2 = "Limpieza PRO";
-                    } else {
-                        $limpieza2 = "-";
-                    }
+                        <a href="#" id="enlace4" class="btn btn-secondary w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Eliminar reserva</a>
 
-                    $idReserva = $row['idReserva'];
-                    $checkIn = $row['checkIn'];
-                    $checkOut = $row['checkOut'];
-                    $notes = $row['notes'];
-                    $nom = $row['nombre'];
-                    $telefon = $row['telefono'];
-                    $id = $row['id'];
+                        <button class="btn btn-danger tancar-finestra-btn w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    echo "<tr>";
-                    echo "<td>";
-                    if ($idReserva == 1) {
-                        echo "<button type='button' class='btn btn-primary btn-sm'>Client anual</button>";
-                    } else {
-                        echo "" . $idReserva . "</a>";
-                    }
+    <div class="container" style="margin-bottom:50px">
+        <h5 id="numReserves"></h5>
+    </div>
 
-                    echo "<td>" . $tipoReserva2 . "</td>";
-                    echo "<td>";
-                    if ($idReserva == 1) {
-                        echo " " . $nom . " // " . $telefon . " ";
-                    }
-                    echo "</td>";
-                    echo "<td>";
-                    if ($anyEntrada == 1970) {
-                        echo "Pendent";
-                    } else {
-                        echo "" . $dataEntrada4 . " // " . $horaEntrada2 . "";
-                    }
-                    echo "</td>";
-                    echo "<td>";
-                    if ($anySortida == 1970) {
-                        echo "Pendent";
-                    } else {
-                        echo "" . $dataSortida4 . " // " . $horaSortida2 . "";
-                    }
-                    echo "</td>";
-                    echo "<td>" . $matricula1 . "</td>";
-                    echo "<td>";
-                    if (empty($vuelo1)) {
-                        echo "<a href='afegir-vol.php?&id=" . $id . "' class='btn btn-secondary btn-sm' role='button' aria-pressed='true'>Afegir vol</a>";
-                    } else {
-                        echo $vuelo1;
-                    }
-                    echo "</td>";
-                    echo "<td>" . $limpieza2 . "</td>";
-                    echo "<td>Reserva completada</td>";
-                    echo "</tr>";
-                }
-                echo "</tbody>";
-                echo "</table>";
-                echo "</div>";
+</div>
 
-                $sql2 = "SELECT COUNT(r.idReserva) AS numero
-    FROM reserves_parking as r
-    WHERE r.checkOut = 2 AND r.idReserva = 1";
+<style>
+    /* Contenedor con scroll vertical si la tabla es muy alta */
+    .table-responsive {
+        max-height: 90vh;
+        /* ajusta la altura que quieras */
+        overflow-y: auto;
+        /* scroll vertical */
+    }
 
-                $pdo_statement = $conn->prepare($sql2);
-                $pdo_statement->execute();
-                $result = $pdo_statement->fetchAll();
-                foreach ($result as $row) {
-                    $numero = $row['numero'];
-                }
+    /* Cabecera fija */
+    .table-responsive thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        /* para que quede por encima del contenido */
+    }
 
-                echo "<h5>Total reserves completades: " . $numero . " </h5>";
-                echo "</div>";
-            } else {
-                echo "En aquests moments no hi ha cap reserva de client anual completada";
-            }
-
-            echo "</div>";
-                ?>
+    /* Aseguramos fondo para que no se vea el texto de atrás al hacer scroll */
+    .table-responsive thead th {
+        background-color: #212529;
+        /* mismo color que .table-dark de Bootstrap */
+        color: #fff;
+    }
+</style>

@@ -100,6 +100,25 @@ if (window.location.pathname === '/control/reserves-completades') {
   reserves(estatParking);
 }
 
+// CLIENTS ANUALS - RESERVES PENDENTS PARKING
+if (window.location.pathname === '/control/clients-anuals/pendents') {
+  const estatParking = 'pendiente_entrada';
+  reserves(estatParking, '3');
+}
+
+// CLIENTS ANUALS - RESERVES DINS AL PARKING
+// RESERVES PARKING
+if (window.location.pathname === '/control/clients-anuals/parking') {
+  const estatParking = 'dentro';
+  reserves(estatParking, '3');
+}
+
+// CLIENTS ANUALS - RESERVES PENDENTS PARKING
+if (window.location.pathname === '/control/clients-anuals/completades') {
+  const estatParking = 'salido';
+  reserves(estatParking, '3');
+}
+
 // FACTURACIO
 if (window.location.pathname === '/control/facturacio') {
   initTaulaFacturacio();
