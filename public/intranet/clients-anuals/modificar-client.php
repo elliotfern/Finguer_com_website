@@ -167,26 +167,35 @@ echo '<h5>Dades obligatòries del client:</h5>';
 
 // nombre
 echo '<div class="col-md-3">';
-echo '<label>Nom i cognoms(obligatori):</label>';
+echo '<label>Nom i cognoms <span class="text-danger">*</span></label>';
 echo '<input type="text" class="form-control" id="nombre" name="nombre" required value="' . htmlspecialchars((string)$nom_old, ENT_QUOTES) . '">';
+    echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
 echo '</div>';
 
 // telefono
 echo '<div class="col-md-3">';
-   echo '<label>Telèfon (obligatori):</label>';
-echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars((string)($telefon_old ?? ''), ENT_QUOTES) . '">';
+   echo '<label>Telèfon <span class="text-danger">*</span></label>';
+echo '<input type="text" class="form-control" id="telefono" name="telefono" required value="' . htmlspecialchars((string)($telefon_old ?? ''), ENT_QUOTES) . '">';
+    echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
 echo '</div>';
 
 // anualitat
 echo '<div class="col-md-3">';
-  echo '<label>Anualitat client dia/mes/any (obligatori):</label>';
-echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars((string)($anualitat_old ?? ''), ENT_QUOTES) . '">';
+  echo '<label>Anualitat client dia/mes/any <span class="text-danger">*</span></label>';
+echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars((string)($anualitat_old ?? ''), ENT_QUOTES) . '" required>';
+    echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
 echo '</div>';
 
 
 // locale
 echo '<div class="col-md-3">';
-    echo '<label>Idioma preferit del client (obligatori):</label>';
+    echo '<label>Idioma preferit del client <span class="text-danger">*</span></label>';
 echo '<select class="form-control" id="locale" name="locale" required>';
 
 $locales = [
@@ -201,14 +210,18 @@ foreach ($locales as $code => $label) {
     echo "<option value=\"$code\" $selected>$label</option>";
 }
 echo '</select>';
+    echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
 echo '</div>';
-
-
 
 // email
 echo '<div class="col-md-3">';
-    echo '<label>Email (obligatori):</label>';
-echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars((string)($email_old ?? ''), ENT_QUOTES) . '">';
+    echo '<label>Email <span class="text-danger">*</span></label>';
+echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars((string)($email_old ?? ''), ENT_QUOTES) . '" required>';
+    echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
 echo '</div>';
 
     echo '<hr>';

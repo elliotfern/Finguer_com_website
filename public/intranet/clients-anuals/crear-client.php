@@ -113,22 +113,31 @@ if ($codi_resposta == 2) {
     echo '<h5>Dades obligatòries del client:</h5>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Nom i cognoms (obligatori):</label>';
-    echo '<input type="text" class="form-control" id="nombre" name="nombre" value="' . htmlspecialchars($_POST["nombre"] ?? "", ENT_QUOTES) . '">';
+    echo '<label>Nom i cognoms <span class="text-danger">*</span></label>';
+    echo '<input type="text" class="form-control" id="nombre" name="nombre" value="' . htmlspecialchars($_POST["nombre"] ?? "", ENT_QUOTES) . '" required>';
+        echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Telèfon (obligatori):</label>';
-    echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars($_POST["telefono"] ?? "", ENT_QUOTES) . '">';
+    echo '<label>Telèfon <span class="text-danger">*</span></label>';
+    echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars($_POST["telefono"] ?? "", ENT_QUOTES) . '" required>';
+        echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Anualitat client dia/mes/any (obligatori):</label>';
-    echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars($_POST["anualitat"] ?? "", ENT_QUOTES) . '">';
+    echo '<label>Anualitat client dia/mes/any <span class="text-danger">*</span></label>';
+    echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars($_POST["anualitat"] ?? "", ENT_QUOTES) . '" required>';
+        echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Idioma preferit del client (obligatori):</label>';
+    echo '<label>Idioma preferit del client <span class="text-danger">*</span></label>';
     echo '<select class="form-select" id="locale" name="locale" required>';
 
     $locales = [
@@ -147,11 +156,17 @@ if ($codi_resposta == 2) {
     }
 
     echo '</select>';
+        echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<div class="col-md-3">';
-    echo '<label>Email (obligatori):</label>';
-    echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars($_POST["email"] ?? "", ENT_QUOTES) . '">';
+    echo '<label>Email <span class="text-danger">*</span></label>';
+    echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars($_POST["email"] ?? "", ENT_QUOTES) . '" required>';
+        echo '<div class="form-text">
+        <span class="text-danger">*</span> Camp obligatori
+        </div>';
     echo '</div>';
 
     echo '<hr>';
