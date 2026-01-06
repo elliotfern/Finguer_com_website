@@ -101,8 +101,9 @@ if (isset($_POST["alta-client"])) {
         }
     } else {
         // Error > bloqueja i mostra avis
-        echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</strong></h4>';
-        echo 'Controla que totes les dades siguin correctes.</div>';
+        echo '<div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading"><strong>Error!</strong></h4>
+        Controla que totes les dades obligatòries siguin correctes.</div>';
     }
 }
 
