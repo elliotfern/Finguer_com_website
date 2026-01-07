@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/public/intranet/inc/header.php'; ?>
 
-<div class="container-fluid">
+<div class="container" style="margin-bottom:100px">
     <h2>Gestió clients i usuaris web</h2>
 
     <div id="contenidorTaulaClients"></div>

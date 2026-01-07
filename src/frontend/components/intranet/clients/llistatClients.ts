@@ -1,7 +1,3 @@
-// clients-users.ts
-// Tabla dinámica usuarios/clientes (Bootstrap 5) + filtros + acciones
-// NO usa `any`
-
 export type UserRole =
   | "cliente"
   | "administrador"
@@ -14,7 +10,6 @@ export interface ApiUserRow {
   email: string;
   telefono?: string;
   tipo_rol: string;
-  createdAt?: string | null;
 }
 
 interface Vp2Ok<T> {
@@ -76,7 +71,9 @@ export async function clientsUsersTable(): Promise<void> {
 
   try {
     allRows = await fetchUsers();
-    render(container);
+    renderShell(container);   // ✅ solo una vez
+    renderBody(container);    // ✅ solo tbody
+    wireEvents(container);    // ✅ eventos una vez
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Error desconegut";
     container.innerHTML = `
@@ -93,35 +90,29 @@ export async function clientsUsersTable(): Promise<void> {
 async function fetchUsers(): Promise<ApiUserRow[]> {
   const res = await fetch(API_LIST_URL, {
     method: "GET",
-    credentials: "include", // importante: cookie token HttpOnly
+    credentials: "include",
     headers: { Accept: "application/json" },
   });
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
   const json = (await res.json()) as ApiResponse<ListUsersData>;
 
   if (json.status !== "success") {
-    const msg = json.message ?? "API error";
-    throw new Error(msg);
+    throw new Error(json.message ?? "API error");
   }
 
-  const rows = json.data?.rows;
-  return Array.isArray(rows) ? rows : [];
+  return Array.isArray(json.data?.rows) ? json.data.rows : [];
 }
 
 // ------------------------------
 // Render
 // ------------------------------
-function render(container: HTMLElement): void {
-  const filtered = applyFilters(allRows);
-
+function renderShell(container: HTMLElement): void {
   container.innerHTML = `
     <div class="row g-2 align-items-center mb-3">
       <div class="col-12 col-lg-8">
-        <div class="btn-group flex-wrap" role="group" aria-label="Filtres per rol">
+        <div id="roleButtons" class="btn-group flex-wrap" role="group" aria-label="Filtres per rol">
           ${renderRoleButtons()}
         </div>
       </div>
@@ -145,34 +136,41 @@ function render(container: HTMLElement): void {
             <th style="min-width: 240px;">Email</th>
             <th style="min-width: 160px;">Telèfon</th>
             <th style="min-width: 140px;">Rol</th>
-            <th style="min-width: 180px;">Alta</th>
             <th style="min-width: 140px;">Veure reserves</th>
             <th style="min-width: 110px;">Modifica</th>
             <th style="min-width: 110px;">Elimina</th>
           </tr>
         </thead>
-        <tbody>
-          ${renderRows(filtered)}
-        </tbody>
+        <tbody id="usersTbody"></tbody>
       </table>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-2">
-      <div class="text-muted small">
-        Mostrant <strong>${filtered.length}</strong> de <strong>${allRows.length}</strong>
-      </div>
+      <div id="usersCount" class="text-muted small"></div>
     </div>
   `;
+}
 
-  wireEvents(container);
+function renderBody(container: HTMLElement): void {
+  const tbody = container.querySelector<HTMLTableSectionElement>("#usersTbody");
+  const count = container.querySelector<HTMLDivElement>("#usersCount");
+  const roleButtons = container.querySelector<HTMLDivElement>("#roleButtons");
+
+  if (!tbody || !count || !roleButtons) return;
+
+  // actualizar botones (activo/inactivo) sin re-render global
+  roleButtons.innerHTML = renderRoleButtons();
+
+  const filtered = applyFilters(allRows);
+  tbody.innerHTML = renderRows(filtered);
+
+  count.innerHTML = `Mostrant <strong>${filtered.length}</strong> de <strong>${allRows.length}</strong>`;
 }
 
 function renderRoleButtons(): string {
   const btn = (key: UserRole | "tots", label: string): string => {
     const activeClass = key === activeRole ? "btn-primary" : "btn-outline-primary";
-    return `<button type="button" class="btn ${activeClass}" data-role="${escapeHtml(
-      key
-    )}">${escapeHtml(label)}</button>`;
+    return `<button type="button" class="btn ${activeClass}" data-role="${escapeHtml(key)}">${escapeHtml(label)}</button>`;
   };
 
   return [
@@ -183,78 +181,73 @@ function renderRoleButtons(): string {
 
 function renderRows(rows: ApiUserRow[]): string {
   if (!rows.length) {
-    return `<tr><td colspan="8" class="text-center text-muted py-4">Sense resultats</td></tr>`;
+    return `<tr><td colspan="7" class="text-center text-muted py-4">Sense resultats</td></tr>`;
   }
 
-  return rows
-    .map((r) => {
-      const uuid = escapeHtml(r.uuid);
-      const nombre = escapeHtml(r.nombre);
-      const email = escapeHtml(r.email);
-      const tel = escapeHtml(r.telefono ?? "");
-      const roleNorm = normalizeRole(r.tipo_rol);
-      const role = escapeHtml(roleNorm);
-      const createdAt = escapeHtml(r.createdAt ?? "");
+  return rows.map((r) => {
+    const uuid = escapeHtml(r.uuid);
+    const nombre = escapeHtml(r.nombre);
+    const email = escapeHtml(r.email);
+    const tel = escapeHtml(r.telefono ?? "");
+    const role = escapeHtml(String(normalizeRole(r.tipo_rol)));
 
-      return `
-        <tr data-uuid="${uuid}">
-          <td>${nombre}</td>
-          <td><a href="mailto:${email}">${email}</a></td>
-          <td>${tel}</td>
-          <td><span class="badge text-bg-secondary">${role}</span></td>
-          <td>${createdAt || '<span class="text-muted">—</span>'}</td>
+    return `
+      <tr data-uuid="${uuid}">
+        <td>${nombre}</td>
+        <td><a href="mailto:${email}">${email}</a></td>
+        <td>${tel}</td>
+        <td><span class="badge text-bg-secondary">${role}</span></td>
 
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-uuid="${uuid}">
-              Veure
-            </button>
-          </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-uuid="${uuid}">Veure</button>
+        </td>
 
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit" data-uuid="${uuid}">
-              Modifica
-            </button>
-          </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit" data-uuid="${uuid}">Modifica</button>
+        </td>
 
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-uuid="${uuid}">
-              Elimina
-            </button>
-          </td>
-        </tr>
-      `;
-    })
-    .join("");
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-uuid="${uuid}">Elimina</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
+// ------------------------------
+// Events
+// ------------------------------
 function wireEvents(container: HTMLElement): void {
-  // Roles
-  container.querySelectorAll<HTMLButtonElement>("button[data-role]").forEach((b) => {
-    b.addEventListener("click", () => {
-      const role = (b.dataset.role ?? "tots") as UserRole | "tots";
+  // Delegación de eventos: NO re-registrar mil listeners
+  container.addEventListener("click", (ev: MouseEvent) => {
+    const target = ev.target as Element | null;
+    if (!target) return;
+
+    const roleBtn = target.closest<HTMLButtonElement>("button[data-role]");
+    if (roleBtn) {
+      const role = (roleBtn.dataset.role ?? "tots") as UserRole | "tots";
       activeRole = role;
-      render(container);
-    });
+      renderBody(container);
+      return;
+    }
+
+    const actionBtn = target.closest<HTMLButtonElement>("button[data-action]");
+    if (actionBtn) {
+      const action = actionBtn.dataset.action;
+      const uuid = actionBtn.dataset.uuid;
+      if (!action || !uuid) return;
+      handleAction(action, uuid);
+      return;
+    }
   });
 
-  // Search
   const search = container.querySelector<HTMLInputElement>("#usersSearch");
   if (search) {
     search.addEventListener("input", () => {
       searchText = search.value ?? "";
-      render(container);
+      renderBody(container); // ✅ solo tbody
     });
   }
-
-  // Actions
-  container.querySelectorAll<HTMLButtonElement>("button[data-action]").forEach((b) => {
-    b.addEventListener("click", () => {
-      const action = b.dataset.action;
-      const uuid = b.dataset.uuid;
-      if (!action || !uuid) return;
-      handleAction(action, uuid);
-    });
-  });
 }
 
 // ------------------------------
@@ -262,27 +255,19 @@ function wireEvents(container: HTMLElement): void {
 // ------------------------------
 function handleAction(action: string, uuid: string): void {
   switch (action) {
-    case "reservas": {
-      // Ajusta a tu ruta real:
-      // p.ej. /control/reserves?usuario_uuid=...
+    case "reservas":
       window.location.href = `/control/reserves?usuario_uuid=${encodeURIComponent(uuid)}`;
       return;
-    }
 
-    case "edit": {
-      // Ajusta a tu ruta real:
+    case "edit":
       window.location.href = `/control/clients/modifica/${encodeURIComponent(uuid)}`;
       return;
-    }
 
-    case "delete": {
+    case "delete":
       if (!confirm("Segur que vols eliminar aquest usuari?")) return;
-
-      // En este paso solo dejamos el hook (luego haremos endpoint DELETE real)
       console.log("[DELETE usuario]", uuid);
       alert("Acció pendent: implementar endpoint d'eliminació.");
       return;
-    }
 
     default:
       console.warn("Acció desconeguda:", action, uuid);
@@ -312,14 +297,11 @@ function rowMatchesSearch(row: ApiUserRow, q: string): boolean {
 // ------------------------------
 function normalizeRole(tipoRol: string): UserRole | string {
   const r = (tipoRol || "").trim().toLowerCase();
-
-  // Mapeos típicos (ajusta según tu BD)
   if (r === "admin") return "administrador";
   if (r === "administrador") return "administrador";
   if (r === "cliente") return "cliente";
   if (r === "cliente_anual") return "cliente_anual";
   if (r === "trabajador") return "trabajador";
-
   return tipoRol;
 }
 
