@@ -1,6 +1,6 @@
 <?php
+declare(strict_types=1);
 
-use Dotenv\Dotenv;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -11,56 +11,100 @@ function data_input($data)
     return $data;
 }
 
-// Función que verifica si el usuario tiene un token válido
-function verificarSesion()
+/** JWT válido => payload (stdClass). Si no => false */
+function validarToken(string $jwt)
 {
-    // Inicia la sesión si no está ya iniciada
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['token']) || !validarToken($_COOKIE['token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] != 'admin') {
-        header('Location: /control/login'); // Redirige a login si no hay token válido
-        exit();
-    }
-}
-
-// Función que verifica si el usuario tiene acceso al area de cliente
-function verificarAcceso()
-{
-    // Inicia la sesión si no está ya iniciada
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    // Verifica si la cookie del token existe y es válida
-    if (!isset($_COOKIE['user_id']) || $_COOKIE['acceso'] != "si") {
-        header('Location: /area-cliente/login'); // Redirige a login si no hay token válido
-        exit();
-    }
-}
-
-function validarToken($jwt)
-{
-
-    $jwtSecret = $_ENV['TOKEN'];  // Tu clave secreta
-    $decoded = null;
+    $jwtSecret = $_ENV['TOKEN'];
 
     try {
+        $decoded = JWT::decode($jwt, new Key($jwtSecret, 'HS256'));
 
-        $decoded = JWT::decode($jwt, new key($jwtSecret, 'HS256'));
+        if (isset($decoded->exp) && (int)$decoded->exp < time()) return false;
+        if (empty($decoded->sub) || empty($decoded->role)) return false;
 
-        // Verifica si el token ha expirado
-        if (isset($decoded->exp) && $decoded->exp < time()) {
-            return false;  // Token expirado
-        }
-    } catch (Exception $e) {
-        // Manejo del error
-        error_log('Error al validar el token: ' . $e->getMessage());  // Log del error para depuración
+        return $decoded;
+    } catch (Throwable $e) {
+        error_log('Error al validar el token: ' . $e->getMessage());
         return false;
     }
+}
 
-    // Si la decodificación es exitosa y el token es válido, se devuelve el payload
-    return $decoded;
+/**
+ * Usuario autenticado desde token:
+ * uuid (string), uuid_bin (16 bytes), role, name, jti
+ */
+function auth_user(): ?array
+{
+    if (empty($_COOKIE['token'])) return null;
+
+    $payload = validarToken((string)$_COOKIE['token']);
+    if ($payload === false) return null;
+
+    $uuidStr = (string)$payload->sub;
+
+    try {
+        $uuidBin = uuid_bin_from_string($uuidStr); // tu helper del paso 1
+    } catch (Throwable $e) {
+        return null;
+    }
+
+    return [
+        'uuid'     => $uuidStr,
+        'uuid_bin' => $uuidBin,
+        'role'     => (string)$payload->role,
+        'name'     => (string)($payload->name ?? ''),
+        'jti'      => (string)($payload->jti ?? ''),
+    ];
+}
+
+/** Guard intranet: admin + trabajador */
+function verificarSesionIntranet(): void
+{
+    $user = auth_user();
+    if ($user === null) {
+        header('Location: /control/login');
+        exit();
+    }
+
+    $rolesPermitidos = ['admin', 'trabajador'];
+    if (!in_array($user['role'], $rolesPermitidos, true)) {
+        header('Location: /control/login');
+        exit();
+    }
+}
+
+/**
+ * Guard área cliente.
+ * Opción A (recomendada): rol explícito 'cliente'
+ */
+function verificarAccesoCliente(): void
+{
+    $user = auth_user();
+    if ($user === null) {
+        header('Location: /area-cliente/login');
+        exit();
+    }
+
+    // ✅ AJUSTA este array a tu realidad (p.ej. 'cliente', 'usuario', 'client', etc.)
+    $rolesPermitidos = ['cliente'];
+
+    if (!in_array($user['role'], $rolesPermitidos, true)) {
+        header('Location: /area-cliente/login');
+        exit();
+    }
+}
+
+/**
+ * Compatibilidad con tu router actual:
+ * - verificarSesion() se usa para needs_session (intranet)
+ * - verificarAcceso() se usa para needs_verification (area cliente)
+ */
+function verificarSesion(): void
+{
+    verificarSesionIntranet();
+}
+
+function verificarAcceso(): void
+{
+    verificarAccesoCliente();
 }

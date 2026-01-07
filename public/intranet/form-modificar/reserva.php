@@ -18,7 +18,7 @@ if (is_numeric($id)) {
         $sql = "
             SELECT 
                 r.id                AS idReserva,
-                r.usuario_id        AS idClient,
+                r.usuario_uuid      AS usuarioUuidBin,
                 r.total_calculado   AS importe,
                 r.estado            AS estado,
                 r.fecha_reserva     AS fechaReserva,
@@ -32,7 +32,7 @@ if (is_numeric($id)) {
                 r.notas             AS notas,
                 r.canal             AS canal
             FROM parking_reservas AS r
-            LEFT JOIN usuarios AS u ON r.usuario_id = u.id
+            LEFT JOIN usuarios AS u ON r.usuario_uuid = u.uuid
             WHERE r.id = :id
             LIMIT 1
         ";
@@ -44,7 +44,8 @@ if (is_numeric($id)) {
 
         if ($row) {
             $idReserva_old    = $row['idReserva'];
-            $idClient_old     = $row['idClient'];
+            $usuarioUuidBin = $row['usuarioUuidBin'];             // 16 bytes
+            $usuarioUuidStr = uuid_string_from_bin($usuarioUuidBin); // "....-...."
             $importe_old      = $row['importe'];
             $estado_old       = $row['estado'];
             $fechaReserva_old = $row['fechaReserva'];
