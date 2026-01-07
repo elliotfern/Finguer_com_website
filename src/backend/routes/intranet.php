@@ -67,6 +67,12 @@ $routes = [
 
     // Facturacio
     '/control/facturacio' => ['view' => 'public/intranet/facturacio/index.php', 'needs_session' => true],
+
+    // Control clients / usuaris
+    '/control/usuaris' => [
+        'view' => 'public/intranet/gestio-clients/llistat-clients.php',
+        'needs_session' => true
+    ],
 ];
 
 return $routes;

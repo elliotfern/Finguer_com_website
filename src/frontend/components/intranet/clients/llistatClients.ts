@@ -1,0 +1,334 @@
+// clients-users.ts
+// Tabla dinámica usuarios/clientes (Bootstrap 5) + filtros + acciones
+// NO usa `any`
+
+export type UserRole =
+  | "cliente"
+  | "administrador"
+  | "cliente_anual"
+  | "trabajador";
+
+export interface ApiUserRow {
+  uuid: string;
+  nombre: string;
+  email: string;
+  telefono?: string;
+  tipo_rol: string;
+  createdAt?: string | null;
+}
+
+interface Vp2Ok<T> {
+  status: "success";
+  message?: string;
+  data: T;
+}
+
+interface Vp2Err {
+  status: "error";
+  message?: string;
+  error?: unknown;
+  data?: unknown;
+}
+
+type ApiResponse<T> = Vp2Ok<T> | Vp2Err;
+
+interface ListUsersData {
+  rows: ApiUserRow[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+  q?: string;
+  role?: string | null;
+  hasRows?: boolean;
+}
+
+// ------------------------------
+// Config
+// ------------------------------
+const API_LIST_URL = "/api/usuaris/get/?type=list";
+const CONTAINER_ID = "contenidorTaulaClients";
+
+const ROLE_BUTTONS: Array<{ key: UserRole; label: string }> = [
+  { key: "cliente", label: "Cliente" },
+  { key: "administrador", label: "Administrador" },
+  { key: "cliente_anual", label: "Cliente anual" },
+  { key: "trabajador", label: "Trabajador" },
+];
+
+// ------------------------------
+// State
+// ------------------------------
+let allRows: ApiUserRow[] = [];
+let activeRole: UserRole | "tots" = "tots";
+let searchText = "";
+
+// ------------------------------
+// Public entry point
+// ------------------------------
+export async function clientsUsersTable(): Promise<void> {
+  const container = document.getElementById(CONTAINER_ID);
+  if (!container) {
+    console.warn(`[clientsUsersTable] No existe #${CONTAINER_ID}`);
+    return;
+  }
+
+  container.innerHTML = `<div class="text-muted">Carregant usuaris...</div>`;
+
+  try {
+    allRows = await fetchUsers();
+    render(container);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error desconegut";
+    container.innerHTML = `
+      <div class="alert alert-danger">
+        Error carregant usuaris. (${escapeHtml(msg)})
+      </div>
+    `;
+  }
+}
+
+// ------------------------------
+// Fetch
+// ------------------------------
+async function fetchUsers(): Promise<ApiUserRow[]> {
+  const res = await fetch(API_LIST_URL, {
+    method: "GET",
+    credentials: "include", // importante: cookie token HttpOnly
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const json = (await res.json()) as ApiResponse<ListUsersData>;
+
+  if (json.status !== "success") {
+    const msg = json.message ?? "API error";
+    throw new Error(msg);
+  }
+
+  const rows = json.data?.rows;
+  return Array.isArray(rows) ? rows : [];
+}
+
+// ------------------------------
+// Render
+// ------------------------------
+function render(container: HTMLElement): void {
+  const filtered = applyFilters(allRows);
+
+  container.innerHTML = `
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-12 col-lg-8">
+        <div class="btn-group flex-wrap" role="group" aria-label="Filtres per rol">
+          ${renderRoleButtons()}
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <input
+          id="usersSearch"
+          type="text"
+          class="form-control"
+          placeholder="Cerca per nom, email, tel..."
+          value="${escapeHtml(searchText)}"
+        >
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover table-bordered align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th style="min-width: 220px;">Nom</th>
+            <th style="min-width: 240px;">Email</th>
+            <th style="min-width: 160px;">Telèfon</th>
+            <th style="min-width: 140px;">Rol</th>
+            <th style="min-width: 180px;">Alta</th>
+            <th style="min-width: 140px;">Veure reserves</th>
+            <th style="min-width: 110px;">Modifica</th>
+            <th style="min-width: 110px;">Elimina</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${renderRows(filtered)}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <div class="text-muted small">
+        Mostrant <strong>${filtered.length}</strong> de <strong>${allRows.length}</strong>
+      </div>
+    </div>
+  `;
+
+  wireEvents(container);
+}
+
+function renderRoleButtons(): string {
+  const btn = (key: UserRole | "tots", label: string): string => {
+    const activeClass = key === activeRole ? "btn-primary" : "btn-outline-primary";
+    return `<button type="button" class="btn ${activeClass}" data-role="${escapeHtml(
+      key
+    )}">${escapeHtml(label)}</button>`;
+  };
+
+  return [
+    btn("tots", "Tots"),
+    ...ROLE_BUTTONS.map((r) => btn(r.key, r.label)),
+  ].join("");
+}
+
+function renderRows(rows: ApiUserRow[]): string {
+  if (!rows.length) {
+    return `<tr><td colspan="8" class="text-center text-muted py-4">Sense resultats</td></tr>`;
+  }
+
+  return rows
+    .map((r) => {
+      const uuid = escapeHtml(r.uuid);
+      const nombre = escapeHtml(r.nombre);
+      const email = escapeHtml(r.email);
+      const tel = escapeHtml(r.telefono ?? "");
+      const roleNorm = normalizeRole(r.tipo_rol);
+      const role = escapeHtml(roleNorm);
+      const createdAt = escapeHtml(r.createdAt ?? "");
+
+      return `
+        <tr data-uuid="${uuid}">
+          <td>${nombre}</td>
+          <td><a href="mailto:${email}">${email}</a></td>
+          <td>${tel}</td>
+          <td><span class="badge text-bg-secondary">${role}</span></td>
+          <td>${createdAt || '<span class="text-muted">—</span>'}</td>
+
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-uuid="${uuid}">
+              Veure
+            </button>
+          </td>
+
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit" data-uuid="${uuid}">
+              Modifica
+            </button>
+          </td>
+
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-uuid="${uuid}">
+              Elimina
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function wireEvents(container: HTMLElement): void {
+  // Roles
+  container.querySelectorAll<HTMLButtonElement>("button[data-role]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const role = (b.dataset.role ?? "tots") as UserRole | "tots";
+      activeRole = role;
+      render(container);
+    });
+  });
+
+  // Search
+  const search = container.querySelector<HTMLInputElement>("#usersSearch");
+  if (search) {
+    search.addEventListener("input", () => {
+      searchText = search.value ?? "";
+      render(container);
+    });
+  }
+
+  // Actions
+  container.querySelectorAll<HTMLButtonElement>("button[data-action]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const action = b.dataset.action;
+      const uuid = b.dataset.uuid;
+      if (!action || !uuid) return;
+      handleAction(action, uuid);
+    });
+  });
+}
+
+// ------------------------------
+// Actions
+// ------------------------------
+function handleAction(action: string, uuid: string): void {
+  switch (action) {
+    case "reservas": {
+      // Ajusta a tu ruta real:
+      // p.ej. /control/reserves?usuario_uuid=...
+      window.location.href = `/control/reserves?usuario_uuid=${encodeURIComponent(uuid)}`;
+      return;
+    }
+
+    case "edit": {
+      // Ajusta a tu ruta real:
+      window.location.href = `/control/clients/modifica/${encodeURIComponent(uuid)}`;
+      return;
+    }
+
+    case "delete": {
+      if (!confirm("Segur que vols eliminar aquest usuari?")) return;
+
+      // En este paso solo dejamos el hook (luego haremos endpoint DELETE real)
+      console.log("[DELETE usuario]", uuid);
+      alert("Acció pendent: implementar endpoint d'eliminació.");
+      return;
+    }
+
+    default:
+      console.warn("Acció desconeguda:", action, uuid);
+  }
+}
+
+// ------------------------------
+// Filtering
+// ------------------------------
+function applyFilters(rows: ApiUserRow[]): ApiUserRow[] {
+  return rows.filter((r) => {
+    const role = normalizeRole(r.tipo_rol);
+    const roleOk = activeRole === "tots" ? true : role === activeRole;
+    const searchOk = rowMatchesSearch(r, searchText);
+    return roleOk && searchOk;
+  });
+}
+
+function rowMatchesSearch(row: ApiUserRow, q: string): boolean {
+  if (!q) return true;
+  const hay = `${row.nombre ?? ""} ${row.email ?? ""} ${row.telefono ?? ""} ${row.tipo_rol ?? ""}`.toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+// ------------------------------
+// Utils
+// ------------------------------
+function normalizeRole(tipoRol: string): UserRole | string {
+  const r = (tipoRol || "").trim().toLowerCase();
+
+  // Mapeos típicos (ajusta según tu BD)
+  if (r === "admin") return "administrador";
+  if (r === "administrador") return "administrador";
+  if (r === "cliente") return "cliente";
+  if (r === "cliente_anual") return "cliente_anual";
+  if (r === "trabajador") return "trabajador";
+
+  return tipoRol;
+}
+
+function escapeHtml(input: unknown): string {
+  const str = String(input ?? "");
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}

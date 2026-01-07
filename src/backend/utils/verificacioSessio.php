@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Firebase\JWT\JWT;
@@ -107,4 +108,51 @@ function verificarSesion(): void
 function verificarAcceso(): void
 {
     verificarAccesoCliente();
+}
+
+/**
+ * True si el usuario logueado es admin
+ */
+function auth_is_admin(): bool
+{
+    $u = auth_user();
+    return $u !== null && $u['role'] === 'admin';
+}
+
+/**
+ * True si el usuario logueado tiene uno de estos roles
+ */
+function auth_has_role(array $roles): bool
+{
+    $u = auth_user();
+    if ($u === null) return false;
+    return in_array($u['role'], $roles, true);
+}
+
+/**
+ * Para futuro: autorización por "capabilities" (permisos finos).
+ * Por ahora:
+ *  - admin => true
+ *  - trabajador => false (por defecto)
+ *
+ * Luego aquí meterás tu lógica (por pantalla/acción/canal/etc.)
+ */
+function auth_can(string $capability, array $context = []): bool
+{
+    $u = auth_user();
+    if ($u === null) return false;
+
+    if ($u['role'] === 'admin') return true;
+
+    if ($u['role'] === 'trabajador') {
+        return match ($capability) {
+            'menu.admin'        => false,
+            'reserva.update'    => in_array($context['campo'] ?? '', ['fecha', 'vehiculo']),
+            'reserva.view'      => true,
+            'factura.emitir'    => false,
+            default             => false,
+        };
+    }
+
+    return false;
 }

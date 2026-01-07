@@ -5,6 +5,7 @@ import './style.css';
 import 'bootstrap';
 import { reserves } from './components/intranet/reserves/reservesPendents';
 import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
+import { clientsUsersTable } from './components/intranet/clients/llistatClients';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -133,4 +134,9 @@ if (window.location.pathname === '/control/login') {
     .catch((error) => {
       console.error('Error al cargar el módulo de la homepage:', error);
     });
+}
+
+// CONTROL CLIENTS
+if (window.location.pathname === '/control/clients') {
+  clientsUsersTable();
 }

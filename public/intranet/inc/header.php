@@ -16,7 +16,12 @@
 
             <a href="<?php APP_SERVER; ?>/control/reserves-completades" class="btn btn-success menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Estat 3: completades</a>
 
-            <a href="<?php APP_SERVER; ?>/control/facturacio" class="btn btn-primary menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Facturació</a>
+            <?php if (auth_can('menu.admin')): ?>
+                <a href="<?php APP_SERVER; ?>/control/facturacio" class="btn btn-primary menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Facturació</a>
+
+                <a href="<?php APP_SERVER; ?>/control/usuaris" class="btn btn-primary menuBtn w-100 w-md-auto" role="button" aria-disabled="false">Gestió clients / usuaris</a>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
