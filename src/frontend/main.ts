@@ -137,6 +137,6 @@ if (window.location.pathname === '/control/login') {
 }
 
 // CONTROL CLIENTS
-if (window.location.pathname === '/control/clients') {
+if (normalizedPath === '/control/usuaris') {
   clientsUsersTable();
 }

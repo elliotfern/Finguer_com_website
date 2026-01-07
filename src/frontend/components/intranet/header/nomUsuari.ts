@@ -10,7 +10,7 @@ export async function nomUsuari() {
     }
 
     const data = await response.json(); // Parsea la respuesta JSON
-    const welcomeMessage = data.nombre ? `Benvingut, ${data.nombre}` : 'Usuari no trobat';
+    const welcomeMessage = data.name ? `Benvingut, ${data.name}` : 'Usuari no trobat';
     const userDiv = document.getElementById('userDiv');
     if (userDiv) {
       userDiv.innerHTML = welcomeMessage; // Actualiza el contenido de #userDiv
