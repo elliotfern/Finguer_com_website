@@ -75,12 +75,12 @@ try {
 
         // Count (para paginación)
         $sqlCount = "
-            SELECT COUNT(*) AS total noted
-            FROM usuarios u
-            WHERE 1=1
-              AND (:q = '' OR u.nombre LIKE :qLike OR u.email LIKE :qLike OR u.telefono LIKE :qLike)
-              {$roleWhere}
-        ";
+                SELECT COUNT(*) AS total
+                FROM usuarios u
+                WHERE 1=1
+                AND (:q = '' OR u.nombre LIKE :qLike OR u.email LIKE :qLike OR u.telefono LIKE :qLike)
+                {$roleWhere}
+            ";
 
         $stmtC = $conn->prepare($sqlCount);
         $stmtC->bindValue(':q', $q, PDO::PARAM_STR);
@@ -89,6 +89,7 @@ try {
             $stmtC->bindValue(':role', $role, PDO::PARAM_STR);
         }
         $stmtC->execute();
+
         $total = (int)($stmtC->fetchColumn() ?: 0);
 
         // Normalizar uuid a string para el frontend
@@ -126,7 +127,6 @@ try {
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
         'allowed' => ['list']
     ]), 400);
-
 } catch (Throwable $e) {
     jsonResponse(vp2_err('Error interno', 'SERVER_ERROR', [
         'details' => $e->getMessage(),
