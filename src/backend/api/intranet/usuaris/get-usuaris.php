@@ -52,13 +52,12 @@ try {
                 u.nombre,
                 u.email,
                 u.telefono,
-                u.tipo_rol,
-                u.created_at
+                u.tipo_rol
             FROM usuarios u
             WHERE 1=1
               AND (:q = '' OR u.nombre LIKE :qLike OR u.email LIKE :qLike OR u.telefono LIKE :qLike)
               {$roleWhere}
-            ORDER BY u.created_at DESC
+            ORDER BY u.nombre DESC
             LIMIT :limit OFFSET :offset
         ";
 
