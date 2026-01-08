@@ -260,7 +260,7 @@ function handleAction(action: string, uuid: string): void {
       return;
 
     case "edit":
-      window.location.href = `/control/clients/modifica/${encodeURIComponent(uuid)}`;
+      window.location.href = `/control/usuaris/modifica-client/${encodeURIComponent(uuid)}`;
       return;
 
     case "delete":
