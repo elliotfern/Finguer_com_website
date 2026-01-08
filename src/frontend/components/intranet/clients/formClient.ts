@@ -80,15 +80,6 @@ export async function formUsuarios(isUpdate: boolean, uuid?: string) {
     setHidden('uuid', '');
     setHidden('estado', 'activo');
 
-    // (opcional) redirigir al terminar
-    form.addEventListener('form:success', (e) => {
-      const detail = (e as CustomEvent<ApiResponse<UsuarioCreateData>>).detail;
-      if (detail.status === 'success') {
-        const newUuid = detail.data.uuid;
-        window.location.href = `/control/usuaris/modifica-client/${encodeURIComponent(newUuid)}`;
-      }
-    }, { once: true });
-
     form.addEventListener(
       'submit',
       (event) => {
