@@ -1,6 +1,7 @@
 // reservesClient.ts
 
-import { API_BASE } from "../../../config/globals";
+import { API_BASE } from '../../../config/globals';
+import { formatDateTime } from '../../../utils/dates';
 
 type Vp2Ok<T> = {
   status: 'success';
@@ -22,9 +23,9 @@ export interface ReservaRow {
   localizador: string;
   estado: string;
   estado_vehiculo: string;
-  fecha_reserva: string;      // datetime
-  entrada_prevista: string;   // datetime
-  salida_prevista: string;    // datetime
+  fecha_reserva: string; // datetime
+  entrada_prevista: string; // datetime
+  salida_prevista: string; // datetime
   total_calculado?: string | number | null;
   vehiculo?: string | null;
   matricula?: string | null;
@@ -45,7 +46,7 @@ interface ListReservesData {
 // ------------------------------
 const API_LIST_BY_EMAIL_URL = `${API_BASE}/intranet/reserves/get/?type=list-by-email`;
 const CONTAINER_ID = 'contenidorReservesClient'; // tu div contenedor tabla
-const TITLE_ID = 'titolReservesClient';          // tu div título
+const TITLE_ID = 'titolReservesClient'; // tu div título
 
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 200;
@@ -114,11 +115,7 @@ async function loadAndRender(container: HTMLElement): Promise<void> {
 // Fetch
 // ------------------------------
 async function fetchReservesByEmail(email: string, limit: number, offset: number): Promise<ListReservesData> {
-  const url =
-    `${API_LIST_BY_EMAIL_URL}` +
-    `&email=${encodeURIComponent(email)}` +
-    `&limit=${encodeURIComponent(String(limit))}` +
-    `&offset=${encodeURIComponent(String(offset))}`;
+  const url = `${API_LIST_BY_EMAIL_URL}` + `&email=${encodeURIComponent(email)}` + `&limit=${encodeURIComponent(String(limit))}` + `&offset=${encodeURIComponent(String(offset))}`;
 
   const res = await fetch(url, {
     method: 'GET',
@@ -150,9 +147,13 @@ function render(container: HTMLElement): void {
       <div class="d-flex gap-2 align-items-center">
         <label class="small text-muted mb-0">Límit</label>
         <select id="limitSelect" class="form-select form-select-sm" style="width:auto;">
-          ${[10, 25, 50, 100, 200].map((n) => `
+          ${[10, 25, 50, 100, 200]
+            .map(
+              (n) => `
             <option value="${n}" ${n === limit ? 'selected' : ''}>${n}</option>
-          `).join('')}
+          `
+            )
+            .join('')}
         </select>
       </div>
     </div>
@@ -194,21 +195,24 @@ function renderRows(rows: ReservaRow[]): string {
     return `<tr><td colspan="8" class="text-center text-muted py-4">Sense reserves</td></tr>`;
   }
 
-  return rows.map((r) => {
-    const localizador = escapeHtml(r.localizador ?? '');
-    const estado = escapeHtml(r.estado ?? '');
-    const estadoVeh = escapeHtml(r.estado_vehiculo ?? '');
+  return rows
+    .map((r) => {
+      const localizador = escapeHtml(r.localizador ?? '');
+      const fecha_reserva = escapeHtml(formatDateTime(r.fecha_reserva));
+      const estado = escapeHtml(r.estado ?? '');
+      const estadoVeh = escapeHtml(r.estado_vehiculo ?? '');
 
-    const entrada = escapeHtml(formatDateTime(r.entrada_prevista));
-    const salida = escapeHtml(formatDateTime(r.salida_prevista));
+      const entrada = escapeHtml(formatDateTime(r.entrada_prevista));
+      const salida = escapeHtml(formatDateTime(r.salida_prevista));
 
-    const total = escapeHtml(formatMoney(r.total_calculado));
-    const vehiculo = escapeHtml(r.vehiculo ?? '');
-    const matricula = escapeHtml(r.matricula ?? '');
+      const total = escapeHtml(formatMoney(r.total_calculado));
+      const vehiculo = escapeHtml(r.vehiculo ?? '');
+      const matricula = escapeHtml(r.matricula ?? '');
 
-    return `
+      return `
       <tr>
-        <td><code>${localizador}</code></td>
+        <td><code>${localizador}</code>
+        <p>${fecha_reserva}</p></td>
         <td>${badge(estado)}</td>
         <td>${badge(estadoVeh)}</td>
         <td>${entrada}</td>
@@ -218,7 +222,8 @@ function renderRows(rows: ReservaRow[]): string {
         <td><code>${matricula}</code></td>
       </tr>
     `;
-  }).join('');
+    })
+    .join('');
 }
 
 // ------------------------------
@@ -257,13 +262,6 @@ function getEmailFromQuery(): string {
   return email.includes('@') ? email : '';
 }
 
-function formatDateTime(dt: string | null | undefined): string {
-  if (!dt) return '';
-  // MySQL DATETIME -> "YYYY-MM-DD HH:MM:SS"
-  // Lo dejamos legible sin depender de timezone JS
-  return dt.replace('T', ' ').slice(0, 16);
-}
-
 function formatMoney(v: string | number | null | undefined): string {
   if (v === null || v === undefined || v === '') return '';
   const n = typeof v === 'number' ? v : Number(v);
@@ -292,10 +290,5 @@ function clamp(n: number, min: number, max: number): number {
 
 function escapeHtml(input: unknown): string {
   const str = String(input ?? '');
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }

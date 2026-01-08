@@ -36,3 +36,27 @@ export function formatDatesFormDateTime(fecha: string | null | undefined): strin
 
   return `${dia}/${mes}/${any} ${hora}:${minutos}:${segundos}`;
 }
+
+export function formatDateTime(dt: string | null | undefined): string {
+  if (!dt) return '';
+
+  // Acepta "YYYY-MM-DD HH:MM:SS" o ISO "YYYY-MM-DDTHH:MM:SS"
+  const s = dt.replace('T', ' ').trim();
+
+  const [datePart, timePart] = s.split(' ');
+  if (!datePart) return dt;
+
+  const [y, m, d] = datePart.split('-');
+  if (!y || !m || !d) return dt;
+
+  let hh = '00';
+  let mm = '00';
+
+  if (timePart) {
+    const parts = timePart.split(':');
+    hh = parts[0] ?? '00';
+    mm = parts[1] ?? '00';
+  }
+
+  return `${d}/${m}/${y} ${hh}:${mm}`;
+}
