@@ -43,7 +43,7 @@ interface ListReservesData {
 // ------------------------------
 // Config
 // ------------------------------
-const API_LIST_BY_EMAIL_URL = `${API_BASE}/reserves/get/?type=list-by-email`;
+const API_LIST_BY_EMAIL_URL = `${API_BASE}/intranet/reserves/get/?type=list-by-email`;
 const CONTAINER_ID = 'contenidorReservesClient'; // tu div contenedor tabla
 const TITLE_ID = 'titolReservesClient';          // tu div título
 
