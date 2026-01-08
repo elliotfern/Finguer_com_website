@@ -124,9 +124,94 @@ try {
         ]));
     }
 
+        // =========================================================
+    // type=get  (detalle usuario por uuid)
+    // GET ?type=get&uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    // =========================================================
+    if ($type === 'get') {
+
+        $uuidStr = isset($_GET['uuid']) ? trim((string)$_GET['uuid']) : '';
+        if ($uuidStr === '') {
+            jsonResponse(vp2_err('Falta parámetro uuid', 'BAD_UUID'), 400);
+        }
+
+        try {
+            $uuidBin = uuid_bin_from_string($uuidStr);
+        } catch (Throwable $e) {
+            jsonResponse(vp2_err('UUID inválido', 'BAD_UUID'), 400);
+        }
+
+        $sql = "
+            SELECT
+                u.uuid,
+                u.nombre,
+                u.email,
+                u.estado,
+                u.empresa,
+                u.nif,
+                u.direccion,
+                u.ciudad,
+                u.codigo_postal,
+                u.pais,
+                u.telefono,
+                u.anualitat,
+                u.tipo_rol,
+                u.locale,
+                u.dispositiu,
+                u.navegador,
+                u.sistema_operatiu,
+                u.ip,
+                u.created_at,
+                u.updated_at
+            FROM usuarios u
+            WHERE u.uuid = :uuid
+            LIMIT 1
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt->execute();
+
+        $r = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$r) {
+            jsonResponse(vp2_err('Usuario no encontrado', 'NOT_FOUND'), 404);
+        }
+
+        $uuidBinRow = $r['uuid'] ?? null;
+        if (!is_string($uuidBinRow) || strlen($uuidBinRow) !== 16) {
+            jsonResponse(vp2_err('UUID almacenado inválido', 'DATA_ERROR'), 500);
+        }
+
+        $data = [
+            'uuid'             => uuid_string_from_bin($uuidBinRow),
+            'nombre'           => (string)($r['nombre'] ?? ''),
+            'email'            => (string)($r['email'] ?? ''),
+            'estado'           => (string)($r['estado'] ?? ''),
+            'empresa'          => $r['empresa'] ?? null,
+            'nif'              => $r['nif'] ?? null,
+            'direccion'        => $r['direccion'] ?? null,
+            'ciudad'           => $r['ciudad'] ?? null,
+            'codigo_postal'    => $r['codigo_postal'] ?? null,
+            'pais'             => $r['pais'] ?? null,
+            'telefono'         => $r['telefono'] ?? null,
+            'anualitat'        => $r['anualitat'] ?? null,
+            'tipo_rol'         => (string)($r['tipo_rol'] ?? ''),
+            'locale'           => (string)($r['locale'] ?? ''),
+            'dispositiu'       => $r['dispositiu'] ?? null,
+            'navegador'        => $r['navegador'] ?? null,
+            'sistema_operatiu' => $r['sistema_operatiu'] ?? null,
+            'ip'               => $r['ip'] ?? null,
+            'createdAt'        => $r['created_at'] ?? null,
+            'updatedAt'        => $r['updated_at'] ?? null,
+        ];
+
+        jsonResponse(vp2_ok('OK', $data), 200);
+    }
+
+
     // Si llega aquí, type no válido
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
-        'allowed' => ['list']
+        'allowed' => ['list', 'get']
     ]), 400);
 } catch (Throwable $e) {
     jsonResponse(vp2_err('Error interno', 'SERVER_ERROR', [

@@ -6,6 +6,7 @@ import 'bootstrap';
 import { reserves } from './components/intranet/reserves/reservesPendents';
 import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
 import { clientsUsersTable } from './components/intranet/clients/llistatClients';
+import { formUsuarios } from './components/intranet/clients/formClient';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -18,6 +19,15 @@ const normalizedPath = window.location.pathname.replace(/\/$/, '');
 const isReservaPage = normalizedPath === '/reserva' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/reserva`));
 
 const isPagoPage = normalizedPath === '/pago' || supportedLanguages.some((lang) => normalizedPath.startsWith(`/${lang}/pago`)) || /^\/pago\/[a-zA-Z0-9]+$/.test(normalizedPath);
+
+function getUuidFromPath(prefix: string): string | undefined {
+  // prefix ejemplo: '/control/usuaris/modifica-client'
+  const path = window.location.pathname.replace(/\/+$/, ''); // quita trailing /
+  if (!path.startsWith(prefix + '/')) return undefined;
+
+  const uuid = path.slice(prefix.length + 1); // lo que viene después del /
+  return uuid ? decodeURIComponent(uuid) : undefined;
+}
 
 // Web Finguer.com
 // Importar mòduls per la homepage de Finguer.com
@@ -139,4 +149,15 @@ if (window.location.pathname === '/control/login') {
 // CONTROL CLIENTS
 if (normalizedPath === '/control/usuaris') {
   clientsUsersTable();
+}
+
+// OPERACIO CREAR NOU CLIENT / USUARI
+if (normalizedPath === '/control/usuaris/alta-client') {
+  formUsuarios(false);
+}
+
+// OPERACIO MODIFICACIO CLIENT
+if (normalizedPath.startsWith('/control/usuaris/modifica-client')) {
+  const uuid = getUuidFromPath('/control/usuaris/modifica-client');
+  formUsuarios(true, uuid);
 }

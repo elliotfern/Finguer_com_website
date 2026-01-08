@@ -46,6 +46,18 @@ $routes = [
         'needs_session' => true,
     ],
 
+    '/api/usuaris/post' => [
+        'view' => 'src/backend/api/intranet/usuaris/post-usuaris.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/usuaris/put' => [
+        'view' => 'src/backend/api/intranet/usuaris/put-usuaris.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],  
+
 ];
 
 

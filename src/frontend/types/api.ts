@@ -1,8 +1,14 @@
-export type ApiOk<T> = { status: 'success'; message: string; data: T };
+export type ApiOk<T> = {
+  status: 'success';
+  message: string;
+  data: T;
+};
+
 export type ApiErr = {
   status: 'error';
-  code?: string;
   message: string;
-  details?: unknown;
+  errors?: string[];
+  code?: string;
 };
+
 export type ApiResponse<T> = ApiOk<T> | ApiErr;

@@ -3,6 +3,13 @@
 <div class="container" style="margin-bottom:100px">
     <h2>Gestió clients i usuaris web</h2>
 
+    <div class="container" style="padding-top:25px;padding-bottom:25px">
+
+        <a href="/control/usuaris/alta-client" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Alta nou client</a>
+
+    </div>
+
     <div id="contenidorTaulaClients"></div>
 
 </div>

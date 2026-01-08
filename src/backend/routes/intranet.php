@@ -73,6 +73,16 @@ $routes = [
         'view' => 'public/intranet/gestio-clients/llistat-clients.php',
         'needs_session' => true
     ],
+
+    '/control/usuaris/alta-client' => [
+        'view' => 'public/intranet/gestio-clients/form-client.php',
+        'needs_session' => true
+    ],
+
+    '/control/usuaris/modifica-client/{id}' => [
+        'view' => 'public/intranet/gestio-clients/form-client.php',
+        'needs_session' => true
+    ],
 ];
 
 return $routes;
