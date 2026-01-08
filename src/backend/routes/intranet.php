@@ -84,7 +84,7 @@ $routes = [
         'needs_session' => true
     ],
 
-     '/control/usuaris/reserves-client/{email}' => [
+     '/control/usuaris/reserves-client' => [
         'view' => 'public/intranet/gestio-clients/llistat-reserves-client.php',
         'needs_session' => true
     ],

@@ -260,7 +260,7 @@ function wireEvents(container: HTMLElement): void {
 function handleAction(action: string, value: string): void {
   switch (action) {
     case 'reservas':
-      window.location.href = `/control/usuaris/reserves-client/${encodeURIComponent(value)}`;
+      window.location.href = `/control/usuaris/reserves-client/?email=${encodeURIComponent(value)}`;
       return;
 
     case 'edit':

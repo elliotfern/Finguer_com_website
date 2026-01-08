@@ -71,7 +71,7 @@ export async function reservesClientPage(): Promise<void> {
     return;
   }
 
-  emailFromRoute = getEmailFromPath('/control/reserves-client');
+  emailFromRoute = getEmailFromQuery();
   if (!emailFromRoute) {
     container.innerHTML = `<div class="alert alert-danger">Falta email en la URL.</div>`;
     return;
@@ -252,16 +252,8 @@ function wirePagination(container: HTMLElement): void {
 // ------------------------------
 // Helpers
 // ------------------------------
-function getEmailFromPath(prefix: string): string {
-  const path = window.location.pathname.replace(/\/+$/, '');
-  const base = prefix.replace(/\/+$/, '');
-
-  if (!path.startsWith(base + '/')) return '';
-
-  const encoded = path.slice(base.length + 1);
-  const email = decodeURIComponent(encoded);
-
-  // validación básica (no bloquea +)
+function getEmailFromQuery(): string {
+  const email = new URLSearchParams(window.location.search).get('email') ?? '';
   return email.includes('@') ? email : '';
 }
 
