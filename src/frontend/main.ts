@@ -7,6 +7,7 @@ import { reserves } from './components/intranet/reserves/reservesPendents';
 import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
 import { clientsUsersTable } from './components/intranet/clients/llistatClients';
 import { formUsuarios } from './components/intranet/clients/formClient';
+import { reservesClientPage } from './components/intranet/clients/reservesClient';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -160,4 +161,9 @@ if (normalizedPath === '/control/usuaris/alta-client') {
 if (normalizedPath.startsWith('/control/usuaris/modifica-client')) {
   const uuid = getUuidFromPath('/control/usuaris/modifica-client');
   formUsuarios(true, uuid);
+}
+
+// CLIENTS - LLISTAT DE RESERVES PER EMAIL
+if (normalizedPath.startsWith('/control/usuaris/reserves-client')) {
+  reservesClientPage();
 }

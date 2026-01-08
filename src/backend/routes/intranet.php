@@ -83,6 +83,11 @@ $routes = [
         'view' => 'public/intranet/gestio-clients/form-client.php',
         'needs_session' => true
     ],
+
+     '/control/usuaris/reserves-client/{email}' => [
+        'view' => 'public/intranet/gestio-clients/llistat-reserves-client.php',
+        'needs_session' => true
+    ],
 ];
 
 return $routes;
