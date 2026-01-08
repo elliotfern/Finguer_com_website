@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once APP_ROOT . '/public/intranet/includes/header.php';
+require_once APP_ROOT . '/public/intranet/inc/header.php';
 
 /**
  * Este archivo SOLO dibuja el formulario.
