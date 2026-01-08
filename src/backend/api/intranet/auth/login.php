@@ -33,7 +33,7 @@ if ($email === false) {
 }
 
 $query = "
-    SELECT u.id, u.uuid, u.nombre, u.email, u.password, u.tipo_rol
+    SELECT u.uuid, u.nombre, u.email, u.password, u.tipo_rol
     FROM usuarios AS u
     WHERE u.email = :email
     LIMIT 1
