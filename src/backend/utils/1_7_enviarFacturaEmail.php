@@ -41,7 +41,7 @@ function enviarFacturaPorEmail(PDO $conn, int $idFactura, array $opts = []): arr
             u.email,
             u.nombre
         FROM facturas f
-        JOIN usuarios u ON u.id = f.usuario_uuid
+        JOIN usuarios u ON u.uuid = f.usuario_uuid
         WHERE f.id = :id
         LIMIT 1
     ");
