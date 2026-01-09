@@ -163,7 +163,7 @@ function render(container: HTMLElement): void {
         <thead class="table-dark">
           <tr>
             <th style="min-width: 120px;">Localitzador</th>
-            <th style="min-width: 140px;">Estat</th>
+            <th style="min-width: 140px;">Tipus reserva</th>
             <th style="min-width: 160px;">Estat vehicle</th>
             <th style="min-width: 170px;">Entrada</th>
             <th style="min-width: 170px;">Sortida</th>

@@ -38,7 +38,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                 <!-- =========================
              BLOQUE: Identidad
         ========================== -->
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-6">
                         <label for="nombre" class="form-label negreta">Nombre y apellidos *</label>
                         <input type="text"
@@ -120,63 +120,37 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                         <input type="text" class="form-control" name="pais" id="pais" maxlength="100" value="">
                     </div>
 
-                    <div class="col-md-4" style="margin-top:15px;">
+                    <div class="col-md-4">
                         <label for="empresa" class="form-label negreta">Empresa</label>
                         <input type="text" class="form-control" name="empresa" id="empresa" maxlength="255" value="">
                     </div>
 
-                    <div class="col-md-4" style="margin-top:15px;">
+                    <div class="col-md-4">
                         <label for="nif" class="form-label negreta">NIF</label>
                         <input type="text" class="form-control" name="nif" id="nif" maxlength="50" value="">
                     </div>
 
-                    <div class="col-md-6" style="margin-top:15px;">
+                    <div class="col-md-6">
                         <label for="direccion" class="form-label negreta">Dirección</label>
                         <input type="text" class="form-control" name="direccion" id="direccion" maxlength="255" value="">
                     </div>
 
-                    <div class="col-md-4" style="margin-top:15px;">
+                    <div class="col-md-4">
                         <label for="ciudad" class="form-label negreta">Ciudad</label>
                         <input type="text" class="form-control" name="ciudad" id="ciudad" maxlength="150" value="">
                     </div>
 
-                    <div class="col-md-3" style="margin-top:15px;">
+                    <div class="col-md-3">
                         <label for="codigo_postal" class="form-label negreta">Código postal</label>
                         <input type="text" class="form-control" name="codigo_postal" id="codigo_postal" maxlength="20" value="">
                     </div>
 
                     <hr>
-                    <h5>Clientes anuales: </h5>
+                    <h5>Información para Clientes anuales: </h5>
 
                     <div class="col-md-4">
                         <label for="anualitat" class="form-label negreta">Anualidad (dia/mes/año):</label>
                         <input type="text" class="form-control" name="anualitat" id="anualitat" maxlength="50" value="">
-                    </div>
-
-                    <hr>
-                    <h5>No rellenar: </h5>
-                    <div class="col-md-3" style="margin-top:15px;">
-                        <label for="dispositiu" class="form-label negreta">Dispositivo (auto)</label>
-                        <input type="text" class="form-control" name="dispositiu" id="dispositiu" maxlength="100" value="" readonly>
-                    </div>
-
-                    <div class="col-md-3" style="margin-top:15px;">
-                        <label for="navegador" class="form-label negreta">Navegador (auto)</label>
-                        <input type="text" class="form-control" name="navegador" id="navegador" maxlength="100" value="" readonly>
-                    </div>
-
-                    <div class="col-md-3" style="margin-top:15px;">
-                        <label for="sistema_operatiu" class="form-label negreta">Sistema operativo (auto)</label>
-                        <input type="text" class="form-control" name="sistema_operatiu" id="sistema_operatiu" maxlength="100" value="" readonly>
-                    </div>
-
-                    <div class="col-md-3" style="margin-top:15px;">
-                        <label for="ip" class="form-label negreta">IP (auto)</label>
-                        <input type="text" class="form-control" name="ip" id="ip" maxlength="45" value="" readonly>
-                        <div class="form-text">
-                            Estos campos "auto" los rellenará el backend en create/update (recomendado),
-                            pero se dejan para mostrar info.
-                        </div>
                     </div>
                 </div>
 
