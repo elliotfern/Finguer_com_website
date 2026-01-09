@@ -1,4 +1,7 @@
 <?php
+
+use Ramsey\Uuid\Uuid;
+
 global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
 require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
@@ -11,6 +14,9 @@ $codi_resposta = 2;
 if (isset($_POST["alta-client"])) {
 
     // --- Obligatorio ---
+
+    $uuidBytes = Uuid::uuid7()->getBytes(); // 16 bytes para BINARY(16)
+
     if (empty($_POST["nombre"])) {
         $hasError = true;
     } else {
@@ -52,6 +58,7 @@ if (isset($_POST["alta-client"])) {
     if (!isset($hasError)) {
 
         $sql = "INSERT INTO usuarios SET
+            uuid=:uuid,
             nombre=:nombre,
             telefono=:telefono,
             anualitat=:anualitat,
@@ -67,7 +74,7 @@ if (isset($_POST["alta-client"])) {
         ";
 
         $stmt = $conn->prepare($sql);
-
+        $stmt->bindValue(":uuid", $uuidBytes, PDO::PARAM_LOB);
         $stmt->bindValue(":nombre", $nombre, PDO::PARAM_STR);
         $stmt->bindValue(":email", $email, PDO::PARAM_STR);
 
@@ -115,7 +122,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Nom i cognoms <span class="text-danger">*</span></label>';
     echo '<input type="text" class="form-control" id="nombre" name="nombre" value="' . htmlspecialchars($_POST["nombre"] ?? "", ENT_QUOTES) . '" required>';
-        echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';
@@ -123,7 +130,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Telèfon <span class="text-danger">*</span></label>';
     echo '<input type="text" class="form-control" id="telefono" name="telefono" value="' . htmlspecialchars($_POST["telefono"] ?? "", ENT_QUOTES) . '" required>';
-        echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';
@@ -131,7 +138,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Anualitat client dia/mes/any <span class="text-danger">*</span></label>';
     echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars($_POST["anualitat"] ?? "", ENT_QUOTES) . '" required>';
-        echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';
@@ -156,7 +163,7 @@ if ($codi_resposta == 2) {
     }
 
     echo '</select>';
-        echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';
@@ -164,7 +171,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Email <span class="text-danger">*</span></label>';
     echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars($_POST["email"] ?? "", ENT_QUOTES) . '" required>';
-        echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';

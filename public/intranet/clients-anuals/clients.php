@@ -7,7 +7,7 @@ echo "<div class='container' style='margin-bottom:100px'>";
 echo "<h3>Clients amb Abonament anual</h3>";
 
 // consulta general clients
-$sql = "SELECT c.nombre AS nom, c.telefono AS telefon, c.id, c.anualitat
+$sql = "SELECT c.nombre AS nom, c.telefono AS telefon, c.uuid, c.anualitat
     FROM usuarios AS c
     WHERE c.tipo_rol = 'cliente_anual'
     ORDER BY c.nombre ASC";
@@ -36,7 +36,7 @@ $result = $pdo_statement->fetchAll();
             foreach ($result as $row) {
                 $nom = $row['nom'];
                 $telefon = $row['telefon'];
-                $id = $row['id'];
+                $id = $row['uuid'];
                 $anualitat = $row['anualitat'];
                 echo "<tr>";
                 echo "<td>" . $nom . "</td>";
