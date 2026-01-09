@@ -74,8 +74,8 @@ export async function formUsuarios(isUpdate: boolean, uuid?: string) {
   // CREATE
   // =========================
   if (!isUpdate) {
-    setTitle(`<h2>Usuarios: creación de nuevo usuario/cliente</h2>`);
-    btn.textContent = 'Insertar datos';
+    setTitle(`<h5>Clients/usuaris: alta nou client</h5>`);
+    btn.textContent = 'Inserir dades';
 
     setHidden('uuid', '');
     setHidden('estado', 'activo');
@@ -95,17 +95,17 @@ export async function formUsuarios(isUpdate: boolean, uuid?: string) {
   // UPDATE
   // =========================
   if (!uuid) {
-    setTitle(`<h2>Usuarios: modificación</h2><p>Falta UUID para cargar el usuario.</p>`);
+    setTitle(`<h5>Clients/usuaris: modificació dades</h5><p>Falta UUID per a carregar l'usuari.</p>`);
     btn.disabled = true;
     return;
   }
 
-  setTitle(`<h2>Usuarios: modificación de usuario/cliente</h2>`);
-  btn.textContent = 'Modificar datos';
+  setTitle(`<h5>Clients/usuaris: modificació dades</h5>`);
+  btn.textContent = 'Modificar dades';
 
   const res = await fetchDataGet<ApiResponse<UsuarioFitxa>>(URLS.GET.USUARIOS_GET(uuid));
   if (!res || !isOk(res)) {
-    setTitle(`<h2>Usuarios: modificación</h2><p>No se han podido cargar los datos del usuario.</p>`);
+    setTitle(`<h2>Clients/usuaris: modificació</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
     btn.disabled = true;
     return;
   }

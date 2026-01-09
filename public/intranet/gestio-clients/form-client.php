@@ -14,9 +14,10 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
 <div class="container"
     style="margin-bottom:100px;border:1px solid gray;border-radius:10px;padding:25px;background-color:#eaeaea">
     <div class="container">
-        <div class="row">
+        <div class="row g-3">
 
             <!-- Título dinámico (lo rellenará TS) -->
+             <h2>Gestió de clients i usuaris intranet</h2>
             <div id="titolForm"></div>
 
             <!-- OK / ERROR -->
@@ -38,9 +39,9 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                 <!-- =========================
              BLOQUE: Identidad
         ========================== -->
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="nombre" class="form-label negreta">Nombre y apellidos *</label>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="nombre" class="form-label negreta">Nom i cognoms *</label>
                         <input type="text"
                             class="form-control"
                             name="nombre"
@@ -50,7 +51,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                             value="">
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="email" class="form-label negreta">Email *</label>
                         <input type="email"
                             class="form-control"
@@ -59,7 +60,11 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                             required
                             maxlength="255"
                             value="">
-                        <div class="form-text">Se normaliza a minúsculas al guardar.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="telefono" class="form-label negreta">Telèfon *</label>
+                        <input type="text" class="form-control" name="telefono" id="telefono" maxlength="50" value="" required>
                     </div>
                 </div>
 
@@ -68,7 +73,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
         ========================== -->
                 <div class="row espai-superior" style="margin-top:20px;">
                     <div class="col-md-6">
-                        <label for="password" class="form-label negreta">Contraseña</label>
+                        <label for="password" class="form-label negreta">Contrasenya</label>
                         <input type="password"
                             class="form-control"
                             name="password"
@@ -83,7 +88,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                     </div>
 
                     <div class="col-md-3">
-                        <label for="tipo_rol" class="form-label negreta">Tipo de cliente*</label>
+                        <label for="tipo_rol" class="form-label negreta">Tipus de client*</label>
                         <select class="form-select" name="tipo_rol" id="tipo_rol" required>
                             <option value="cliente" selected>Cliente web</option>
                             <option value="cliente_anual">Cliente anual</option>
@@ -93,7 +98,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                     </div>
 
                     <div class="col-md-3">
-                        <label for="locale" class="form-label negreta">Idioma cliente *</label>
+                        <label for="locale" class="form-label negreta">Idioma client *</label>
                         <select class="form-select" name="locale" id="locale" required>
                             <option value="ca">Català</option>
                             <option value="es" selected>Castellano</option>
@@ -109,14 +114,9 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
         ========================== -->
                 <div class="row espai-superior" style="border-top:1px solid black;padding-top:25px;margin-top:25px;">
 
-                    <h5>Datos de facturación (opcionales): </h5>
+                    <h5>Dades de facturació (opcionals): </h5>
                     <div class="col-md-4">
-                        <label for="telefono" class="form-label negreta">Teléfono</label>
-                        <input type="text" class="form-control" name="telefono" id="telefono" maxlength="50" value="">
-                    </div>
-
-                    <div class="col-md-4">
-                        <label for="pais" class="form-label negreta">País</label>
+                        <label for="pais" class="form-label negreta">Pais</label>
                         <input type="text" class="form-control" name="pais" id="pais" maxlength="100" value="">
                     </div>
 
@@ -131,25 +131,25 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                     </div>
 
                     <div class="col-md-6">
-                        <label for="direccion" class="form-label negreta">Dirección</label>
+                        <label for="direccion" class="form-label negreta">Direcció</label>
                         <input type="text" class="form-control" name="direccion" id="direccion" maxlength="255" value="">
                     </div>
 
                     <div class="col-md-4">
-                        <label for="ciudad" class="form-label negreta">Ciudad</label>
+                        <label for="ciudad" class="form-label negreta">Ciutat</label>
                         <input type="text" class="form-control" name="ciudad" id="ciudad" maxlength="150" value="">
                     </div>
 
                     <div class="col-md-3">
-                        <label for="codigo_postal" class="form-label negreta">Código postal</label>
+                        <label for="codigo_postal" class="form-label negreta">Codi postal</label>
                         <input type="text" class="form-control" name="codigo_postal" id="codigo_postal" maxlength="20" value="">
                     </div>
 
                     <hr>
-                    <h5>Información para Clientes anuales: </h5>
+                    <h5>Informació per a Clients anuals: </h5>
 
                     <div class="col-md-4">
-                        <label for="anualitat" class="form-label negreta">Anualidad (dia/mes/año):</label>
+                        <label for="anualitat" class="form-label negreta">Anualitat (dia/mes/any):</label>
                         <input type="text" class="form-control" name="anualitat" id="anualitat" maxlength="50" value="">
                     </div>
                 </div>
@@ -157,11 +157,16 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                 <!-- =========================
              BOTÓN
         ========================== -->
-                <div class="row espai-superior" style="border-top:1px solid black;padding-top:25px;margin-top:25px;">
-                    <div class="col"></div>
+                <div class="row espai-superior border-top pt-4 mt-4">
+                    <div class="col d-flex align-items-center">
+                        <a href="usuarios.php" class="btn btn-outline-secondary">
+                            ← Tornar enrere
+                        </a>
+                    </div>
+
                     <div class="col d-flex justify-content-end align-items-center">
                         <button class="btn btn-primary" id="btnUsuarios" type="submit">
-                            Guardar
+                            Desar dades
                         </button>
                     </div>
                 </div>
