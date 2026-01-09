@@ -159,7 +159,7 @@ try {
             AND estado = 'activo'
             LIMIT 1
         ");
-        
+
     $stmtUser->execute([':uuid_hex' => $usuarioUuidHex]);
     if (!$stmtUser->fetchColumn()) {
         echo json_encode([
@@ -193,7 +193,7 @@ try {
             total_calculado,
             canal
         ) VALUES (
-            :usuario_uuid,
+            UNHEX(:usuario_uuid_hex),
             :localizador,
             :estado,
             :estado_vehiculo,
@@ -218,7 +218,7 @@ try {
     $estadoVehiculo = 'pendiente_entrada';
 
     $stmt->execute([
-        ':usuario_uuid_hex'   => $usuarioUuidHex,
+        ':usuario_uuid_hex'  => $usuarioUuidHex,
         ':localizador'       => $idReserva,
         ':estado'            => $estadoReserva,
         ':estado_vehiculo'   => $estadoVehiculo,

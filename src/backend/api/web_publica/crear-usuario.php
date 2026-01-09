@@ -222,7 +222,8 @@ if ($stmt->execute()) {
     // Devolver respuesta de éxito
     echo json_encode([
         "status" => "success",
-        "usuario_uuid_hex" => $uuidStr,
+        "usuario_uuid" => $uuidStr,                 // UUID con guiones (legible)
+        "usuario_uuid_hex" => bin2hex($uuidBytes),  // 32 hex (URL/UNHEX friendly)
         "message" => "Cliente creado con exito."
     ]);
 } else {
