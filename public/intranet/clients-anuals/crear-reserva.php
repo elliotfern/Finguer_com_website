@@ -154,28 +154,34 @@ if ($codi_resposta == 2) {
 
     echo '<div class="col-md-4">';
     echo '<label>Selecciona un client anual <span class="text-danger">*</span></label>';
-    echo '<select class="form-select" name="uuidClientHex" id="uuidClientHex" required>';
-    echo '<option value="" disabled ' . (empty($post['uuidClientHex']) ? 'selected' : '') . '>Selecciona el client:</option>';
+    echo '<select class="form-select" name="usuario_uuid_hex" id="usuario_uuid_hex" required>';
+
+    // placeholder: selected solo si NO hay post ni uuid en URL
+    $placeholderSelected = (empty($post['usuario_uuid_hex']) && empty($usuarioUuidHexFromPath)) ? 'selected' : '';
+    echo '<option value="" disabled ' . $placeholderSelected . '>Selecciona el client:</option>';
 
     $sql = "SELECT c.nombre, HEX(c.uuid) AS uuid_hex
-        FROM usuarios AS c
-        WHERE c.tipo_rol = 'cliente_anual'
-          AND c.estado <> 'eliminado'
-        ORDER BY c.nombre ASC";
+    FROM usuarios AS c
+    WHERE c.tipo_rol = 'cliente_anual'
+      AND c.estado <> 'eliminado'
+    ORDER BY c.nombre ASC";
 
     $pdo_statement = $conn->prepare($sql);
     $pdo_statement->execute();
     $result = $pdo_statement->fetchAll(PDO::FETCH_ASSOC);
 
-    // si viene por POST, manda POST. Si no, usa el de la URL.
-    $selectedClientHex = $post['uuidClientHex'] ?? ($uuidClientHexFromPath ?? '');
+    // POST tiene prioridad, si no, el de la URL
+    $selectedClientHex = !empty($post['usuario_uuid_hex'])
+        ? strtolower((string)$post['usuario_uuid_hex'])
+        : ($usuarioUuidHexFromPath ?? '');
 
     foreach ($result as $row) {
         $nom = $row['nombre'];
-        $uuidHex = strtolower($row['uuid_hex']); // 32 hex
+        $uuidHex = strtolower($row['uuid_hex']);
         $selected = ($selectedClientHex === $uuidHex) ? 'selected' : '';
         echo "<option value=\"" . htmlspecialchars($uuidHex, ENT_QUOTES) . "\" $selected>" . htmlspecialchars($nom, ENT_QUOTES) . "</option>";
     }
+
 
     echo '</select>';
     echo '<div class="form-text"><span class="text-danger">*</span> Camp obligatori</div>';
