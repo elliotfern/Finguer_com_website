@@ -195,7 +195,7 @@ if ($hasError) {
 global $conn;
 
 // 🔁 CAMBIO IMPORTANTE: nueva BD + nueva tabla
-$sql = "INSERT INTO usuarios SET uuid = :uuid, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+$sql = "INSERT INTO usuarios SET uuid = :uuid, estado=:estado, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
 
 $stmt = $conn->prepare($sql);
 $stmt->bindValue(":uuid", $uuidBytes, PDO::PARAM_LOB);
