@@ -45,23 +45,23 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         }
 
         // ¿Existe reserva sin join?
-        $stR = $conn->prepare("SELECT id, usuario_id FROM parking_reservas WHERE id = :id LIMIT 1");
+        $stR = $conn->prepare("SELECT id, usuario_uuid FROM parking_reservas WHERE id = :id LIMIT 1");
         $stR->execute([':id' => $reservaId]);
         $r0 = $stR->fetch(PDO::FETCH_ASSOC);
         error_log('[FINGUER][DEBUG] pr=' . json_encode($r0, JSON_UNESCAPED_UNICODE));
 
         // ¿Existe el usuario por id?
-        $uid = (int)($r0['usuario_id'] ?? 0);
-        $stU = $conn->prepare("SELECT id, nombre, email FROM usuarios WHERE id = :uid LIMIT 1");
+        $uid = (int)($r0['usuario_uuid'] ?? 0);
+        $stU = $conn->prepare("SELECT uuid, nombre, email FROM usuarios WHERE uuid = :uid LIMIT 1");
         $stU->execute([':uid' => $uid]);
         $u0 = $stU->fetch(PDO::FETCH_ASSOC);
         error_log('[FINGUER][DEBUG] u=' . json_encode($u0, JSON_UNESCAPED_UNICODE));
 
         // ¿Y el join exacto?
         $stJ = $conn->prepare("
-            SELECT pr.id pr_id, pr.usuario_id, u.id u_id
+            SELECT pr.id pr_id, pr.usuario_uuid, u.uuid u_id
             FROM parking_reservas pr
-            INNER JOIN usuarios u ON u.id = pr.usuario_id
+            INNER JOIN usuarios u ON u.uuid = pr.usuario_uuid
             WHERE pr.id = :id
             LIMIT 1
         ");
@@ -75,7 +75,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $sql = "
             SELECT
                 pr.id,
-                pr.usuario_id,
+                pr.usuario_uuid,
                 pr.fecha_reserva,
                 pr.subtotal_calculado,
                 pr.iva_calculado,
@@ -91,7 +91,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 u.pais           AS u_pais
             FROM parking_reservas pr
             LEFT JOIN usuarios u
-                ON u.id = pr.usuario_id
+                ON u.uuid = pr.usuario_uuid
             WHERE pr.id = :id
             LIMIT 1
         ";

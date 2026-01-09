@@ -89,7 +89,7 @@ try {
         FROM parking_reservas pr
 
         LEFT JOIN usuarios u
-            ON pr.usuario_id = u.uuid
+            ON pr.usuario_uuid = u.uuid
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
@@ -228,7 +228,7 @@ try {
         FROM parking_reservas pr
 
         LEFT JOIN usuarios u
-            ON pr.usuario_id = u.uuid
+            ON pr.usuario_uuid = u.uuid
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
