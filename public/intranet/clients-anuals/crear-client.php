@@ -29,6 +29,8 @@ if (isset($_POST["alta-client"])) {
         $email = data_input($_POST["email"], ENT_NOQUOTES);
     }
 
+    $estado = "activo";
+
     // --- Locale obligatorio ---
     $localesPermitidos = ['ca', 'es', 'fr', 'en', 'it'];
 
@@ -70,13 +72,15 @@ if (isset($_POST["alta-client"])) {
             ciudad=:ciudad,
             codigo_postal=:codigo_postal,
             pais=:pais,
-            locale=:locale
+            locale=:locale,
+            estado=:estado
         ";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":uuid", $uuidBytes, PDO::PARAM_LOB);
         $stmt->bindValue(":nombre", $nombre, PDO::PARAM_STR);
         $stmt->bindValue(":email", $email, PDO::PARAM_STR);
+        $stmt->bindValue(":estado", $estado, PDO::PARAM_STR);
 
         // si son NULL, pasamos PDO::PARAM_NULL
         $stmt->bindValue(":telefono", $telefono, $telefono === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
