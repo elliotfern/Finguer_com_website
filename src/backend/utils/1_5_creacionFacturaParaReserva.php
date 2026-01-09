@@ -214,7 +214,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             ) VALUES (
                 :numero, :serie, :reserva_id, :usuario_uuid,
                 :emisor_id, :emisor_nombre_legal, :emisor_nif, :emisor_direccion, :emisor_cp, :emisor_ciudad, :emisor_pais,
-                :fecha_emision, :subtotal, :impuesto_total, :total, 'emitida',
+                :fecha_emision, 'EUR', :subtotal, :impuesto_total, :total, 'emitida',
                 :facturar_a_nombre, :facturar_a_empresa, :facturar_a_nif, :facturar_a_direccion, :facturar_a_ciudad, :facturar_a_cp, :facturar_a_pais, :facturar_a_email
             )
         ";
@@ -224,7 +224,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             ':numero' => (string)$numeracion['numero'],
             ':serie'  => (string)$numeracion['serie'],
             ':reserva_id' => $reservaId,
-            ':usuario_uuid', $usuarioUuidBytes,
+            ':usuario_uuid' => $usuarioUuidBytes,
 
             ':emisor_id' => $emisorId,
             ':emisor_nombre_legal' => $emisorNombre,
