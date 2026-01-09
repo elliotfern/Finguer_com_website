@@ -76,7 +76,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
              BLOQUE: Acceso
         ========================== -->
                     <div class="row espai-superior" style="margin-top:20px;">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label for="password" class="form-label negreta">Contrasenya</label>
                             <input type="password"
                                 class="form-control"
@@ -94,10 +94,10 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                         <div class="col-md-3">
                             <label for="tipo_rol" class="form-label negreta">Tipus de client*</label>
                             <select class="form-select" name="tipo_rol" id="tipo_rol" required>
-                                <option value="cliente" selected>Cliente web</option>
-                                <option value="cliente_anual">Cliente anual</option>
-                                <option value="trabajador">Trabajador</option>
-                                <option value="admin">Administrador</option>
+                                <option value="cliente" selected>1) Client</option>
+                                <option value="cliente_anual">2) Client anual</option>
+                                <option value="trabajador">3) Treballador</option>
+                                <option value="admin">4) Administrador</option>
                             </select>
                         </div>
 
@@ -163,7 +163,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
         ========================== -->
                     <div class="row espai-superior border-top pt-4 mt-4">
                         <div class="col d-flex align-items-center">
-                            <a href="./usuaris" class="btn btn-outline-secondary">
+                            <a href="/usuaris" class="btn btn-outline-secondary">
                                 ← Tornar enrere
                             </a>
                         </div>
@@ -183,7 +183,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
 
 <style>
     input[type="email"].form-control {
-        line-height: 1.5;
+        line-height: 1.8;
         padding-top: .375rem;
         padding-bottom: .375rem;
     }
