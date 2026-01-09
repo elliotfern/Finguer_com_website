@@ -49,12 +49,16 @@ if ($session === '') {
     $errors["session"] = "Falta session del carrito.";
 }
 
-// idClient + idReserva obligatorios
-$idClient  = isset($data["idClient"]) ? (int)$data["idClient"] : 0;
-$idReserva = isset($data["idReserva"]) ? trim((string)$data["idReserva"]) : '';
+// usuario_uuid_hex + idReserva obligatorios
+$usuarioUuidHex = strtolower(trim((string)($data["usuario_uuid_hex"] ?? '')));
+$idReserva      = trim((string)($data["idReserva"] ?? ''));
 
-if ($idClient <= 0) $errors["idClient"] = "Falta idClient.";
-if ($idReserva === '') $errors["idReserva"] = "Falta idReserva.";
+if ($usuarioUuidHex === '' || !preg_match('/^[0-9a-f]{32}$/', $usuarioUuidHex)) {
+    $errors["usuario_uuid_hex"] = "Falta usuario_uuid_hex (32 hex).";
+}
+if ($idReserva === '') {
+    $errors["idReserva"] = "Falta idReserva.";
+}
 
 if (!empty($errors)) {
     echo json_encode([
@@ -147,13 +151,32 @@ try {
     // ------------------------
     // INSERTAR RESERVA + SERVICIOS
     // ------------------------
+
+    $stmtUser = $conn->prepare("
+            SELECT 1
+            FROM usuarios
+            WHERE uuid = UNHEX(:uuid_hex)
+            AND estado = 'activo'
+            LIMIT 1
+        ");
+        
+    $stmtUser->execute([':uuid_hex' => $usuarioUuidHex]);
+    if (!$stmtUser->fetchColumn()) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Usuario no encontrado o no activo."
+        ]);
+        exit;
+    }
+
+
     $conn->beginTransaction();
 
     // 4) Insert en parking_reservas (totales desde BD)
     $sqlReserva = "
         INSERT INTO parking_reservas
         (
-            usuario_id,
+            usuario_uuid,
             localizador,
             estado,
             estado_vehiculo,
@@ -170,7 +193,7 @@ try {
             total_calculado,
             canal
         ) VALUES (
-            :usuario_id,
+            :usuario_uuid,
             :localizador,
             :estado,
             :estado_vehiculo,
@@ -195,7 +218,7 @@ try {
     $estadoVehiculo = 'pendiente_entrada';
 
     $stmt->execute([
-        ':usuario_id'        => $idClient,
+        ':usuario_uuid_hex'   => $usuarioUuidHex,
         ':localizador'       => $idReserva,
         ':estado'            => $estadoReserva,
         ':estado_vehiculo'   => $estadoVehiculo,

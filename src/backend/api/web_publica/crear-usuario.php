@@ -1,4 +1,7 @@
 <?php
+
+use Ramsey\Uuid\Uuid;
+
 // CORS + tipos
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
@@ -153,6 +156,11 @@ if (!empty($errors)) {
 
 // si no hi ha errors, continuem amb la validacio de les dades
 
+$uuidObj = Uuid::uuid7();
+$uuidBytes = $uuidObj->getBytes();      // BINARY(16)
+$uuidStr   = $uuidObj->toString();      // para devolver al frontend (legible)
+$estado    = 'activo';
+
 $nombre = data_input($data["nombre"]);
 $email = data_input($data["email"]);
 $telefono = data_input($data["telefono"]);
@@ -187,8 +195,11 @@ if ($hasError) {
 global $conn;
 
 // 🔁 CAMBIO IMPORTANTE: nueva BD + nueva tabla
-$sql = "INSERT INTO usuarios SET nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+$sql = "INSERT INTO usuarios SET uuid = :uuid, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+
 $stmt = $conn->prepare($sql);
+$stmt->bindValue(":uuid", $uuidBytes, PDO::PARAM_LOB);
+$stmt->bindValue(":estado", $estado, PDO::PARAM_STR);
 $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
 $stmt->bindParam(":email", $email, PDO::PARAM_STR);
 $stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
@@ -206,14 +217,12 @@ $stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
 $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
-    // Obtener el ID del nuevo cliente insertado
-    $idCliente = $conn->lastInsertId();
 
     // response output
     // Devolver respuesta de éxito
     echo json_encode([
         "status" => "success",
-        "idCliente" => $idCliente,
+        "usuario_uuid_hex" => $uuidStr,
         "message" => "Cliente creado con exito."
     ]);
 } else {
