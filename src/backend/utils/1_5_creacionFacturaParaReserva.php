@@ -152,7 +152,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 . ', subtotal=' . $subtotal
                 . ', iva=' . $iva
                 . ', total=' . $total
-                . ', usuario_id=' . $usuarioUuidHex . ')'
+                . ', usuario_uuid=' . $usuarioUuidHex . ')'
         );
 
         // 2) Seleccionar emisor (cutover fijo 2026-01-01) y snapshot
@@ -209,25 +209,22 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $sqlInsF = "
             INSERT INTO facturas
             (
-                numero, serie, reserva_id, usuario_uuid,
-                emisor_id, emisor_nombre_legal, emisor_nif, emisor_direccion, emisor_cp, emisor_ciudad, emisor_pais,
-                fecha_emision, moneda, subtotal, impuesto_total, total, estado,
+                numero, serie, reserva_id, usuario_uuid, emisor_id, emisor_nombre_legal, emisor_nif, emisor_direccion, emisor_cp, emisor_ciudad, emisor_pais, fecha_emision, moneda, subtotal, impuesto_total, total, estado,
                 facturar_a_nombre, facturar_a_empresa, facturar_a_nif, facturar_a_direccion, facturar_a_ciudad, facturar_a_cp, facturar_a_pais, facturar_a_email
             ) VALUES (
                 :numero, :serie, :reserva_id, :usuario_uuid,
                 :emisor_id, :emisor_nombre_legal, :emisor_nif, :emisor_direccion, :emisor_cp, :emisor_ciudad, :emisor_pais,
-                :fecha_emision, 'EUR', :subtotal, :impuesto_total, :total, 'emitida',
+                :fecha_emision, :subtotal, :impuesto_total, :total, 'emitida',
                 :facturar_a_nombre, :facturar_a_empresa, :facturar_a_nif, :facturar_a_direccion, :facturar_a_ciudad, :facturar_a_cp, :facturar_a_pais, :facturar_a_email
             )
         ";
         $stmtF = $conn->prepare($sqlInsF);
 
-        $stmtF->bindValue(':usuario_uuid', $usuarioUuidBytes, PDO::PARAM_LOB);
-
         $okF = $stmtF->execute([
             ':numero' => (string)$numeracion['numero'],
             ':serie'  => (string)$numeracion['serie'],
             ':reserva_id' => $reservaId,
+            ':usuario_uuid', $usuarioUuidBytes,
 
             ':emisor_id' => $emisorId,
             ':emisor_nombre_legal' => $emisorNombre,
