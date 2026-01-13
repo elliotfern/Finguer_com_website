@@ -12,6 +12,8 @@ import { nomUsuari } from './components/intranet/header/nomUsuari';
 import { setMe } from './components/intranet/auth/store';
 import { applyRoleToDom } from './components/intranet/auth/applyRole';
 
+console.log('[main] loaded', window.location.pathname);
+
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
 
@@ -87,19 +89,24 @@ if (window.location.pathname === '/area-cliente/reservas') {
 
 // TOTA LA INTRANET
 if (window.location.pathname.startsWith('/control/') && !window.location.pathname.includes('/control/login')) {
+  console.log('[main] intranet block entered');
+
   (async () => {
-    const me = await nomUsuari(); // devuelve {uuid, role, name} o null
+    console.log('[main] calling nomUsuari...');
+    const me = await nomUsuari();
+    console.log('[main] nomUsuari returned:', me);
+
     setMe(me);
 
-     if (me) {
+    if (me) {
       applyRoleToDom(me.role); // 🔥 aquí aplicas ocultar/disable a HTML existente
     }
 
     // header
-    const module = await import("./components/intranet/header/header");
+    const module = await import('./components/intranet/header/header');
     module.header();
   })().catch((error) => {
-    console.error("Error intranet init:", error);
+    console.error('Error intranet init:', error);
   });
 }
 
