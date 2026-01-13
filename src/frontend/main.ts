@@ -95,21 +95,20 @@ if (isIntranet && !window.location.pathname.includes("/control/login")) {
   console.log('[main] intranet block entered');
 
   (async () => {
-    console.log('[main] calling nomUsuari...');
+    console.log("[main] calling nomUsuari...");
     const me = await nomUsuari();
-    console.log('[main] nomUsuari returned:', me);
+    console.log("[main] nomUsuari returned:", me);
 
     setMe(me);
 
-    if (me) {
-      applyRoleToDom(me.role); // 🔥 aquí aplicas ocultar/disable a HTML existente
-    }
-
-    // header
-    const module = await import('./components/intranet/header/header');
+    // header (primero renderiza)
+    const module = await import("./components/intranet/header/header");
     module.header();
+
+    // luego aplica ocultación sobre HTML ya existente
+    if (me) applyRoleToDom(me.role);
   })().catch((error) => {
-    console.error('Error intranet init:', error);
+    console.error("Error intranet init:", error);
   });
 }
 
