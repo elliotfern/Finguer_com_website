@@ -266,10 +266,10 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         // Solo admin puede ver/usar este botón
         if (isAdmin()) {
           html += `<button type="button"
-      class="btn btn-success btn-sm confirmar-pago-manual"
-      data-id="${data.id}">
-      Cobrar y emitir factura
-    </button>`;
+            class="btn btn-success btn-sm confirmar-pago-manual"
+            data-id="${data.id}">
+            Cobrar y emitir factura
+          </button>`;
         } else {
           html += '-';
         }

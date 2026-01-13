@@ -10,6 +10,7 @@ import { formUsuarios } from './components/intranet/clients/formClient';
 import { reservesClientPage } from './components/intranet/clients/reservesClient';
 import { nomUsuari } from './components/intranet/header/nomUsuari';
 import { setMe } from './components/intranet/auth/store';
+import { applyRoleToDom } from './components/intranet/auth/applyRole';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -89,6 +90,10 @@ if (window.location.pathname.startsWith('/control/') && !window.location.pathnam
   (async () => {
     const me = await nomUsuari(); // devuelve {uuid, role, name} o null
     setMe(me);
+
+     if (me) {
+      applyRoleToDom(me.role); // 🔥 aquí aplicas ocultar/disable a HTML existente
+    }
 
     // header
     const module = await import("./components/intranet/header/header");

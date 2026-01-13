@@ -1,60 +1,58 @@
 import { Role } from "../../../types/Role";
 
-type DenyMode = "hide" | "disable";
-
-function getDenyMode(el: HTMLElement): DenyMode {
-  const v = el.dataset.denyMode;
-  return v === "disable" ? "disable" : "hide";
-}
-
-function deny(el: HTMLElement, mode: DenyMode): void {
+function deny(el: HTMLElement, mode: "hide" | "disable"): void {
   if (mode === "disable") {
-    // Si es botón / input, deshabilita. Si no, lo “apagas”.
-    if (el instanceof HTMLButtonElement || el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) {
+    if (
+      el instanceof HTMLButtonElement ||
+      el instanceof HTMLInputElement ||
+      el instanceof HTMLSelectElement ||
+      el instanceof HTMLTextAreaElement
+    ) {
       el.disabled = true;
     } else {
       el.setAttribute("aria-disabled", "true");
       el.classList.add("is-disabled");
     }
   } else {
-    el.hidden = true; // mejor que display:none: mantiene semántica simple
+    el.hidden = true;
   }
 }
 
+function getMode(el: HTMLElement): "hide" | "disable" {
+  return el.dataset.denyMode === "disable" ? "disable" : "hide";
+}
+
+function isRole(v: string): v is Role {
+  return v === "admin" || v === "trabajador" || v === "cliente" || v === "cliente_anual";
+}
+
 export function applyRoleToDom(role: Role): void {
-  // 1) Elementos con roles requeridos
-  const nodes = document.querySelectorAll<HTMLElement>("[data-requires-role]");
-  nodes.forEach((el) => {
-    const required = el.dataset.requiresRole; // string | undefined
+  // data-requires-role="admin" o "admin,trabajador"
+  document.querySelectorAll<HTMLElement>("[data-requires-role]").forEach((el) => {
+    const required = el.dataset.requiresRole;
     if (!required) return;
 
-    // soporta: data-requires-role="admin" o "admin,trabajador"
-    const requiredRoles = required
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0) as Role[]; // (ok: validamos abajo)
+    const roles = required.split(",").map((s) => s.trim()).filter(Boolean);
 
-    // Si el atributo tiene algo raro, por seguridad lo denegamos
-    const isValid = requiredRoles.every((r) => r === "admin" || r === "trabajador" || r === "cliente" || r === "cliente_anual");
-    if (!isValid) {
-      deny(el, getDenyMode(el));
+    // si alguien puso un rol inválido en el HTML, por seguridad ocultamos
+    if (!roles.every(isRole)) {
+      deny(el, getMode(el));
       return;
     }
 
-    if (!requiredRoles.includes(role)) {
-      deny(el, getDenyMode(el));
+    if (!roles.includes(role)) {
+      deny(el, getMode(el));
     }
   });
 
-  // 2) Elementos que se ocultan específicamente para un rol
-  const hideFor = document.querySelectorAll<HTMLElement>("[data-hide-for]");
-  hideFor.forEach((el) => {
-    const v = el.dataset.hideFor;
-    if (!v) return;
+  // data-hide-for="trabajador" o "trabajador,cliente"
+  document.querySelectorAll<HTMLElement>("[data-hide-for]").forEach((el) => {
+    const hideFor = el.dataset.hideFor;
+    if (!hideFor) return;
 
-    const roles = v.split(",").map((s) => s.trim());
-    if (roles.includes(role)) {
-      deny(el, getDenyMode(el));
+    const roles = hideFor.split(",").map((s) => s.trim()).filter(Boolean);
+    if (roles.some((r) => isRole(r) && r === role)) {
+      deny(el, getMode(el));
     }
   });
 }
