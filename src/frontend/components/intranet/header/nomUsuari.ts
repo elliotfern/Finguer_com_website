@@ -93,6 +93,8 @@ export async function nomUsuari(): Promise<Me | null> {
     const userDiv = document.getElementById('userDiv');
     if (userDiv) userDiv.textContent = welcomeMessage;
 
+      console.log("[auth] me =", name);
+
     return parsed.data; // { uuid, role, name }
   } catch (error) {
     console.error('Error:', error);
