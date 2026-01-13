@@ -90,7 +90,7 @@ if (window.location.pathname === '/area-cliente/reservas') {
 // TOTA LA INTRANET
 const isIntranet = window.location.pathname === "/control" || window.location.pathname.startsWith("/control/");
 
-if (isIntranet && !window.location.pathname.includes("/control")) {
+if (isIntranet && !window.location.pathname.includes("/control/login")) {
 
   console.log('[main] intranet block entered');
 
