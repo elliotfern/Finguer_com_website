@@ -169,7 +169,7 @@ require_once APP_ROOT . '/public/intranet/inc/header.php';
                         </div>
 
                         <div class="col d-flex justify-content-end align-items-center">
-                            <button class="btn btn-primary" id="btnUsuarios" type="submit">
+                            <button class="btn btn-primary" id="btnUsuarios" type="submit" data-requires-role="admin">
                                 Desar dades
                             </button>
                         </div>

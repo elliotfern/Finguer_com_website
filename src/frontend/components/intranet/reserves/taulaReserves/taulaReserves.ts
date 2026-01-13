@@ -2,6 +2,7 @@ import { apiUrl, webUrl } from '../../../../config/globals';
 import { ApiResponse } from '../../../../types/api';
 import { Reserva } from '../../../../types/interfaces';
 import { isApiOk } from '../../../../utils/api';
+import { isAdmin } from '../../auth/store';
 import { actualizarEstadoReserva } from './actualitzarEstatReserva';
 import { ComptadorReserves, comptadorReserves } from './comptadorReserves';
 
@@ -247,7 +248,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
         html += `<td><strong>${formatImporte(data.importe)} €</strong></td>`;
       }
 
-      // 3 - FACTURA PDF
+      // 3 - FACTURA PDF - por rol
       html += '<td>';
 
       const canal = Number(data.canal);
@@ -261,12 +262,17 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
       } else if (canal === 5) {
         html += '-';
       } else {
-        // ✅ NO hay factura y NO es canal 5 => mostramos botón
-        html += `<button type="button"
-          class="btn btn-success btn-sm confirmar-pago-manual"
-          data-id="${data.id}">
-          Cobrar y emitir factura
-        </button>`;
+        // ✅ NO hay factura y NO es canal 5
+        // Solo admin puede ver/usar este botón
+        if (isAdmin()) {
+          html += `<button type="button"
+      class="btn btn-success btn-sm confirmar-pago-manual"
+      data-id="${data.id}">
+      Cobrar y emitir factura
+    </button>`;
+        } else {
+          html += '-';
+        }
       }
 
       html += '</td>';
@@ -294,7 +300,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
       const puedeVerificar = diffDays <= MAX_DIAS_VERIFICACION;
       const estadoHtml = formatEstadoReservaHtml(data.estado);
 
-      if (data.canal === "5") {
+      if (data.canal === '5') {
         html += `<p>${estadoHtml}</p>`;
       } else {
         if (Number(data.processed) === 1) {
@@ -305,7 +311,7 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
           if (puedeVerificar) {
             html += `<p><a href="${urlWeb}/reserva/verificar-pagament/${data.id}"><strong>Verificar pagament</strong></a></p>`;
           }
-        } else if (Number(data.canal) === 3 ) {
+        } else if (Number(data.canal) === 3) {
           html += `<p><button type="button" class="btn btn-danger">NO</button></p>
           <p>${estadoHtml}</p>`;
         } else {

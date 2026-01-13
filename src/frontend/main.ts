@@ -8,6 +8,8 @@ import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFac
 import { clientsUsersTable } from './components/intranet/clients/llistatClients';
 import { formUsuarios } from './components/intranet/clients/formClient';
 import { reservesClientPage } from './components/intranet/clients/reservesClient';
+import { nomUsuari } from './components/intranet/header/nomUsuari';
+import { setMe } from './components/intranet/auth/store';
 
 // Obtener la ruta actual sin barra final
 //const path = window.location.pathname.replace(/\/$/, '');
@@ -84,14 +86,16 @@ if (window.location.pathname === '/area-cliente/reservas') {
 
 // TOTA LA INTRANET
 if (window.location.pathname.startsWith('/control/') && !window.location.pathname.includes('/control/login')) {
-  // Esto se ejecutará en cualquier página que contenga "/control/"
-  import('./components/intranet/header/header')
-    .then((module) => {
-      module.header();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo de reservesPendents:', error);
-    });
+  (async () => {
+    const me = await nomUsuari(); // devuelve {uuid, role, name} o null
+    setMe(me);
+
+    // header
+    const module = await import("./components/intranet/header/header");
+    module.header();
+  })().catch((error) => {
+    console.error("Error intranet init:", error);
+  });
 }
 
 // RESERVES PENDENTS
