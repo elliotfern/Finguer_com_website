@@ -70,6 +70,7 @@ $routes = [
         'no_header_footer' => true,
         'needs_session' => false,
     ],
+    
 ];
 
 
