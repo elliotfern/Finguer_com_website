@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/src/backend/config/config.php';
+require_once __DIR__ . '/src/backend/utils/uuidv7.php';
 require_once __DIR__ . '/src/backend/utils/1_verificaPagamentRedsys.php';
 require_once __DIR__ . '/src/backend/utils/1_1_lecturaReserva.php';
 require_once __DIR__ . '/src/backend/utils/1_2_consultaPagamentRedsys.php';
@@ -27,6 +28,7 @@ require_once __DIR__ . '/src/backend/utils/calcularHashFactura.php';
 require_once __DIR__ . '/src/backend/utils/generadorLocalizador.php';
 require_once __DIR__ . '/src/backend/utils/helpers.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
+require_once __DIR__ . '/src/backend/utils/auth.php';
 
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -94,12 +96,14 @@ if (!$routeFound) {
     $noHeaderFooter = false;
 } else {
     // Verificar si la ruta requiere sesión
+    // AREA INTRANET TRABAJADORES
     $needsSession = $routeInfo['needs_session'] ?? false;
     if ($needsSession) {
         verificarSesion(); // Llamada a la función de verificación de sesión
     }
 
     // Verificar si la ruta necesita verificación adicional
+    // AREA CLIENTE
     $needsVerification = $routeInfo['needs_verification'] ?? false;
     if ($needsVerification) {
         verificarAcceso(); // Llamada al middleware para verificar la verificación

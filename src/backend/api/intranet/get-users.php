@@ -1,87 +1,86 @@
 <?php
 
-// Check if the request method is GET
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+
+// Método
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    header('HTTP/1.1 405 Method Not Allowed');
-    echo json_encode(['error' => 'Method not allowed']);
-    exit();
-} else {
-    if (isset($_COOKIE['token'])) {
-        $token = $_COOKIE['token'];
+    http_response_code(405);
+    echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+    exit;
+}
 
-        // Verificar el token aquí según tus requerimientos
-        if (validarToken($token)) {
-            // Token válido, puedes continuar con el código para obtener los datos del usuario
+$type = (string)($_GET['type'] ?? '');
 
-            // 1) usuari
-            // ruta GET => "https://finguer.com/api/intranet/users/?type=user&701"
-            if (isset($_GET['type']) && $_GET['type'] === 'user') {
-                global $conn;
+try {
 
-                $id = $_COOKIE['user_id'];
+    // =========================================================
+    // type=user  -> datos del usuario autenticado (por token)
+    // =========================================================
+    if ($type === 'user') {
 
-                $query = "SELECT u.nombre
-                FROM epgylzqu_finguer.usuaris AS u
-                WHERE u.id = :param";
-
-                // Preparar la consulta
-                /** @var PDO $conn */
-                $stmt = $conn->prepare($query);
-
-                // Vincular los parámetros
-                $stmt->bindParam(':param', $id);
-
-                // Ejecutar la consulta
-                $stmt->execute();
-
-                // Verificar si se encontraron resultados
-                if ($stmt->rowCount() === 0) {
-                    echo json_encode(['error' => 'No rows found']);
-                    exit;
-                }
-
-                // Recopilar los resultados
-                $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                // Establecer el encabezado de respuesta a JSON
-                header('Content-Type: application/json');
-
-                // Devolver los datos en formato JSON
-                echo json_encode($data);
-
-                // 1) Llistat topics
-                // ruta GET => "https://finguer.com/api/intranet/users/?type=user&701"
-            } elseif (isset($_GET['type']) && $_GET['type'] === 'deleteCookies') {
-
-                // Eliminar cookies seguras
-                if (isset($_COOKIE['token'])) {
-                    setcookie('token', '', time() - 3600, '/', '', true, true);
-                }
-
-                // Eliminar otras cookies si es necesario
-                setcookie('user_id', '', time() - 3600, '/', '', true, true);
-
-                // También puedes borrar las sesiones o realizar otras acciones relacionadas
-                session_destroy(); // Si estás usando sesiones en PHP
-
-                // Responder al cliente
-                echo json_encode(['message' => 'Sesión cerrada correctamente.']);
-            } else {
-                // Si 'type', 'id' o 'token' están ausentes o 'type' no es 'user' en la URL
-                header('HTTP/1.1 403 Forbidden');
-                echo json_encode(['error' => 'Something get wrong']);
-                exit();
-            }
-        } else {
-            // Token no válido
-            header('HTTP/1.1 403 Forbidden');
-            echo json_encode(['error' => 'Invalid token']);
-            exit();
+        $user = auth_user();
+        if ($user === null) {
+            http_response_code(403);
+            echo json_encode(['status' => 'error', 'message' => 'Access not allowed']);
+            exit;
         }
-    } else {
-        // No se proporcionó un token
-        header('HTTP/1.1 403 Forbidden');
-        echo json_encode(['error' => 'Access not allowed']);
-        exit();
+
+        // Si quieres además leer datos frescos de BD (opcional):
+        // global $conn;
+        // $stmt = $conn->prepare("SELECT nombre, email, tipo_rol FROM usuarios WHERE uuid = :u LIMIT 1");
+        // $stmt->bindValue(':u', $user['uuid_bin'], PDO::PARAM_LOB);
+        // $stmt->execute();
+        // $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'uuid' => $user['uuid'],
+                'role' => $user['role'],
+                'name' => $user['name'],
+                // 'email' => $row['email'] ?? null, // si lo consultas
+            ],
+        ]);
+        exit;
     }
+
+    // =========================================================
+    // type=logout  -> borrar cookie token (multi-subdominio)
+    // =========================================================
+    if ($type === 'logout') {
+
+        // Borrar cookie token (IMPORTANTE: mismo domain/path/samesite/secure)
+        setcookie('token', '', [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'domain'   => '.finguer.com',
+            'secure'   => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+
+        echo json_encode(['status' => 'success', 'message' => 'Sessió tancada correctament.']);
+        exit;
+    }
+
+    // =========================================================
+    // type inválido
+    // =========================================================
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Bad type',
+        'allowed' => ['user', 'logout'],
+    ]);
+    exit;
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Server error',
+        'details' => $e->getMessage(),
+    ]);
+    exit;
 }

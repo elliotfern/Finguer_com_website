@@ -67,6 +67,27 @@ $routes = [
 
     // Facturacio
     '/control/facturacio' => ['view' => 'public/intranet/facturacio/index.php', 'needs_session' => true],
+
+    // Control clients / usuaris
+    '/control/usuaris' => [
+        'view' => 'public/intranet/gestio-clients/llistat-clients.php',
+        'needs_session' => true
+    ],
+
+    '/control/usuaris/alta-client' => [
+        'view' => 'public/intranet/gestio-clients/form-client.php',
+        'needs_session' => true
+    ],
+
+    '/control/usuaris/modifica-client/{id}' => [
+        'view' => 'public/intranet/gestio-clients/form-client.php',
+        'needs_session' => true
+    ],
+
+     '/control/usuaris/reserves-client' => [
+        'view' => 'public/intranet/gestio-clients/llistat-reserves-client.php',
+        'needs_session' => true
+    ],
 ];
 
 return $routes;

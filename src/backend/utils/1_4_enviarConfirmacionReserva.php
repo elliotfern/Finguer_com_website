@@ -35,7 +35,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
             u.telefono
         FROM parking_reservas pr
         LEFT JOIN usuarios u
-          ON pr.usuario_id = u.id
+          ON pr.usuario_uuid = u.uuid
         WHERE pr.id = :id
         LIMIT 1
     ";

@@ -10,7 +10,7 @@ function lecturaReserva(PDO $conn, int $reservaId): array
         SELECT
             pr.id,
             pr.localizador,
-            pr.usuario_id,
+            pr.usuario_uuid,
             pr.estado,
             pr.canal,
             pr.fecha_reserva,

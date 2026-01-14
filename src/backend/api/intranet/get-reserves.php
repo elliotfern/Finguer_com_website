@@ -89,7 +89,7 @@ try {
         FROM parking_reservas pr
 
         LEFT JOIN usuarios u
-            ON pr.usuario_id = u.id
+            ON pr.usuario_uuid = u.uuid
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
@@ -150,7 +150,7 @@ try {
             " . ($tipo !== null ? " AND pr.tipo = :tipo " : "") . "
             GROUP BY pr.estado_vehiculo
         ";
-        
+
         $stmtCounts = $conn->prepare($sqlCounts);
         if ($tipo !== null) {
             $stmtCounts->bindValue(':tipo', $tipo, PDO::PARAM_STR);
@@ -228,7 +228,7 @@ try {
         FROM parking_reservas pr
 
         LEFT JOIN usuarios u
-            ON pr.usuario_id = u.id
+            ON pr.usuario_uuid = u.uuid
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
@@ -310,6 +310,77 @@ try {
         // lo devolvemos tal cual:
         jsonResponse($result, $http);
     }
+
+    // =========================================================
+    // type=list-by-email  (reservas por email cliente)
+    // GET ?type=list-by-email&email=...&limit=50&offset=0
+    // =========================================================
+    if ($type === 'list-by-email') {
+
+        $email = isset($_GET['email']) ? trim((string)$_GET['email']) : '';
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(vp2_err('Email inválido', 'BAD_EMAIL'), 400);
+        }
+
+        $limit  = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
+        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+        if ($limit < 1) $limit = 50;
+        if ($limit > 200) $limit = 200;
+        if ($offset < 0) $offset = 0;
+
+        // LIST
+        $sql = "
+        SELECT
+            r.id,
+            r.localizador,
+            r.estado,
+            r.estado_vehiculo,
+            r.fecha_reserva,
+            r.entrada_prevista,
+            r.salida_prevista,
+            r.total_calculado,
+            r.vehiculo,
+            r.matricula,
+            r.created_at
+        FROM parking_reservas r
+        INNER JOIN usuarios u
+            ON u.uuid = r.usuario_uuid
+        WHERE LOWER(u.email) = LOWER(:email)
+        ORDER BY r.fecha_reserva DESC
+        LIMIT :limit OFFSET :offset
+    ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':email', $email, PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // COUNT
+        $sqlCount = "
+        SELECT COUNT(*) AS total
+        FROM parking_reservas r
+        INNER JOIN usuarios u
+            ON u.uuid = r.usuario_uuid
+        WHERE LOWER(u.email) = LOWER(:email)
+    ";
+        $stmtC = $conn->prepare($sqlCount);
+        $stmtC->bindValue(':email', $email, PDO::PARAM_STR);
+        $stmtC->execute();
+        $total = (int)($stmtC->fetchColumn() ?: 0);
+
+        jsonResponse(vp2_ok('OK', [
+            'email'  => $email,
+            'limit'  => $limit,
+            'offset' => $offset,
+            'total'  => $total,
+            'rows'   => $rows,
+            'hasRows' => (bool)$rows,
+        ]), 200);
+    }
+
 
     // Si llega aquí, type no válido
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', ['allowed' => ['reserves', 'reservaId', 'verificaPagament']]), 400);

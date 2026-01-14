@@ -2,15 +2,18 @@
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-if (!preg_match('#/client/([0-9]+)$#', $path, $matches)) {
+// esperamos 32 hex chars al final
+if (!preg_match('#/client/([0-9a-fA-F]{32})$#', $path, $matches)) {
     http_response_code(400);
-    die('ID de cliente no encontrado');
+    die('UUID de cliente no encontrado');
 }
 
-$idClient = (int)$matches[1];
-if ($idClient <= 0) {
+$uuidHex = strtolower($matches[1]);
+
+// validación extra (opcional, pero me gusta)
+if (!preg_match('/^[0-9a-f]{32}$/', $uuidHex)) {
     http_response_code(400);
-    die('ID de cliente inválido');
+    die('UUID de cliente inválido');
 }
 
 global $conn;
@@ -24,7 +27,7 @@ $codi_resposta = 2;
 
 // 1) Cargar datos actuales del cliente
 $sql = "SELECT
-            c.id,
+            HEX(c.uuid) AS uuid_hex,
             c.nombre,
             c.telefono,
             c.anualitat,
@@ -37,10 +40,12 @@ $sql = "SELECT
             c.codigo_postal,
             c.pais
         FROM usuarios AS c
-        WHERE c.id = :id
+        WHERE c.uuid = UNHEX(:uuid_hex)
         LIMIT 1";
+
 $st = $conn->prepare($sql);
-$st->execute([':id' => $idClient]);
+$st->bindValue(':uuid_hex', $uuidHex, PDO::PARAM_STR);
+$st->execute();
 $row = $st->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
@@ -108,12 +113,12 @@ if (isset($_POST["update-client"])) {
                     ciudad = :ciudad,
                     codigo_postal = :codigo_postal,
                     pais = :pais
-                WHERE id = :id
+                WHERE uuid = UNHEX(:uuid_hex)
                 LIMIT 1";
 
         $stmt = $conn->prepare($sql);
 
-        $stmt->bindValue(":id", $idClient, PDO::PARAM_INT);
+        $stmt->bindValue(":uuid_hex", $uuidHex, PDO::PARAM_STR);
         $stmt->bindValue(":nombre", $nombre, PDO::PARAM_STR);
         $stmt->bindValue(":locale", $locale, PDO::PARAM_STR);
 

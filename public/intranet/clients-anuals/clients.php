@@ -7,9 +7,9 @@ echo "<div class='container' style='margin-bottom:100px'>";
 echo "<h3>Clients amb Abonament anual</h3>";
 
 // consulta general clients
-$sql = "SELECT c.nombre AS nom, c.telefono AS telefon, c.id, c.anualitat
+$sql = "SELECT c.nombre AS nom, c.telefono AS telefon, HEX(c.uuid) AS uuid_hex, c.anualitat, c.estado
     FROM usuarios AS c
-    WHERE c.tipo_rol = 'cliente_anual'
+    WHERE c.tipo_rol = 'cliente_anual' AND estado <> 'eliminado'
     ORDER BY c.nombre ASC";
 
 $pdo_statement = $conn->prepare($sql);
@@ -24,6 +24,7 @@ $result = $pdo_statement->fetchAll();
                 <th>Nom i cognoms &darr;</th>
                 <th>Telèfon</th>
                 <th>Anualitat</th>
+                <th>Estat</th>
                 <th>Modificar dades</th>
                 <th>Eliminar client</th>
                 <th>Crear reserva</th>
@@ -36,12 +37,15 @@ $result = $pdo_statement->fetchAll();
             foreach ($result as $row) {
                 $nom = $row['nom'];
                 $telefon = $row['telefon'];
-                $id = $row['id'];
+                $id = $row['uuid_hex'];
                 $anualitat = $row['anualitat'];
+                $estado = htmlspecialchars($row['estado'], ENT_QUOTES);
+
                 echo "<tr>";
                 echo "<td>" . $nom . "</td>";
                 echo "<td>" . $telefon . "</td>";
                 echo "<td>" . $anualitat . "</td>";
+                echo "<td><span class='badge bg-secondary'>{$estado}</span></td>";
                 echo "<td><a href='" . APP_WEB . "/control/clients-anuals/modificar/client/" . $id . "' class='btn btn-warning btn-sm' role='button' aria-pressed='true'>Actualitzar dades</a></td>";
                 echo "<td><a href='" . APP_WEB . "/control/clients-anuals/eliminar/client/" . $id . "' class='btn btn-danger btn-sm' role='button' aria-pressed='true'>Eliminar client</a></td>";
                 echo "<td><a href='" . APP_WEB . "/control/clients-anuals/crear-reserva/" . $id . "' class='btn btn-info btn-sm' role='button' aria-pressed='true'>Crear reserva</a></td>";
@@ -50,7 +54,5 @@ $result = $pdo_statement->fetchAll();
             echo "</tbody>";
             echo "</table>";
             echo "</div>";
- ?>
-            </div>
-
-           
+            ?>
+</div>

@@ -10,7 +10,7 @@ function getSessionFromUrl(): string | null {
   return last ? decodeURIComponent(last) : null;
 }
 
-export const creacioReserva = async (clientId: number, idReserva: string): Promise<{ status: string; message: string } | undefined> => {
+export const creacioReserva = async (usuarioUuidHex: string, idReserva: string): Promise<{ status: string; message: string } | undefined> => {
   const url = `${window.location.origin}/api/alta-reserva`;
 
   const session = getSessionFromUrl();
@@ -26,7 +26,7 @@ export const creacioReserva = async (clientId: number, idReserva: string): Promi
 
   // Enviamos SOLO lo necesario. El backend calcula/importa todo desde carro_compra por session.
   const formData = {
-    idClient: clientId,
+    usuario_uuid_hex: usuarioUuidHex.toLowerCase(), // 32 hex
     idReserva: idReserva, // tu order Redsys (mdHis)
     session: session, // <- clave para leer carro_compra
     vehiculo,

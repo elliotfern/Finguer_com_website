@@ -4,7 +4,7 @@ export const logout = async (event: MouseEvent) => {
   // Evita que el enlace realice la acción predeterminada (redirigir a otra página)
   event.preventDefault();
 
-  const urlAjax = `${apiUrl}/intranet/users/get/?type=deleteCookies`;
+  const urlAjax = `${apiUrl}/intranet/users/get/?type=logout`;
 
   try {
     const response = await fetch(urlAjax);

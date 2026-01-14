@@ -43,10 +43,14 @@ export const creacioDadesUsuaris = async (idReserva: string): Promise<{ status: 
     }
 
     if (data.status === 'success') {
-      const clientId = data.idCliente;
+      const usuarioUuidHex = (data.usuario_uuid_hex || '').toString();
+
+      if (!usuarioUuidHex || !/^[0-9a-fA-F]{32}$/.test(usuarioUuidHex)) {
+        return { status: 'error', message: 'El backend no devolvió usuario_uuid_hex válido.' };
+      }
 
       // 👇 ahora creamos la reserva usando session (carrito real en BD)
-      const reservaResponse = await creacioReserva(clientId, idReserva);
+      const reservaResponse = await creacioReserva(usuarioUuidHex, idReserva);
 
       if (reservaResponse?.status === 'success') {
         return { status: 'success', message: 'Reserva creada correctamente' };

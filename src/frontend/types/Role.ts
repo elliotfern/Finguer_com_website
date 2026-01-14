@@ -1,0 +1,1 @@
+export type Role = "admin" | "trabajador" | "cliente" | "cliente_anual";

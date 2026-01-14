@@ -4,19 +4,16 @@ date_default_timezone_set('Europe/Rome');
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$idClient = null;
+$usuarioUuidHexFromPath = null;
 
-// Coincide SOLO si hay /crear-reserva/{id}
-if (preg_match('#/crear-reserva/([0-9]+)$#', $path, $matches)) {
-    $idClient = (int)$matches[1];
+if (preg_match('#/crear-reserva/([0-9a-fA-F]{32})$#', $path, $matches)) {
+    $usuarioUuidHexFromPath = strtolower($matches[1]);
 
-    if ($idClient <= 0) {
+    if (!preg_match('/^[0-9a-f]{32}$/', $usuarioUuidHexFromPath)) {
         http_response_code(400);
-        die('ID de cliente inválido');
+        die('UUID de cliente inválido');
     }
 }
-
-$idClient_old = is_numeric($idClient) ? (int)$idClient : null;
 
 global $conn;
 require_once APP_ROOT . '/public/intranet/inc/header.php';
@@ -47,10 +44,10 @@ function parseDiaHoraToDatetimeOrNull(?string $dia, ?string $hora): ?string
 if (isset($_POST["alta-reserva"])) {
 
     // --- Obligatorio: cliente ---
-    if (empty($_POST["idClient"]) || !ctype_digit((string)$_POST["idClient"])) {
+    if (empty($_POST["usuario_uuid_hex"]) || !preg_match('/^[0-9a-fA-F]{32}$/', (string)$_POST["usuario_uuid_hex"])) {
         $hasError = true;
     } else {
-        $idClient = (int)$_POST["idClient"];
+        $usuarioUuidHex = strtolower((string)$_POST["usuario_uuid_hex"]);
     }
 
     // --- Obligatorio: entrada (porque entrada_prevista es NOT NULL) ---
@@ -92,7 +89,7 @@ if (isset($_POST["alta-reserva"])) {
     if (!isset($hasError)) {
 
         $sql = "INSERT INTO parking_reservas SET
-            usuario_id = :usuario_id,
+            usuario_uuid = UNHEX(:usuario_uuid_hex),
             localizador = :localizador,
             estado = :estado,
             estado_vehiculo = :estado_vehiculo,
@@ -112,7 +109,7 @@ if (isset($_POST["alta-reserva"])) {
 
         $stmt = $conn->prepare($sql);
 
-        $stmt->bindValue(":usuario_id", $idClient, PDO::PARAM_INT);
+        $stmt->bindValue(":usuario_uuid_hex", $usuarioUuidHex, PDO::PARAM_STR);
         $stmt->bindValue(":localizador", $localizador, PDO::PARAM_STR);
 
         $stmt->bindValue(":estado", $estado, PDO::PARAM_STR);
@@ -157,31 +154,37 @@ if ($codi_resposta == 2) {
 
     echo '<div class="col-md-4">';
     echo '<label>Selecciona un client anual <span class="text-danger">*</span></label>';
-    echo '<select class="form-select" name="idClient" id="idClient" required>';
-    echo '<option value="" disabled ' . (empty($post['idClient']) ? 'selected' : '') . '>Selecciona el client:</option>';
+    echo '<select class="form-select" name="usuario_uuid_hex" id="usuario_uuid_hex" required>';
 
-    $sql = "SELECT c.nombre, c.id
-            FROM usuarios AS c
-            WHERE c.tipo_rol = 'cliente_anual'
-            ORDER BY c.nombre ASC";
+    // placeholder: selected solo si NO hay post ni uuid en URL
+    $placeholderSelected = (empty($post['usuario_uuid_hex']) && empty($usuarioUuidHexFromPath)) ? 'selected' : '';
+    echo '<option value="" disabled ' . $placeholderSelected . '>Selecciona el client:</option>';
+
+    $sql = "SELECT c.nombre, HEX(c.uuid) AS uuid_hex
+    FROM usuarios AS c
+    WHERE c.tipo_rol = 'cliente_anual'
+      AND c.estado <> 'eliminado'
+    ORDER BY c.nombre ASC";
 
     $pdo_statement = $conn->prepare($sql);
     $pdo_statement->execute();
     $result = $pdo_statement->fetchAll(PDO::FETCH_ASSOC);
 
-    $selectedClient = $post['idClient'] ?? ($idClient_old ?? '');
+    // POST tiene prioridad, si no, el de la URL
+    $selectedClientHex = !empty($post['usuario_uuid_hex'])
+        ? strtolower((string)$post['usuario_uuid_hex'])
+        : ($usuarioUuidHexFromPath ?? '');
 
     foreach ($result as $row) {
         $nom = $row['nombre'];
-        $id  = (int)$row['id'];
-        $selected = ((string)$selectedClient === (string)$id) ? 'selected' : '';
-        echo "<option value=\"$id\" $selected>" . htmlspecialchars($nom, ENT_QUOTES) . "</option>";
+        $uuidHex = strtolower($row['uuid_hex']);
+        $selected = ($selectedClientHex === $uuidHex) ? 'selected' : '';
+        echo "<option value=\"" . htmlspecialchars($uuidHex, ENT_QUOTES) . "\" $selected>" . htmlspecialchars($nom, ENT_QUOTES) . "</option>";
     }
 
+
     echo '</select>';
-     echo '<div class="form-text">
-        <span class="text-danger">*</span> Camp obligatori
-        </div>';
+    echo '<div class="form-text"><span class="text-danger">*</span> Camp obligatori</div>';
     echo "</div>";
 
     echo '<div class="col-md-4">';
@@ -189,7 +192,7 @@ if ($codi_resposta == 2) {
     echo '<select class="form-select" name="tipo_ui" id="tipo_ui" disabled>';
     echo "<option value='3' selected>Client anual</option>";
     echo '</select>';
-     echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo "</div>";
@@ -199,7 +202,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Data entrada <span class="text-danger">*</span></label>';
     echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" required value="' . htmlspecialchars($post['diaEntrada'] ?? '', ENT_QUOTES) . '">';
-     echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';
@@ -207,7 +210,7 @@ if ($codi_resposta == 2) {
     echo '<div class="col-md-3">';
     echo '<label>Hora entrada <span class="text-danger">*</span></label>';
     echo '<input type="time" class="form-control" id="horaEntrada" name="horaEntrada" required value="' . htmlspecialchars($post['horaEntrada'] ?? '', ENT_QUOTES) . '">';
-     echo '<div class="form-text">
+    echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
     echo '</div>';

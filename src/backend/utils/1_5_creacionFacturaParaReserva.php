@@ -45,23 +45,29 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         }
 
         // ¿Existe reserva sin join?
-        $stR = $conn->prepare("SELECT id, usuario_id FROM parking_reservas WHERE id = :id LIMIT 1");
+        $stR = $conn->prepare("SELECT id, usuario_uuid FROM parking_reservas WHERE id = :id LIMIT 1");
         $stR->execute([':id' => $reservaId]);
         $r0 = $stR->fetch(PDO::FETCH_ASSOC);
+
+        if ($r0 && isset($r0['usuario_uuid']) && is_string($r0['usuario_uuid'])) {
+            $r0['usuario_uuid_hex'] = bin2hex($r0['usuario_uuid']);
+            unset($r0['usuario_uuid']);
+        }
         error_log('[FINGUER][DEBUG] pr=' . json_encode($r0, JSON_UNESCAPED_UNICODE));
 
         // ¿Existe el usuario por id?
-        $uid = (int)($r0['usuario_id'] ?? 0);
-        $stU = $conn->prepare("SELECT id, nombre, email FROM usuarios WHERE id = :uid LIMIT 1");
-        $stU->execute([':uid' => $uid]);
+        $uid = $r0['usuario_uuid'] ?? null;
+        $stU = $conn->prepare("SELECT HEX(uuid) uuid_hex, nombre, email FROM usuarios WHERE uuid = :uid LIMIT 1");
+        $stU->bindValue(':uid', $uid, PDO::PARAM_LOB);
+        $stU->execute();
         $u0 = $stU->fetch(PDO::FETCH_ASSOC);
         error_log('[FINGUER][DEBUG] u=' . json_encode($u0, JSON_UNESCAPED_UNICODE));
 
         // ¿Y el join exacto?
         $stJ = $conn->prepare("
-            SELECT pr.id pr_id, pr.usuario_id, u.id u_id
+            SELECT pr.id pr_id, pr.usuario_uuid, u.uuid u_id
             FROM parking_reservas pr
-            INNER JOIN usuarios u ON u.id = pr.usuario_id
+            INNER JOIN usuarios u ON u.uuid = pr.usuario_uuid
             WHERE pr.id = :id
             LIMIT 1
         ");
@@ -75,7 +81,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $sql = "
             SELECT
                 pr.id,
-                pr.usuario_id,
+                pr.usuario_uuid,
                 pr.fecha_reserva,
                 pr.subtotal_calculado,
                 pr.iva_calculado,
@@ -91,7 +97,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 u.pais           AS u_pais
             FROM parking_reservas pr
             LEFT JOIN usuarios u
-                ON u.id = pr.usuario_id
+                ON u.uuid = pr.usuario_uuid
             WHERE pr.id = :id
             LIMIT 1
         ";
@@ -112,14 +118,19 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $subtotal  = (float)($reserva['subtotal_calculado'] ?? 0);
         $iva       = (float)($reserva['iva_calculado'] ?? 0);
         $total     = (float)($reserva['total_calculado'] ?? 0);
-        $usuarioId = (int)($reserva['usuario_id'] ?? 0);
+        $usuarioUuidBytes = $reserva['usuario_uuid'] ?? null;
+        if (!is_string($usuarioUuidBytes) || strlen($usuarioUuidBytes) !== 16) {
+            error_log("[FINGUER] crearFacturaParaReserva: usuario_uuid inválido (reserva_id={$reservaId})");
+            return null;
+        }
 
         // Snapshot cliente (nombre/email siempre, resto opcional)
         $facturarNombre = trim((string)($reserva['u_nombre'] ?? ''));
         $facturarEmail  = trim((string)($reserva['u_email'] ?? ''));
 
         if ($facturarNombre === '' || $facturarEmail === '') {
-            error_log("[FINGUER] crearFacturaParaReserva: faltan datos obligatorios usuario (nombre/email) reserva={$reservaId}");
+            $usuarioUuidHex = bin2hex($usuarioUuidBytes);
+            error_log('[FINGUER] crearFacturaParaReserva RESERVA (faltan datos obligatorios usuario (nombre/email) usuario_uuid_hex=' . $usuarioUuidHex . ')');
             return null;
         }
 
@@ -132,6 +143,8 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $facturarPais      = trim((string)($reserva['u_pais'] ?? ''));
         if ($facturarPais === '') $facturarPais = 'ES';
 
+        $usuarioUuidHex = bin2hex($usuarioUuidBytes);
+
         error_log(
             '[FINGUER] crearFacturaParaReserva RESERVA '
                 . '(reserva_id=' . $reservaId
@@ -139,7 +152,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 . ', subtotal=' . $subtotal
                 . ', iva=' . $iva
                 . ', total=' . $total
-                . ', usuario_id=' . $usuarioId . ')'
+                . ', usuario_uuid=' . $usuarioUuidHex . ')'
         );
 
         // 2) Seleccionar emisor (cutover fijo 2026-01-01) y snapshot
@@ -196,12 +209,10 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $sqlInsF = "
             INSERT INTO facturas
             (
-                numero, serie, reserva_id, usuario_id,
-                emisor_id, emisor_nombre_legal, emisor_nif, emisor_direccion, emisor_cp, emisor_ciudad, emisor_pais,
-                fecha_emision, moneda, subtotal, impuesto_total, total, estado,
+                numero, serie, reserva_id, usuario_uuid, emisor_id, emisor_nombre_legal, emisor_nif, emisor_direccion, emisor_cp, emisor_ciudad, emisor_pais, fecha_emision, moneda, subtotal, impuesto_total, total, estado,
                 facturar_a_nombre, facturar_a_empresa, facturar_a_nif, facturar_a_direccion, facturar_a_ciudad, facturar_a_cp, facturar_a_pais, facturar_a_email
             ) VALUES (
-                :numero, :serie, :reserva_id, :usuario_id,
+                :numero, :serie, :reserva_id, :usuario_uuid,
                 :emisor_id, :emisor_nombre_legal, :emisor_nif, :emisor_direccion, :emisor_cp, :emisor_ciudad, :emisor_pais,
                 :fecha_emision, 'EUR', :subtotal, :impuesto_total, :total, 'emitida',
                 :facturar_a_nombre, :facturar_a_empresa, :facturar_a_nif, :facturar_a_direccion, :facturar_a_ciudad, :facturar_a_cp, :facturar_a_pais, :facturar_a_email
@@ -213,7 +224,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             ':numero' => (string)$numeracion['numero'],
             ':serie'  => (string)$numeracion['serie'],
             ':reserva_id' => $reservaId,
-            ':usuario_id' => $usuarioId,
+            ':usuario_uuid' => $usuarioUuidBytes,
 
             ':emisor_id' => $emisorId,
             ':emisor_nombre_legal' => $emisorNombre,
