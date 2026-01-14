@@ -68,7 +68,7 @@ $routes = [
     '/api/comprova' => [
         'view' => 'src/backend/api/comprova.php',
         'no_header_footer' => true,
-        'needs_session' => true,
+        'needs_session' => false,
     ],
 ];
 
