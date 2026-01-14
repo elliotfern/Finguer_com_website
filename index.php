@@ -101,7 +101,6 @@ if (!$routeFound) {
     if ($needsSession) {
         verificarSesion(); // Llamada a la función de verificación de sesión
     }
-
     // Verificar si la ruta necesita verificación adicional
     // AREA CLIENTE
     $needsVerification = $routeInfo['needs_verification'] ?? false;

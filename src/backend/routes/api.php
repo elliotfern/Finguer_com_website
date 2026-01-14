@@ -64,6 +64,12 @@ $routes = [
         'no_header_footer' => true,
         'needs_session' => true,
     ],
+
+    '/api/comprova' => [
+        'view' => 'src/backend/api/comprova.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
 ];
 
 
