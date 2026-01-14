@@ -1,11 +1,17 @@
+// ==============================
+// Finguer Intranet - Users table
+// Server-side filtering + pagination (Option A)
+// ==============================
+
 export type UserRole = 'cliente' | 'administrador' | 'cliente_anual' | 'trabajador';
+export type ActiveRole = UserRole | 'tots';
 
 export interface ApiUserRow {
   uuid: string;
   nombre: string;
   email: string;
   telefono?: string;
-  tipo_rol: string;
+  tipo_rol: string; // backend: admin | trabajador | cliente | cliente_anual
 }
 
 interface Vp2Ok<T> {
@@ -49,9 +55,19 @@ const ROLE_BUTTONS: Array<{ key: UserRole; label: string }> = [
 // ------------------------------
 // State
 // ------------------------------
-let allRows: ApiUserRow[] = [];
-let activeRole: UserRole | 'tots' = 'tots';
+let rows: ApiUserRow[] = [];
+let total = 0;
+
+let activeRole: ActiveRole = 'tots';
 let searchText = '';
+
+let limit = 50;
+let offset = 0;
+
+let isWired = false;
+let fetchController: AbortController | null = null;
+
+let searchDebounceTimer: number | null = null;
 
 // ------------------------------
 // Public entry point
@@ -66,10 +82,16 @@ export async function clientsUsersTable(): Promise<void> {
   container.innerHTML = `<div class="text-muted">Carregant usuaris...</div>`;
 
   try {
-    allRows = await fetchUsers();
-    renderShell(container); // ✅ solo una vez
-    renderBody(container); // ✅ solo tbody
-    wireEvents(container); // ✅ eventos una vez
+    renderShell(container);
+
+    // eventos UNA sola vez
+    if (!isWired) {
+      wireEvents(container);
+      isWired = true;
+    }
+
+    // carga inicial
+    await loadAndRender(container);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Error desconegut';
     container.innerHTML = `
@@ -81,13 +103,62 @@ export async function clientsUsersTable(): Promise<void> {
 }
 
 // ------------------------------
+// Load + render
+// ------------------------------
+async function loadAndRender(container: HTMLElement): Promise<void> {
+  setLoading(container, true);
+
+  const apiRole = roleUiToApi(activeRole);
+  const data = await fetchUsers({
+    role: apiRole ?? undefined,
+    q: searchText,
+    limit,
+    offset,
+  });
+
+  rows = data.rows;
+  total = data.total ?? 0;
+  limit = data.limit ?? limit;
+  offset = data.offset ?? offset;
+
+  renderBody(container);
+  setLoading(container, false);
+}
+
+function setLoading(container: HTMLElement, on: boolean): void {
+  const badge = container.querySelector<HTMLSpanElement>('#usersLoading');
+  if (!badge) return;
+  badge.textContent = on ? 'Carregant…' : '';
+}
+
+// ------------------------------
 // Fetch
 // ------------------------------
-async function fetchUsers(): Promise<ApiUserRow[]> {
-  const res = await fetch(API_LIST_URL, {
+type FetchUsersParams = {
+  role?: string; // backend role: admin|cliente|cliente_anual|trabajador
+  q?: string;
+  limit?: number;
+  offset?: number;
+};
+
+async function fetchUsers(params: FetchUsersParams): Promise<ListUsersData> {
+  // abort previous
+  if (fetchController) fetchController.abort();
+  fetchController = new AbortController();
+
+  const url = new URL(API_LIST_URL, window.location.origin);
+
+  if (params.role) url.searchParams.set('role', params.role);
+  if (params.q && params.q.trim() !== '') url.searchParams.set('q', params.q.trim());
+
+  url.searchParams.set('limit', String(params.limit ?? 50));
+  url.searchParams.set('offset', String(params.offset ?? 0));
+
+  const res = await fetch(url.toString(), {
     method: 'GET',
     credentials: 'include',
     headers: { Accept: 'application/json' },
+    signal: fetchController.signal,
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -98,7 +169,10 @@ async function fetchUsers(): Promise<ApiUserRow[]> {
     throw new Error(json.message ?? 'API error');
   }
 
-  return Array.isArray(json.data?.rows) ? json.data.rows : [];
+  const data = json.data ?? { rows: [] };
+  if (!Array.isArray(data.rows)) data.rows = [];
+
+  return data;
 }
 
 // ------------------------------
@@ -113,7 +187,7 @@ function renderShell(container: HTMLElement): void {
         </div>
       </div>
 
-      <div class="col-12 col-lg-4">
+      <div class="col-12 col-lg-4 d-flex gap-2 align-items-center">
         <input
           id="usersSearch"
           type="text"
@@ -121,6 +195,7 @@ function renderShell(container: HTMLElement): void {
           placeholder="Cerca per nom, email, tel..."
           value="${escapeHtml(searchText)}"
         >
+        <span id="usersLoading" class="text-muted small"></span>
       </div>
     </div>
 
@@ -141,8 +216,14 @@ function renderShell(container: HTMLElement): void {
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
       <div id="usersCount" class="text-muted small"></div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button id="usersPrev" type="button" class="btn btn-sm btn-outline-secondary">← Anterior</button>
+        <div id="usersPageInfo" class="text-muted small"></div>
+        <button id="usersNext" type="button" class="btn btn-sm btn-outline-secondary">Següent →</button>
+      </div>
     </div>
   `;
 }
@@ -150,21 +231,40 @@ function renderShell(container: HTMLElement): void {
 function renderBody(container: HTMLElement): void {
   const tbody = container.querySelector<HTMLTableSectionElement>('#usersTbody');
   const count = container.querySelector<HTMLDivElement>('#usersCount');
+  const pageInfo = container.querySelector<HTMLDivElement>('#usersPageInfo');
+  const prevBtn = container.querySelector<HTMLButtonElement>('#usersPrev');
+  const nextBtn = container.querySelector<HTMLButtonElement>('#usersNext');
   const roleButtons = container.querySelector<HTMLDivElement>('#roleButtons');
 
-  if (!tbody || !count || !roleButtons) return;
+  if (!tbody || !count || !pageInfo || !prevBtn || !nextBtn || !roleButtons) return;
 
-  // actualizar botones (activo/inactivo) sin re-render global
+  // update buttons active state
   roleButtons.innerHTML = renderRoleButtons();
 
-  const filtered = applyFilters(allRows);
-  tbody.innerHTML = renderRows(filtered);
+  // rows
+  tbody.innerHTML = renderRows(rows);
 
-  count.innerHTML = `Mostrant <strong>${filtered.length}</strong> de <strong>${allRows.length}</strong>`;
+  // counters
+  const shownFrom = total === 0 ? 0 : offset + 1;
+  const shownTo = offset + rows.length;
+
+  count.innerHTML = `Mostrant <strong>${shownFrom}</strong>-<strong>${shownTo}</strong> de <strong>${total}</strong>`;
+
+  // pagination
+  const currentPage = total === 0 ? 0 : Math.floor(offset / limit) + 1;
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  pageInfo.innerHTML = total === 0 ? `Pàgina 0/0` : `Pàgina <strong>${currentPage}</strong>/<strong>${totalPages}</strong>`;
+
+  const hasPrev = offset > 0;
+  const hasNext = offset + rows.length < total;
+
+  prevBtn.disabled = !hasPrev;
+  nextBtn.disabled = !hasNext;
 }
 
 function renderRoleButtons(): string {
-  const btn = (key: UserRole | 'tots', label: string): string => {
+  const btn = (key: ActiveRole, label: string): string => {
     const activeClass = key === activeRole ? 'btn-primary' : 'btn-outline-primary';
     return `<button type="button" class="btn ${activeClass}" data-role="${escapeHtml(key)}">${escapeHtml(label)}</button>`;
   };
@@ -172,25 +272,25 @@ function renderRoleButtons(): string {
   return [btn('tots', 'Tots'), ...ROLE_BUTTONS.map((r) => btn(r.key, r.label))].join('');
 }
 
-function renderRows(rows: ApiUserRow[]): string {
-  if (!rows.length) {
+function renderRows(rowsToRender: ApiUserRow[]): string {
+  if (!rowsToRender.length) {
     return `<tr><td colspan="7" class="text-center text-muted py-4">Sense resultats</td></tr>`;
   }
 
-  return rows
+  return rowsToRender
     .map((r) => {
       const uuid = escapeHtml(r.uuid);
       const nombre = escapeHtml(r.nombre);
       const email = escapeHtml(r.email);
       const tel = escapeHtml(r.telefono ?? '');
-      const role = escapeHtml(String(normalizeRole(r.tipo_rol)));
+      const roleBadge = escapeHtml(String(normalizeRoleUiLabel(r.tipo_rol)));
 
       return `
       <tr data-uuid="${uuid}">
         <td>${nombre}</td>
         <td><a href="mailto:${email}">${email}</a></td>
         <td>${tel}</td>
-        <td><span class="badge text-bg-secondary">${role}</span></td>
+        <td><span class="badge text-bg-secondary">${roleBadge}</span></td>
 
         <td class="text-center">
           <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-email="${email}">Veure reserves</button>
@@ -213,19 +313,41 @@ function renderRows(rows: ApiUserRow[]): string {
 // Events
 // ------------------------------
 function wireEvents(container: HTMLElement): void {
-  // Delegación de eventos: NO re-registrar mil listeners
-  container.addEventListener('click', (ev: MouseEvent) => {
+  // Delegación de eventos
+  container.addEventListener('click', async (ev: MouseEvent) => {
     const target = ev.target as Element | null;
     if (!target) return;
 
+    // role button
     const roleBtn = target.closest<HTMLButtonElement>('button[data-role]');
     if (roleBtn) {
-      const role = (roleBtn.dataset.role ?? 'tots') as UserRole | 'tots';
+      const role = (roleBtn.dataset.role ?? 'tots') as ActiveRole;
+
+      // reset paging on role change
       activeRole = role;
-      renderBody(container);
+      offset = 0;
+
+      await safeLoad(container);
       return;
     }
 
+    // pagination
+    const prevBtn = target.closest<HTMLButtonElement>('#usersPrev');
+    if (prevBtn) {
+      if (offset <= 0) return;
+      offset = Math.max(0, offset - limit);
+      await safeLoad(container);
+      return;
+    }
+
+    const nextBtn = target.closest<HTMLButtonElement>('#usersNext');
+    if (nextBtn) {
+      offset = offset + limit;
+      await safeLoad(container);
+      return;
+    }
+
+    // row actions
     const actionBtn = target.closest<HTMLButtonElement>('button[data-action]');
     if (actionBtn) {
       const action = actionBtn.dataset.action;
@@ -245,12 +367,35 @@ function wireEvents(container: HTMLElement): void {
     }
   });
 
+  // search input (server-side with debounce)
   const search = container.querySelector<HTMLInputElement>('#usersSearch');
   if (search) {
     search.addEventListener('input', () => {
       searchText = search.value ?? '';
-      renderBody(container); // ✅ solo tbody
+
+      // reset paging on search
+      offset = 0;
+
+      if (searchDebounceTimer) window.clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = window.setTimeout(() => {
+        void safeLoad(container);
+      }, 250);
     });
+  }
+}
+
+async function safeLoad(container: HTMLElement): Promise<void> {
+  try {
+    await loadAndRender(container);
+  } catch (e: unknown) {
+    // Si abortamos por una nueva búsqueda, ignoramos
+    if (e instanceof DOMException && e.name === 'AbortError') return;
+
+    const msg = e instanceof Error ? e.message : 'Error desconegut';
+    const tbody = container.querySelector<HTMLTableSectionElement>('#usersTbody');
+    const count = container.querySelector<HTMLDivElement>('#usersCount');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error carregant dades: ${escapeHtml(msg)}</td></tr>`;
+    if (count) count.textContent = '';
   }
 }
 
@@ -279,27 +424,15 @@ function handleAction(action: string, value: string): void {
 }
 
 // ------------------------------
-// Filtering
+// Role mapping
 // ------------------------------
-function applyFilters(rows: ApiUserRow[]): ApiUserRow[] {
-  return rows.filter((r) => {
-    const role = normalizeRole(r.tipo_rol);
-    const roleOk = activeRole === 'tots' ? true : role === activeRole;
-    const searchOk = rowMatchesSearch(r, searchText);
-    return roleOk && searchOk;
-  });
+function roleUiToApi(role: ActiveRole): string | null {
+  if (role === 'tots') return null;
+  if (role === 'administrador') return 'admin';
+  return role; // cliente | cliente_anual | trabajador
 }
 
-function rowMatchesSearch(row: ApiUserRow, q: string): boolean {
-  if (!q) return true;
-  const hay = `${row.nombre ?? ''} ${row.email ?? ''} ${row.telefono ?? ''} ${row.tipo_rol ?? ''}`.toLowerCase();
-  return hay.includes(q.toLowerCase());
-}
-
-// ------------------------------
-// Utils
-// ------------------------------
-function normalizeRole(tipoRol: string): UserRole | string {
+function normalizeRoleUiLabel(tipoRol: string): UserRole | string {
   const r = (tipoRol || '').trim().toLowerCase();
   if (r === 'admin') return 'administrador';
   if (r === 'administrador') return 'administrador';
@@ -309,7 +442,15 @@ function normalizeRole(tipoRol: string): UserRole | string {
   return tipoRol;
 }
 
+// ------------------------------
+// Utils
+// ------------------------------
 function escapeHtml(input: unknown): string {
   const str = String(input ?? '');
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

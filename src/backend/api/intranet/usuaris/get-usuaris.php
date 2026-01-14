@@ -39,7 +39,7 @@ try {
         $qLike = '%' . $q . '%';
 
         // Filtro opcional por rol (si quieres)
-        $allowedRoles = ['admin', 'trabajador', 'cliente'];
+        $allowedRoles = ['admin', 'trabajador', 'cliente', 'cliente_anual'];
         $role = isset($_GET['role']) ? trim((string)$_GET['role']) : '';
         $role = ($role !== '' && in_array($role, $allowedRoles, true)) ? $role : null;
 
@@ -104,7 +104,6 @@ try {
 
             $items[] = [
                 'uuid'      => uuid_string_from_bin($uuidBin),
-                'id'        => isset($r['id']) ? (int)$r['id'] : null, // legacy (opcional)
                 'nombre'    => (string)($r['nombre'] ?? ''),
                 'email'     => (string)($r['email'] ?? ''),
                 'telefono'  => (string)($r['telefono'] ?? ''),
