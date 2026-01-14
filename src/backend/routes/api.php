@@ -56,8 +56,14 @@ $routes = [
         'view' => 'src/backend/api/intranet/usuaris/put-usuaris.php',
         'no_header_footer' => true,
         'needs_session' => true,
-    ],  
+    ],
 
+    // ALTRES
+    '/api/uuid' => [
+        'view' => 'src/backend/api/generarUUID.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
 ];
 
 
