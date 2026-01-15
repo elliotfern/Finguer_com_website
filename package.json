@@ -11,7 +11,7 @@
     "lint-staged": "^15.2.10",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
+    "ts-node": "^1.7.1",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.8.0",
     "webpack": "^5.97.1",
