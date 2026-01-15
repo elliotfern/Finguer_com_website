@@ -1,3 +1,5 @@
+import { API_BASE } from "../../../config/globals";
+
 export const login = () => {
   document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btnLogin') as HTMLButtonElement;
@@ -14,8 +16,9 @@ export const login = () => {
         const password = passwordInput.value;
 
         try {
-          const response = await fetch('https://' + window.location.hostname + '/api/intranet/auth/login/', {
+          const response = await fetch(`${API_BASE}/api/intranet/auth/login/`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -30,7 +33,7 @@ export const login = () => {
             loginMessageErr.style.display = 'none';
 
             setTimeout(() => {
-              window.location.href = 'https://' + window.location.hostname + '/control/reserves-pendents';
+               window.location.href = `${window.location.origin}/control/reserves-pendents`;
             }, 2000); // Redirige después de 3 segundos
           } else {
             loginMessageErr.innerHTML = data.message;

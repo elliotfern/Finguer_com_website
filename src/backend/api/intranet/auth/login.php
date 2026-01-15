@@ -5,12 +5,32 @@ use Firebase\JWT\JWT;
 
 $jwtSecret = $_ENV['TOKEN'];
 
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: POST");
+header("Content-Type: application/json; charset=utf-8");
 
-// Si usas cookies desde otro dominio con fetch, esto NO puede ser "*".
-// De momento lo dejo como está para no romperte nada en este paso.
-// header("Access-Control-Allow-Origin: *");
+// --- CORS (solo los orígenes permitidos) ---
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+$allowedOrigins = [
+    'https://finguer.com',
+    'https://dev.finguer.com',
+];
+
+// Si viene un Origin válido, lo devolvemos (nunca '*')
+if ($origin && in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true");
+    header("Vary: Origin");
+}
+
+// Preflight
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+    header("Access-Control-Allow-Methods: POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type");
+    http_response_code(204);
+    exit;
+}
+
+header("Access-Control-Allow-Methods: POST");
 
 $data = json_decode(file_get_contents("php://input"), true);
 
