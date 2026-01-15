@@ -16,7 +16,7 @@ export const login = () => {
         const password = passwordInput.value;
 
         try {
-          const response = await fetch(`${API_BASE}/api/intranet/auth/login/`, {
+          const response = await fetch(`${API_BASE}/intranet/auth/login/`, {
             method: 'POST',
             credentials: 'include',
             headers: {
