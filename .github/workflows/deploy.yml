@@ -1,4 +1,4 @@
-name: Build + Deploy (git pull + composer + bundle.js) Finguer
+name: "Build + Deploy (git pull + composer + bundle.js) Finguer"
 
 on:
   push:
@@ -15,8 +15,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
 
       - name: Install dependencies (npm)
         run: npm ci
@@ -34,83 +34,3 @@ jobs:
             echo "remote_dist_dir=/home/epgylzqu/finguer.com/dist" >> "$GITHUB_OUTPUT"
             echo "remote_app_dir=/home/epgylzqu/finguer.com" >> "$GITHUB_OUTPUT"
           else
-            echo "env_name=TEST" >> "$GITHUB_OUTPUT"
-            echo "branch=develop" >> "$GITHUB_OUTPUT"
-            echo "remote_dist_dir=/home/epgylzqu/finguer.com/dev/dist" >> "$GITHUB_OUTPUT"
-            echo "remote_app_dir=/home/epgylzqu/finguer.com/dev" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Start SSH agent
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add server to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
-
-      # ✅ 1) BACKEND FIRST: git pull + composer (sin que bundle.js lo ensucie antes)
-      - name: Deploy BACKEND (git pull) + vendor (composer install)
-        run: |
-          set -euo pipefail
-
-          echo "Deploying BACKEND to: ${{ steps.target.outputs.env_name }}"
-          echo "Remote app dir:       ${{ steps.target.outputs.remote_app_dir }}"
-          echo "Git branch:           ${{ steps.target.outputs.branch }}"
-
-          ssh epgylzqu@87.98.230.129 "bash -lc '
-            set -euo pipefail
-
-            APP_DIR=\"${{ steps.target.outputs.remote_app_dir }}\"
-            BRANCH=\"${{ steps.target.outputs.branch }}\"
-
-            cd \"\$APP_DIR\"
-            test -d .git || { echo \"ERROR: \$APP_DIR no es un repo git (no existe .git)\"; exit 2; }
-
-            # 🔒 Por si dist está trackeado: descarta cambios locales SOLO de dist antes del pull
-            if [ -f dist/bundle.js ]; then
-              git checkout -- dist/bundle.js || true
-            fi
-
-            git fetch origin
-            git checkout \"\$BRANCH\"
-            git pull origin \"\$BRANCH\"
-
-            if command -v composer >/dev/null 2>&1; then
-              composer install --no-dev --prefer-dist --optimize-autoloader
-            else
-              echo \"ERROR: composer no está instalado en el servidor\"
-              exit 3
-            fi
-          '"
-
-      # ✅ 2) FRONTEND AFTER: upload bundle.js atómico
-      - name: Upload bundle.js atomically
-        run: |
-          set -euo pipefail
-
-          echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
-          echo "Remote dist dir:       ${{ steps.target.outputs.remote_dist_dir }}"
-
-          test -f dist/bundle.js || { echo "dist/bundle.js no existe"; exit 1; }
-
-          REMOTE_DIR="${{ steps.target.outputs.remote_dist_dir }}"
-          REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
-
-          ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIR'"
-
-          scp dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
-
-          ssh epgylzqu@87.98.230.129 "\
-            mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
-            chmod 644 '$REMOTE_BUNDLE' \
-          "
-
-          if [ -f dist/bundle.js.map ]; then
-            scp dist/bundle.js.map epgylzqu@87.98.230.129:"$REMOTE_DIR/bundle.js.map.tmp"
-            ssh epgylzqu@87.98.230.129 "\
-              mv -f '$REMOTE_DIR/bundle.js.map.tmp' '$REMOTE_DIR/bundle.js.map' && \
-              chmod 644 '$REMOTE_DIR/bundle.js.map' \
-            "
-          fi
