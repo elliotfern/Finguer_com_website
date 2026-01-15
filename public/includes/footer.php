@@ -21,8 +21,10 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 
             <div class="col-12 col-md-2">
                 <h6><strong>LEGAL</strong></h6>
-                <p><a href="/terminos-y-condiciones/">Terminos y Condiciones</a><br>
-                    <a href="/politica-de-privacidad-finguer/">Política de Privacidad</a>
+                <p><a href="/aviso-legal">Aviso legal</a><br>
+                    <a href="/terminos-y-condiciones">Términos y Condiciones de contratación</a><br>
+                    <a href="/politica-privacidad">Política de Privacidad</a><br>
+                    <a href="/politica-cookies">Política de Cookies</a>
                 </p>
             </div>
 
@@ -33,7 +35,7 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 
             <div class="col-12 col-md-2">
                 <h6><strong>SÍGUENOS</strong></h6>
-                <a href="https://www.instagram.com/finguer_parking/" target="_blank"><img src="<?php APP_ROOT; ?>/public/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
+                <a href="https://www.instagram.com/finguer_parking" target="_blank"><img src="<?php APP_ROOT; ?>/public/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
             </div>
 
         </div>
