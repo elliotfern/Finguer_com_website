@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",  // O "CommonJS" si prefieres módulos CommonJS
+    "module": "commonjs",
     "target": "ES2020",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -12,17 +12,11 @@
     "lib": ["es2017", "dom"],
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["./node_modules/@types", "src/frontend/types"]
-      },
-
- "include": [
+  },
+  "include": [
     "src/frontend",
     "src/frontend/types/global.d.ts",
-    "src/frontend/types",
-  ], 
-  "exclude": ["node_modules"],
-  "scripts": {
-      "build": "webpack --config ./node_modules/ts-node/register ./webpack.config.ts --mode production",
-      "dev": "webpack serve --config webpack.config.ts --mode development",
-      "start": "npm run dev"
-  }
+    "src/frontend/types"
+  ],
+  "exclude": ["node_modules"]
 }

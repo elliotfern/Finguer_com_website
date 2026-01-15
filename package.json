@@ -24,8 +24,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
-    "build": "webpack --config webpack.config.ts --mode production",
-    "dev": "webpack serve --config webpack.config.ts --mode development",
+    "build": "webpack --config webpack.config.cjs --mode production",
+    "dev": "webpack serve --config webpack.config.cjs --mode development",
     "start": "npm run dev"
   },
   "keywords": [],
@@ -46,4 +46,6 @@
     "*.ts": "eslint --fix",
     "*.css": "prettier --write"
   }
+
 }
+
