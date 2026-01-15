@@ -2,7 +2,6 @@ import { API_BASE } from '../../../config/globals';
 
 // logout.ts
 export const logout = async (event: Event) => {
-  console.log('LOGOUT CLICK'); // <-- prueba
   event.preventDefault();
 
   try {
