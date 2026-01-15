@@ -1,20 +1,23 @@
-import { apiUrl } from '../../../config/globals';
+import { API_BASE } from '../../../config/globals';
 
-export const logout = async (event: MouseEvent) => {
-  // Evita que el enlace realice la acción predeterminada (redirigir a otra página)
+// logout.ts
+export const logout = async (event: Event) => {
   event.preventDefault();
 
-  const urlAjax = `${apiUrl}/intranet/users/get/?type=logout`;
-
   try {
-    const response = await fetch(urlAjax);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const response = await fetch(`${API_BASE}/intranet/users/get/?type=logout`, {
+      method: 'GET',
+      credentials: 'include',
+    });
 
-    await response.json(); // Parsea la respuesta JSON
-    window.location.href = '/control/login'; // Redirige al login
-  } catch (error) {
-    console.error('Error:', error); // Manejo de errores
+    // aunque el backend devuelva 204/200, redirigimos igual
+    if (!response.ok && response.status !== 204) {
+      // opcional: leer body si hay json
+      console.warn('Logout response not ok:', response.status);
+    }
+  } catch (err) {
+    console.error('Logout error:', err);
+  } finally {
+    window.location.href = '/control/login';
   }
 };

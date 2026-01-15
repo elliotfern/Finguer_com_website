@@ -1,5 +1,3 @@
-import { webUrl } from '../../config/globals';
-
 export function deleteCookie(name: string, path?: string, domain?: string): void {
   if (getCookie(name)) {
     document.cookie = name + '=' + (path ? ';path=' + path : '') + (domain ? ';domain=' + domain : '') + ';expires=Thu, 01 Jan 1970 00:00:01 GMT';
@@ -41,16 +39,4 @@ export function deleteAllCookies(): void {
       deleteCookie(name, '/', '.' + window.location.hostname);
     }
   });
-}
-
-export function logout(): void {
-  // Eliminar todas las cookies
-  deleteAllCookies();
-
-  // Si usas localStorage o sessionStorage, también es buena idea limpiarlos
-  localStorage.clear();
-  sessionStorage.clear();
-
-  // Redirigir a la página de inicio de sesión
-  window.location.href = `${webUrl}/login`;
 }

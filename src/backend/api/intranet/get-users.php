@@ -51,7 +51,7 @@ try {
     // =========================================================
     if ($type === 'logout') {
 
-        // Borrar cookie token (IMPORTANTE: mismo domain/path/samesite/secure)
+        // Expira la cookie usando LOS MISMOS PARAMETROS que en login:
         setcookie('token', '', [
             'expires'  => time() - 3600,
             'path'     => '/',
@@ -61,6 +61,19 @@ try {
             'samesite' => 'Lax',
         ]);
 
+        // 2) borrar posible cookie antigua host-only (sin domain)
+        setcookie('token', '', [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'secure'   => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+
+        // opcional: para asegurarte en el request actual
+        unset($_COOKIE['token']);
+
+        http_response_code(200);
         echo json_encode(['status' => 'success', 'message' => 'Sessió tancada correctament.']);
         exit;
     }
