@@ -110,6 +110,9 @@ $payload = [
     // "email" => (string)$row['email'], // opcional
 ];
 
+// 🧹 Limpieza defensiva de tokens antiguos
+clearAuthCookies();
+
 $jwt = JWT::encode($payload, $jwtSecret, "HS256");
 
 // ✅ SOLO UNA COOKIE: token

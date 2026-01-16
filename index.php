@@ -29,6 +29,7 @@ require_once __DIR__ . '/src/backend/utils/generadorLocalizador.php';
 require_once __DIR__ . '/src/backend/utils/helpers.php';
 require_once __DIR__ . '/src/backend/routes/routes.php';
 require_once __DIR__ . '/src/backend/utils/auth.php';
+require_once __DIR__ . '/src/backend/utils/logoutDeleteCookies.php';
 
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
