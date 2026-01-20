@@ -19,7 +19,6 @@ require_once __DIR__ . '/src/backend/utils/1_7_enviarFacturaEmail.php';
 
 require_once __DIR__ . '/src/backend/utils/reserva/cambiarEstadoReserva.php';
 require_once __DIR__ . '/src/backend/utils/reserva/reservaEstadoExceptions.php';
-
 require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
 
 require_once __DIR__ . '/src/backend/utils/generarNumeroFactura.php';
