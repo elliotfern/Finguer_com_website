@@ -173,8 +173,8 @@ if (is_numeric($id)) {
 
         $htmlContent .= '</th>
                         <th>
-                        <strong>BCN PARKING S.L</strong><br>
-                        CIF: B65548919<br>
+                        <strong>AUTO GESTIO FERCAR S.L</strong><br>
+                        CIF: B64768997<br>
                         Carrer de l\'Alt Camp 9<br>
                         Sant Boi de Llobregat (Barcelona)<br>
                         Código postal: 08830<br>
