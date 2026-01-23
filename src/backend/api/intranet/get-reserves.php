@@ -125,6 +125,7 @@ try {
         ) lx ON lx.reserva_id = pr.id
 
         WHERE pr.estado_vehiculo = :estado_vehiculo
+        AND pr.estado <> 'cancelada'
         {$tipoWhere}
         ORDER BY {$orderByField} {$orderDirection}{$limitClause};";
 
@@ -147,6 +148,7 @@ try {
             SELECT pr.estado_vehiculo, COUNT(*) AS total
             FROM parking_reservas pr
             WHERE 1=1
+             AND pr.estado <> 'cancelada'
             " . ($tipo !== null ? " AND pr.tipo = :tipo " : "") . "
             GROUP BY pr.estado_vehiculo
         ";
