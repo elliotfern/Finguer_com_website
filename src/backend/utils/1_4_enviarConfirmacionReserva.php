@@ -250,7 +250,7 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
                     <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.</p>
 
                     <p>Gracias por elegir nuestro servicio.</p>
-                    <p style="margin-bottom:0;">BCN Parking SL - Finguer.com</p>
+                    <p style="margin-bottom:0;">AUTO GESTIO FERCAR S.L - Finguer.com</p>
                 </td>
                 </tr>
 

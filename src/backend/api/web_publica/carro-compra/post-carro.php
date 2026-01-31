@@ -44,7 +44,8 @@ function calcularTotalDiasReserva(string $fechaInicioStr, string $fechaFinStr, s
     if ($diffSegundos < 0) return 0;
 
     $diffDias = (int)ceil($diffSegundos / 86400);
-    return $diffDias + 1; // igual que tu TS
+    //return $diffDias + 1; // igual que tu TS
+    return $diffDias; // igual que tu TS
 }
 
 

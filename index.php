@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/src/backend/config/config.php';
 require_once __DIR__ . '/src/backend/utils/uuidv7.php';
+require_once __DIR__ . '/src/backend/utils/getIdUserCookie.php';
 require_once __DIR__ . '/src/backend/utils/1_verificaPagamentRedsys.php';
 require_once __DIR__ . '/src/backend/utils/1_1_lecturaReserva.php';
 require_once __DIR__ . '/src/backend/utils/1_2_consultaPagamentRedsys.php';
@@ -18,7 +19,6 @@ require_once __DIR__ . '/src/backend/utils/1_7_enviarFacturaEmail.php';
 
 require_once __DIR__ . '/src/backend/utils/reserva/cambiarEstadoReserva.php';
 require_once __DIR__ . '/src/backend/utils/reserva/reservaEstadoExceptions.php';
-
 require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
 
 require_once __DIR__ . '/src/backend/utils/generarNumeroFactura.php';
