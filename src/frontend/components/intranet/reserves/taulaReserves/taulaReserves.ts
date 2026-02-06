@@ -423,8 +423,17 @@ export const carregarDadesTaulaReserves = async (estatParking: string, tipo?: st
       }
       html += '</td>';
 
-      // 14 - Email confirmacio
-      html += `<td><button class="btn btn-success btn-sm obrir-finestra-btn" role="button" aria-pressed="true" data-id="${data.id}">Obrir</button></td>`;
+      // 14 - Obrir pop-up emergent
+      html += `<td>
+          <button class="btn btn-success btn-sm obrir-finestra-btn"
+                  type="button"
+                  role="button"
+                  aria-pressed="true"
+                  data-id="${data.id}"
+                  data-estado="${data.estado}">
+            Obrir
+          </button>
+        </td>`;
 
       html += '</tr>';
 

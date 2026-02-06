@@ -1,9 +1,9 @@
 import { apiUrl } from '../../../config/globals';
 import { ApiOk } from '../../../types/api';
-import { obrirFinestra, tancarFinestra } from './finestraEmergent/finestraEmergent';
+import { obrirFinestra, tancarFinestra } from './finestraEmergent/popUpReserva';
 import { carregarDadesTaulaReserves } from './taulaReserves/taulaReserves';
 
-// TIPADO (mismo shape que usa tu popup) 
+// TIPADO (mismo shape que usa tu popup)
 type DeviceInfo = {
   dispositiu?: string;
   navegador?: string;
@@ -53,7 +53,6 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json: unknown = await res.json();
 
-    // Solo backend nuevo: { status: 'success', data: { rows: [...] } }
     const rows = extractRowsFromVp2(json);
     if (rows) return rows;
 
@@ -64,24 +63,34 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
   }
 }
 
+// ✅ IMPORTANTE: listener global solo 1 vez
+let reservesClickBound = false;
+
 export const reserves = (estatParking: string, tipo?: string) => {
   carregarDadesTaulaReserves(estatParking, tipo);
 
-  // 👇 HAZ EL HANDLER ASYNC
-  document.addEventListener('click', async (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
+  if (reservesClickBound) return;
+  reservesClickBound = true;
 
-    // Verificar si el elemento clickeado tiene la clase 'obrir-finestra-btn'
-    if (target.classList.contains('obrir-finestra-btn')) {
-      const id = target.getAttribute('data-id');
-      if (id) {
-        // 👉 Trae la info de la API y pásala al popup
-        const deviceInfo = await obtenirDeviceInfo(id);
-        obrirFinestra(event as MouseEvent, id, deviceInfo);
-      }
+  document.addEventListener('click', async (event: MouseEvent) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    // ✅ Mejor con closest: funciona si clicas en un icono dentro del botón, etc.
+    const openBtn = target.closest('.obrir-finestra-btn') as HTMLElement | null;
+    if (openBtn) {
+      const id = openBtn.getAttribute('data-id');
+      if (!id) return;
+
+      const estado = openBtn.getAttribute('data-estado'); // 👈 nuevo
+      const deviceInfo = await obtenirDeviceInfo(id);
+
+      obrirFinestra(event, id, deviceInfo, estado); // 👈 nuevo
+      return;
     }
-    // Verificar si el elemento clickeado tiene la clase 'tancar-finestra-btn'
-    else if (target.classList.contains('tancar-finestra-btn')) {
+
+    // cerrar
+    if (target.closest('.tancar-finestra-btn')) {
       tancarFinestra();
     }
   });

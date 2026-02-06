@@ -6,25 +6,10 @@
 
     <div id="contenidorTaulaReserves"></div>
 
-    <!-- Ventana emergente -->
-    <div id="ventanaEmergente" class="ventana" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-        <div class="contenidoVentana">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 col-md-12 d-flex flex-column justify-content-between gap-3">
-                        <button id="enlace1" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar confirmació</button>
-
-                        <button id="enlace2" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Enviar factura</button>
-
-                        <a href="#" id="enlace3" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Modificar reserva</a>
-
-                        <button id="enlace4" class="btn btn-secondary  w-100 w-md-auto btn-sm" role="button" aria-disabled="false" data-requires-role="admin">Eliminar reserva</button>
-
-                        <button class="btn btn-danger tancar-finestra-btn w-100 w-md-auto btn-sm" role="button" aria-disabled="false">Tancar</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+     <!-- Ventana emergente (solo contenedor) -->
+    <div id="ventanaEmergente"
+        class="ventana"
+        style="display:none; position:absolute; background:white; border:1px solid #ccc; padding:20px; border-radius:8px;">
     </div>
 
     <div class="container" style="margin-bottom:50px">
