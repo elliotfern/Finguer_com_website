@@ -66,8 +66,32 @@ async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
 // ✅ IMPORTANTE: listener global solo 1 vez
 let reservesClickBound = false;
 
+// ✅ nuevo: recordar filtros actuales para poder refrescar
+let lastEstatParking = '';
+let lastTipo: string | undefined;
+
+// ✅ nuevo: listener de refresco solo 1 vez
+let reservaChangedBound = false;
+
 export const reserves = (estatParking: string, tipo?: string) => {
+  // ✅ guardar últimos filtros (cada vez que llamas reserves, se actualizan)
+  lastEstatParking = estatParking;
+  lastTipo = tipo;
+
   carregarDadesTaulaReserves(estatParking, tipo);
+
+  // ✅ enganchar refresco 1 sola vez
+  if (!reservaChangedBound) {
+    reservaChangedBound = true;
+
+    window.addEventListener('reserva:changed', async () => {
+      try {
+        await carregarDadesTaulaReserves(lastEstatParking, lastTipo);
+      } catch (e) {
+        console.error('Error refrescando tabla tras cambio de reserva:', e);
+      }
+    });
+  }
 
   if (reservesClickBound) return;
   reservesClickBound = true;

@@ -197,6 +197,57 @@ function bindPopupHandlers(container: HTMLElement, reservaId: string): void {
         console.error(msg);
       }
     });
+
+    // Cancel·lar reserva (solo visible si aplica la regla)
+    const aCancelar = container.querySelector('#enlace4');
+    if (aCancelar instanceof HTMLAnchorElement) {
+      const clone = aCancelar.cloneNode(true) as HTMLAnchorElement;
+      aCancelar.parentNode?.replaceChild(clone, aCancelar);
+
+      clone.href = '#';
+
+      clone.addEventListener('click', async (ev: MouseEvent) => {
+        ev.preventDefault();
+
+        const ok = confirm('Vols cancel·lar aquesta reserva?');
+        if (!ok) return;
+
+        // UI loading
+        clone.classList.remove('btn-secondary', 'btn-success', 'btn-danger');
+        clone.classList.add('btn-warning');
+        clone.textContent = 'Cancel·lant...';
+        clone.style.pointerEvents = 'none';
+        clone.style.opacity = '0.8';
+
+        try {
+          const msg = await cancelarReserva(reservaId);
+
+          // UI success
+          clone.classList.remove('btn-warning', 'btn-danger');
+          clone.classList.add('btn-success');
+          clone.textContent = 'Reserva cancel·lada';
+
+          alert(msg);
+
+          // ✅ Avisar a la tabla para refrescar sin acoplar módulos
+          window.dispatchEvent(new CustomEvent('reserva:changed', { detail: { id: reservaId, action: 'cancelada' } }));
+
+          // Cerrar popup
+          tancarFinestra();
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Error cancel·lant reserva';
+
+          clone.classList.remove('btn-warning', 'btn-success');
+          clone.classList.add('btn-danger');
+          clone.textContent = 'Error (Reintentar)';
+          clone.style.pointerEvents = '';
+          clone.style.opacity = '1';
+
+          alert(msg);
+          console.error(msg);
+        }
+      });
+    }
   }
 
   const btnFactura = container.querySelector('#enlace2');
@@ -254,10 +305,7 @@ function updateLinks(container: HTMLElement, reservaId: string): void {
     aMod.href = `${urlWeb}/reserva/modificar/reserva/${reservaId}`;
   }
 
-  const aDel = container.querySelector('#enlace4');
-  if (aDel instanceof HTMLAnchorElement) {
-    aDel.href = `${urlWeb}/reserva/eliminar/reserva/${reservaId}`;
-  }
+  // ⛔ NO tocar enlace4 aquí (ahora es acción, no navegación)
 }
 
 /** API pública: abre popup (mantiene firma compatible con tu código actual). */
@@ -311,4 +359,26 @@ export function initPopupReservaUX(): void {
     // Si te molesta, quítalo
     // tancarFinestra();
   });
+}
+
+type ApiSimple = { status?: string; message?: string; code?: string };
+
+const CANCEL_RESERVA_ENDPOINT = `${apiUrl}/api/intranet/cancelar-reserves/post`; 
+
+async function cancelarReserva(reservaId: string): Promise<string> {
+  const res = await fetch(CANCEL_RESERVA_ENDPOINT, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ reserva_id: reservaId }),
+  });
+
+  const json: unknown = await res.json();
+  const data = json as ApiSimple;
+
+  if (!res.ok || data.status !== 'success') {
+    throw new Error(data.message || data.code || `Error cancelando (HTTP ${res.status})`);
+  }
+
+  return data.message || 'Reserva cancel·lada correctament';
 }

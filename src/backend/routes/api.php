@@ -11,6 +11,8 @@ $routes = [
 
     '/api/intranet/reserves/get' => ['view' => 'src/backend/api/intranet/get-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
     '/api/intranet/reserves/post' => ['view' => 'src/backend/api/intranet/post-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
+    '/api/intranet/cancelar-reserves/post' => ['view' => 'src/backend/api/intranet/post-cancelar-reserves.php', 'needs_session' => true, 'no_header_footer' => true],
+
 
     '/api/intranet/users/get' => ['view' => 'src/backend/api/intranet/get-users.php', 'needs_session' => false, 'no_header_footer' => true],
 
