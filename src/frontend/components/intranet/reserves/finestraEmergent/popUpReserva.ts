@@ -17,17 +17,31 @@ const clamp = (min: number, val: number, max: number): number => Math.max(min, M
 function applyVisibilityRules(container: HTMLElement, estadoReserva?: string | null): void {
   const admin = isAdmin();
   const pagada = estadoReserva === 'pagada';
+  const cancelada = estadoReserva === 'cancelada';
 
   const btnConfirm = container.querySelector('#enlace1') as HTMLElement | null;
   const btnFactura = container.querySelector('#enlace2') as HTMLElement | null;
   const btnCancelar = container.querySelector('#enlace4') as HTMLElement | null;
 
-  // Solo admin
   if (btnConfirm) btnConfirm.style.display = admin ? '' : 'none';
   if (btnFactura) btnFactura.style.display = admin ? '' : 'none';
 
-  // Cancelar: solo admin + NO pagada
-  if (btnCancelar) btnCancelar.style.display = admin && !pagada ? '' : 'none';
+  // ✅ solo admin + NO pagada + NO cancelada
+  if (btnCancelar) btnCancelar.style.display = admin && !pagada && !cancelada ? '' : 'none';
+}
+
+function resetCancelButton(container: HTMLElement): void {
+  const a = container.querySelector('#enlace4');
+
+  if (!(a instanceof HTMLAnchorElement)) return;
+
+  a.textContent = 'Cancel·lar reserva';
+  a.classList.remove('btn-success', 'btn-danger', 'btn-warning');
+  a.classList.add('btn-secondary');
+
+  a.style.pointerEvents = '';
+  a.style.opacity = '1';
+  a.removeAttribute('aria-disabled');
 }
 
 function isHTMLElement(x: unknown): x is HTMLElement {
@@ -315,6 +329,9 @@ export function obrirFinestra(opener: MouseEvent | HTMLElement | null, id: strin
 
   // 1) crear markup (antes estaba en PHP)
   ensurePopupMarkup(ventana);
+
+  // ✅ IMPORTANTÍSIMO: reset UI del popup (evita “canceladas ficticias”)
+  resetCancelButton(ventana);
   applyVisibilityRules(ventana, estadoReserva);
 
   // 2) actualizar links + handlers (sin duplicar)
