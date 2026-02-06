@@ -282,6 +282,6 @@
     <strong>“Política de Privacidad”</strong>.
   </p>
 
-  <p class="text-muted fst-italic mb-0">Última actualización: 15 de enero de 2026</p>
+  <p class="text-muted fst-italic mb-0">Última actualización: 2 de febrero de 2026</p>
 
 </div>
