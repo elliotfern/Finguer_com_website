@@ -30,6 +30,37 @@ require_once __DIR__ . '/src/backend/routes/routes.php';
 require_once __DIR__ . '/src/backend/utils/auth.php';
 require_once __DIR__ . '/src/backend/utils/logoutDeleteCookies.php';
 
+function isApiRequest(): bool
+{
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    return str_starts_with($uri, '/api/') || str_contains($accept, 'application/json');
+}
+
+function denyAccess(int $code = 403, string $message = 'Accés denegat'): never
+{
+    http_response_code($code);
+
+    if (isApiRequest()) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status' => 'error',
+            'message' => $message,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    // HTML intranet
+    // Opción A: mostrar mensaje simple
+    echo "<h1>{$code}</h1><p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>";
+    exit;
+
+    // Opción B: redirigir a una pantalla:
+    // header('Location: /control/sense-permisos', true, 302);
+    // exit;
+}
+
+
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -101,6 +132,24 @@ if (!$routeFound) {
     if ($needsSession) {
         verificarSesion(); // Llamada a la función de verificación de sesión
     }
+
+    // ✅ Autorización por roles (opcional por ruta)
+    $roles = $routeInfo['roles'] ?? null;
+    if (is_array($roles) && !empty($roles)) {
+        // Ya hay sesión (verificarSesion), así que auth_user() debería existir
+        if (!auth_has_role($roles)) {
+            denyAccess(403, 'No tens permisos per accedir a aquesta secció.');
+        }
+    }
+
+    // ✅ Atajo si prefieres flag needs_admin (opcional)
+    $needsAdmin = $routeInfo['needs_admin'] ?? false;
+    if ($needsAdmin) {
+        if (!auth_is_admin()) {
+            denyAccess(403, 'No tens permisos (admin requerit).');
+        }
+    }
+
     // Verificar si la ruta necesita verificación adicional
     // AREA CLIENTE
     $needsVerification = $routeInfo['needs_verification'] ?? false;

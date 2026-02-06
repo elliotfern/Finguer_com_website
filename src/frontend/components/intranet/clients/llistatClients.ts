@@ -3,6 +3,8 @@
 // Server-side filtering + pagination (Option A)
 // ==============================
 
+import { isAdmin } from '../auth/store';
+
 export type UserRole = 'cliente' | 'administrador' | 'cliente_anual' | 'trabajador';
 export type ActiveRole = UserRole | 'tots';
 
@@ -179,6 +181,8 @@ async function fetchUsers(params: FetchUsersParams): Promise<ListUsersData> {
 // Render
 // ------------------------------
 function renderShell(container: HTMLElement): void {
+  const canAdmin = isAdmin();
+
   container.innerHTML = `
     <div class="row g-2 align-items-center mb-3">
       <div class="col-12 col-lg-8">
@@ -208,8 +212,8 @@ function renderShell(container: HTMLElement): void {
             <th style="min-width: 160px;">Telèfon</th>
             <th style="min-width: 140px;">Rol</th>
             <th style="min-width: 140px;">Reserves</th>
-            <th style="min-width: 110px;">Modifica</th>
-            <th style="min-width: 110px;">Elimina</th>
+            ${canAdmin ? `<th style="min-width: 110px;">Modifica</th>` : ``}
+            ${canAdmin ? `<th style="min-width: 110px;">Elimina</th>` : ``}
           </tr>
         </thead>
         <tbody id="usersTbody"></tbody>
@@ -277,7 +281,9 @@ function renderRows(rowsToRender: ApiUserRow[]): string {
     return `<tr><td colspan="7" class="text-center text-muted py-4">Sense resultats</td></tr>`;
   }
 
-  return rowsToRender
+  const canAdmin = isAdmin();
+
+   return rowsToRender
     .map((r) => {
       const uuid = escapeHtml(r.uuid);
       const nombre = escapeHtml(r.nombre);
@@ -285,26 +291,39 @@ function renderRows(rowsToRender: ApiUserRow[]): string {
       const tel = escapeHtml(r.telefono ?? '');
       const roleBadge = escapeHtml(String(normalizeRoleUiLabel(r.tipo_rol)));
 
+      const tdEdit = canAdmin
+        ? `<td class="text-center">
+             <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit" data-uuid="${uuid}">
+               Modifica
+             </button>
+           </td>`
+        : ``;
+
+      const tdDelete = canAdmin
+        ? `<td class="text-center">
+             <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-uuid="${uuid}">
+               Elimina
+             </button>
+           </td>`
+        : ``;
+
       return `
-      <tr data-uuid="${uuid}">
-        <td>${nombre}</td>
-        <td><a href="mailto:${email}">${email}</a></td>
-        <td>${tel}</td>
-        <td><span class="badge text-bg-secondary">${roleBadge}</span></td>
+        <tr data-uuid="${uuid}">
+          <td>${nombre}</td>
+          <td><a href="mailto:${email}">${email}</a></td>
+          <td>${tel}</td>
+          <td><span class="badge text-bg-secondary">${roleBadge}</span></td>
 
-        <td class="text-center">
-          <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-email="${email}">Veure reserves</button>
-        </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-dark" data-action="reservas" data-email="${email}">
+              Veure reserves
+            </button>
+          </td>
 
-        <td class="text-center">
-          <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit" data-uuid="${uuid}">Modifica</button>
-        </td>
-
-        <td class="text-center">
-          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-uuid="${uuid}">Elimina</button>
-        </td>
-      </tr>
-    `;
+          ${tdEdit}
+          ${tdDelete}
+        </tr>
+      `;
     })
     .join('');
 }
@@ -403,6 +422,13 @@ async function safeLoad(container: HTMLElement): Promise<void> {
 // Actions
 // ------------------------------
 function handleAction(action: string, value: string): void {
+
+   // Guard: accions restringides
+  if ((action === 'edit' || action === 'delete') && !isAdmin()) {
+    alert('No tens permisos per fer aquesta acció.');
+    return;
+  }
+  
   switch (action) {
     case 'reservas':
       window.location.href = `/control/usuaris/reserves-client/?email=${encodeURIComponent(value)}`;
@@ -447,10 +473,5 @@ function normalizeRoleUiLabel(tipoRol: string): UserRole | string {
 // ------------------------------
 function escapeHtml(input: unknown): string {
   const str = String(input ?? '');
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }

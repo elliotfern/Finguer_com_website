@@ -156,3 +156,67 @@ function auth_can(string $capability, array $context = []): bool
 
     return false;
 }
+
+function http_is_ajax_or_api(): bool {
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $xhr    = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+    $uri    = $_SERVER['REQUEST_URI'] ?? '';
+    return str_contains($accept, 'application/json')
+        || strtolower($xhr) === 'xmlhttprequest'
+        || str_starts_with($uri, '/api/');
+}
+
+function respond_json(int $code, array $payload): never {
+    http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function deny(int $code, string $message = 'Accés denegat'): never {
+    if (http_is_ajax_or_api()) {
+        respond_json($code, [
+            'status' => 'error',
+            'message' => $message,
+        ]);
+    }
+
+    // HTML (intranet)
+    http_response_code($code);
+
+    // opción A: render simple
+    echo "<h1>{$code}</h1><p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>";
+    exit;
+
+    // opción B: redirigir a una pantalla:
+    // header('Location: /control/sense-permisos/');
+    // exit;
+}
+
+/** Requiere login */
+function require_auth(): array {
+    $u = auth_user();
+    if ($u === null) deny(401, 'Has d’iniciar sessió');
+    return $u;
+}
+
+/** Requiere admin */
+function require_admin(): array {
+    $u = require_auth();
+    if (($u['role'] ?? null) !== 'admin') deny(403, 'No tens permisos (admin requerit)');
+    return $u;
+}
+
+/** Requiere uno de estos roles */
+function require_role(array $roles): array {
+    $u = require_auth();
+    if (!in_array($u['role'] ?? null, $roles, true)) deny(403, 'No tens permisos');
+    return $u;
+}
+
+/** Requiere capability (tu auth_can) */
+function require_can(string $capability, array $context = []): array {
+    $u = require_auth();
+    if (!auth_can($capability, $context)) deny(403, 'No tens permisos');
+    return $u;
+}
