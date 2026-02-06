@@ -364,7 +364,7 @@ export function initPopupReservaUX(): void {
 type ApiSimple = { status?: string; message?: string; code?: string };
 
 function buildCancelarUrl(): string {
-  const u = new URL('/api/intranet/cancelar-reserva/post');
+  const u = new URL(`${window.location.origin}${apiUrl}/intranet/cancelar-reserva/post`);
   u.searchParams.set('type', 'cancelar-reserva');
   return u.toString();
 }
