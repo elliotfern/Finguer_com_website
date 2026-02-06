@@ -5,8 +5,7 @@ $routes = [
     // INTRANET - AREA PRIVADA REQUEREIX TOKEN DE AUTENTICACIO
     '/control/login' => [
         'view' => 'public/intranet/auth/login.php',
-        'needs_session' => false,
-        'roles' => ['admin', 'trabajador'],
+        'needs_session' => false
     ],
 
     '/control' => [
