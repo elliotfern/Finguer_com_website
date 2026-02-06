@@ -363,7 +363,7 @@ export function initPopupReservaUX(): void {
 
 type ApiSimple = { status?: string; message?: string; code?: string };
 
-const CANCEL_RESERVA_ENDPOINT = `${apiUrl}/api/intranet/cancelar-reserves/post`; 
+const CANCEL_RESERVA_ENDPOINT = `${apiUrl}/intranet/cancelar-reserves/post`; 
 
 async function cancelarReserva(reservaId: string): Promise<string> {
   const res = await fetch(CANCEL_RESERVA_ENDPOINT, {
