@@ -48,7 +48,7 @@ try {
 
     $msg = ($result['changed'] ?? false)
         ? 'Reserva cancel·lada correctament'
-        : 'Sin cambios (ya estaba cancelada)';
+        : 'Sense canvis, ja estava cancel·lada';
 
     jsonResponse(vp2_ok($msg, $result), 200);
 } catch (InvalidArgumentException $e) {
