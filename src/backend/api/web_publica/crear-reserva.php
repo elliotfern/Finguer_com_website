@@ -144,7 +144,7 @@ try {
     $tipoStr = (string)($seleccion['tipoReserva'] ?? '');
     // ejemplos típicos: "RESERVA_FINGUER" o "RESERVA_FINGUER_GOLD" o "finguer_class"
     $tipoNumber = 1;
-    if (stripos($tipoStr, 'GOLD') !== false || $tipoStr === 'gold_finguer') {
+    if (stripos($tipoStr, 'RESERVA_FINGUER_GOLD') !== false || $tipoStr === 'gold_finguer') {
         $tipoNumber = 2;
     }
 
