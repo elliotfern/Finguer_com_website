@@ -22,6 +22,13 @@ if (!$params || !$signature) {
 
 $decoded = json_decode(base64_decode($params), true);
 
+// Justo después de $decoded = json_decode(...)
+error_log('REDSYS NOTIFICATION: ' . json_encode([
+    'order'    => $decoded['Ds_Order'] ?? 'NULL',
+    'response' => $decoded['Ds_Response'] ?? 'NULL',
+    'amount'   => $decoded['Ds_Amount'] ?? 'NULL',
+]));
+
 if (!$decoded) {
     http_response_code(400);
     exit('INVALID PARAMETERS');
@@ -55,6 +62,8 @@ $stmt = $conn->prepare("
 
 $stmt->execute(['order' => $order]);
 $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
+
+error_log('RESERVA FOUND: ' . ($reserva ? json_encode($reserva) : 'NOT FOUND'));
 
 if (!$reserva) {
     http_response_code(404);
