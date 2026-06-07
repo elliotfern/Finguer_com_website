@@ -46,7 +46,6 @@ if (isReservaPage) {
 }
 
 if (isPagoPage) {
-  console.log("pagina pago ?");
   pagament();
 }
 

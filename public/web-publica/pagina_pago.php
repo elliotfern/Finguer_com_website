@@ -226,7 +226,7 @@ $pago = $translations['paginaPago'] ?? [];
                     </table>
 
                     <!-- Formulario para ingresar la información del pago -->
-                    <form name="form" action="" method="POST">
+                    <div id="form">
                         <!-- Casilla de verificación de términos y condiciones -->
                         <hr>
                         <p><?php echo $pago['datosPersonales']; ?></p>
@@ -251,7 +251,7 @@ $pago = $translations['paginaPago'] ?? [];
                             </button>
                             -->
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

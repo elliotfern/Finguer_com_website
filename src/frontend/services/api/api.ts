@@ -30,7 +30,7 @@ export const fetchData = async <T, B = undefined>(
     const data: T = await response.json();
     return data;
   } catch (error) {
-    console.error('Hubo un problema con la llamada a la API:', error);
-    return null; // O manejar de otra forma
+      console.error('API ERROR');
+    throw new Error( 'API error');
   }
 };
