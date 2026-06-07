@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+ini_set('error_log', __DIR__ . '/redsys_debug.log');
 
 use App\Payments\RedsysSignatureVerifier;
 
@@ -64,6 +65,7 @@ $stmt->execute(['order' => $order]);
 $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
 
 error_log('RESERVA FOUND: ' . ($reserva ? json_encode($reserva) : 'NOT FOUND'));
+error_log('=== REDSYS NOTIF === order=[' . ($decoded['Ds_Order'] ?? 'NULL') . '] response=[' . ($decoded['Ds_Response'] ?? 'NULL') . ']');
 
 if (!$reserva) {
     http_response_code(404);
