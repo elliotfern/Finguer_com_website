@@ -98,7 +98,7 @@ $miObj->setParameter("DS_MERCHANT_URLOK", (string)$urlOK);
 $miObj->setParameter("DS_MERCHANT_URLKO", (string)$urlKO);
 
 error_log('REDSYS PARAMS: merchantUrl=' . $url . ' order=' . $idReserva . ' amount=' . $amount);
-
+ 
 // Generar parámetros + firma
 $params    = $miObj->createMerchantParameters();
 $signature = $miObj->createMerchantSignature($kc);
