@@ -13,55 +13,73 @@ function getSessionFromUrl(): string | null {
 }
 
 export const pagamentTargeta = async (): Promise<void> => {
-  console.log('PAGAMENT TARGETA START');
+  console.log('=== PAGAMENT START ===');
+
+  // 🧠 capturadores globales de errores (solo para debug staging)
+  window.addEventListener('error', (e) => {
+    console.error('🧨 JS ERROR:', e.message);
+  });
+
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('🧨 PROMISE ERROR:', e.reason);
+  });
 
   const session = getSessionFromUrl();
-
-  console.log('SESSION', session);
+  console.log('SESSION:', session);
 
   if (!session) {
-    console.error('No session');
+    console.error('NO SESSION');
     return;
   }
 
-  console.log('ANTES FETCH REDSYS');
-
   try {
-    const response = await fetchData<ApiRespostaRedSys, PostRequest>(`${apiUrl}/pagamentRedsysTargeta`, 'POST', { session });
-    console.log('REDSYS RESPONSE', response);
+    console.log('STEP 1 - FETCH REDSYS START');
+
+    const response = await fetchData<ApiRespostaRedSys, PostRequest>(
+      `${apiUrl}/pagamentRedsysTargeta`,
+      'POST',
+      { session }
+    );
+
+    console.log('STEP 2 - FETCH RESPONSE:', response);
 
     if (!response) {
-      console.error('REDSYS RESPONSE NULL');
+      console.error('RESPONSE NULL');
       return;
     }
 
     if (response.status !== 'success') {
-      console.error('REDSYS ERROR RESPONSE', response);
+      console.error('API ERROR RESPONSE:', response);
       return;
     }
 
-    if (!response || response.status !== 'success' || !('params' in response) || !('signature' in response) || !('idReserva' in response)) {
-      console.error('REDSYS INVALID RESPONSE', response);
-      return;
-    }
-    
+    console.log('STEP 3 - VALID RESPONSE OK');
+
     const { params, signature, idReserva } = response;
 
-    console.log('ANTES CREACIO USUARI');
-
-    const r = await creacioDadesUsuaris(idReserva);
-    console.log('DESPUES CREACIO USUARI', r);
-
-    if (!r || r.status !== 'success') {
-      console.error('Error creando datos usuario', r);
+    if (!params || !signature || !idReserva) {
+      console.error('MISSING REDSYS FIELDS:', response);
       return;
     }
+
+    console.log('STEP 4 - CREAR USUARIO');
+
+    const r = await creacioDadesUsuaris(idReserva);
+
+    console.log('STEP 5 - CREAR USUARIO RESPONSE:', r);
+
+    if (!r || r.status !== 'success') {
+      console.error('ERROR CREANDO USUARIO:', r);
+      return;
+    }
+
+    console.log('STEP 6 - BUILD REDSYS FORM');
 
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = redsysUrl;
 
-    const addInput = (name: string, value: string) => {
+    const add = (name: string, value: string) => {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
@@ -69,18 +87,19 @@ export const pagamentTargeta = async (): Promise<void> => {
       form.appendChild(input);
     };
 
-    addInput('Ds_SignatureVersion', 'HMAC_SHA256_V1');
-    addInput('Ds_MerchantParameters', params);
-    addInput('Ds_Signature', signature);
+    add('Ds_SignatureVersion', 'HMAC_SHA256_V1');
+    add('Ds_MerchantParameters', params);
+    add('Ds_Signature', signature);
 
     document.body.appendChild(form);
 
-    console.log('SUBMIT REDSYS');
-    console.log('ANTES FORM SUBMIT');
+    console.log('STEP 7 - SUBMIT REDSYS');
 
-    form.submit();
+    setTimeout(() => {
+      form.submit();
+    }, 0);
+
   } catch (err) {
-    console.error('PAYMENT ERROR', err);
-    return;
+    console.error('🔥 PAYMENT FATAL ERROR:', err);
   }
 };
