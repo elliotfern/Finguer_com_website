@@ -37,7 +37,7 @@ jobs:
             echo "env_name=TEST" >> "$GITHUB_OUTPUT"
             echo "branch=develop" >> "$GITHUB_OUTPUT"
             echo "remote_dist_dir=/home/epgylzqu/finguer.com/dev/public/dist" >> "$GITHUB_OUTPUT"
-            echo "remote_app_dir=/home/epgylzqu/finguer.com/dev" >> "$GITHUB_OUTPUT"
+            echo "remote_app_dir=/home/epgylzqu/finguer.com/dev/public" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Start SSH agent
