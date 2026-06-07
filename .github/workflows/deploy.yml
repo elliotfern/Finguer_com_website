@@ -90,14 +90,14 @@ jobs:
           echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
           echo "Remote dist dir:       ${{ steps.target.outputs.remote_dist_dir }}"
 
-          test -f dist/bundle.js || { echo "dist/bundle.js no existe"; exit 1; }
+          test -f public/dist/bundle.js || { echo "public/dist/bundle.js no existe"; exit 1; }
 
           REMOTE_DIR="${{ steps.target.outputs.remote_dist_dir }}"
           REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
 
           ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIR'"
 
-          scp dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
+          scp public/dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
 
           ssh epgylzqu@87.98.230.129 "\
             mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
