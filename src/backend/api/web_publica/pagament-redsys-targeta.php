@@ -67,6 +67,7 @@ if ($costTotal <= 0) {
 $miObj = new RedsysAPI;
 
 $BASE_DIR = 'https://finguer.com/api/notificacioRedsys';
+  
 
 // Valores de entrada
 $fuc      = $token;
