@@ -75,7 +75,7 @@ export const pagamentTargeta = async (): Promise<void> => {
 
       document.body.appendChild(form);
       console.log('FORM IN DOM');
-      form.submit();
+      //form.submit();
       console.log('SUBMIT CALLED');
       return;
     }
