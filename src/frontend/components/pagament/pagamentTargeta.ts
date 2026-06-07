@@ -70,7 +70,13 @@ export const pagamentTargeta = async (): Promise<void> => {
 
       document.body.appendChild(form);
 
+      console.log('ABOUT TO SUBMIT REDSYS');
+      console.log('URL:', redsysUrl);
+
+      document.body.appendChild(form);
+      console.log('FORM IN DOM');
       form.submit();
+      console.log('SUBMIT CALLED');
       return;
     }
 
