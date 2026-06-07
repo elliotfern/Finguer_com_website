@@ -13,32 +13,29 @@ function getSessionFromUrl(): string | null {
 }
 
 export const pagamentTargeta = async (): Promise<void> => {
-  console.log('PAGAMENT TARGETA START');
+  console.log('PAYMENT START');
 
-  const session = getSessionFromUrl();
+  const session = window.location.pathname.split('/').filter(Boolean).pop();
+  if (!session) return;
 
-  if (!session) {
-    console.error('NO SESSION');
-    return;
-  }
-
-  const response = await fetchData<ApiRespostaRedSys, PostRequest>(
+  const response = await fetchData<ApiRespostaRedSys, { session: string }>(
     `${apiUrl}/pagamentRedsysTargeta`,
     'POST',
     { session }
   );
 
+  console.log('REDSYS RESPONSE', response);
+
   if (!response || response.status !== 'success') {
-    console.error('REDSYS ERROR', response);
+    console.error('ERROR REDSYS');
     return;
   }
 
   const { params, signature, idReserva } = response;
 
   const r = await creacioDadesUsuaris(idReserva);
-
   if (!r || r.status !== 'success') {
-    console.error('ERROR USUARIO');
+    console.error('ERROR CREANDO USUARIO');
     return;
   }
 
@@ -46,7 +43,7 @@ export const pagamentTargeta = async (): Promise<void> => {
   form.method = 'POST';
   form.action = redsysUrl;
 
-  const add = (n: string, v: string) => {
+  const mk = (n: string, v: string) => {
     const i = document.createElement('input');
     i.type = 'hidden';
     i.name = n;
@@ -54,13 +51,16 @@ export const pagamentTargeta = async (): Promise<void> => {
     form.appendChild(i);
   };
 
-  add('Ds_SignatureVersion', 'HMAC_SHA256_V1');
-  add('Ds_MerchantParameters', params);
-  add('Ds_Signature', signature);
+  mk('Ds_SignatureVersion', 'HMAC_SHA256_V1');
+  mk('Ds_MerchantParameters', params);
+  mk('Ds_Signature', signature);
 
   document.body.appendChild(form);
 
   console.log('SUBMIT REDSYS');
 
-  form.submit();
+  // 🔥 IMPORTANTE: evita cualquier interferencia
+  setTimeout(() => {
+    form.submit();
+  }, 50);
 };

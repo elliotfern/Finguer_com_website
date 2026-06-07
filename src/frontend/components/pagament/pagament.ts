@@ -1,48 +1,50 @@
+import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
-import { executePaymentFlow } from './paymentFlow';
 import { recuperarCarroCompra } from './recuperarDadesCarritoCompra';
 
-let paymentInitialized = false;
+let initialized = false;
 
 export const pagament = async (): Promise<void> => {
-  if (paymentInitialized) return;
-  paymentInitialized = true;
-
   const snapshot = await recuperarCarroCompra();
   if (!snapshot) {
-    console.error('NO SNAPSHOT');
+    console.error('No snapshot');
     return;
   }
 
-  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
+  if (initialized) return;
+  initialized = true;
 
-  if (checkbox) {
-    checkbox.addEventListener('change', botoPagament);
+  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
+  const button = document.getElementById('pagamentTargeta') as HTMLButtonElement | null;
+
+  if (!checkbox || !button) return;
+
+  // estado inicial
+  botoPagament();
+
+  // checkbox listener
+  checkbox.addEventListener('change', () => {
     botoPagament();
-  }
+  });
 
-  document.addEventListener('click', onPaymentClick);
-};
+  // click DIRECTO (SIN DELEGACIÓN)
+  button.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-const onPaymentClick = async (e: Event) => {
-  const target = e.target as HTMLElement;
-  const button = target.closest('#pagamentTargeta');
+    console.log('CLICK PAYMENT');
 
-  if (!button) return;
+    const ok = checkbox.checked;
+    if (!ok) {
+      document.getElementById('aviso_terminos')!.style.display = 'block';
+      return;
+    }
 
-  e.preventDefault();
-  e.stopPropagation();
+    document.getElementById('aviso_terminos')!.style.display = 'none';
 
-  console.log('CLICK REAL');
+    const snapshot2 = await recuperarCarroCompra();
+    if (!snapshot2) return;
 
-  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
-
-  if (!checkbox?.checked) {
-    console.log('CHECKBOX NOT OK');
-    return;
-  }
-
-  console.log('GO PAYMENT FLOW');
-
-  await executePaymentFlow();
+    await pagamentTargeta();
+  });
 };
