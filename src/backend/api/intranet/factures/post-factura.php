@@ -31,11 +31,21 @@ try {
         jsonResponse(vp2_err('Error al crear la factura para la reserva', 'ERROR_CREACION_FACTURA'), 500);
     }
 
+    $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
+
+    $BASE_DIR = $isProd
+        ? '/home/epgylzqu/finguer.com'
+        : '/var/www/finguer_com/public';
+
+   $WEB_DIR = $isProd
+        ? 'https://finguer.com/pdf/facturas/'
+        : 'http://finguer.local/pdf/facturas/';
+
     // 2) Generar el PDF
     $pdfRes = generarFacturaPdf($facturaId, [
-        'mode'     => 'F', // Guardar en archivo
-        'base_dir' => '/home/epgylzqu/finguer.com', // Ruta completa a la raíz de tu servidor
-        'subdir'   => '/pdf/facturas', // Subdirectorio donde se guardará el PDF
+        'mode'     => 'F',
+        'base_dir' => $BASE_DIR, // Ruta completa a la raíz de tu servidor
+        'subdir'   => 'pdf/facturas', // Subdirectorio donde se guardará el PDF
         'force'    => false, // No forzar la generación si ya existe
     ]);
 
@@ -43,7 +53,7 @@ try {
         jsonResponse(vp2_err('Error al generar el PDF', 'ERROR_GENERACION_PDF', $pdfRes), 500);
     }
     // 3) Enviar la ruta pública del PDF en la respuesta
-    $pdfUrl = 'https://finguer.com/pdf/facturas/' . basename($pdfRes['path']); // Genera la URL pública
+    $pdfUrl = $WEB_DIR . basename($pdfRes['path']); // Genera la URL pública
 
     jsonResponse(vp2_ok('Factura generada correctamente', [
         'factura_id'    => $facturaId,

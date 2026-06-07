@@ -6,17 +6,18 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
 
   $idFactura = (int)$idFactura;
 
-  require_once(APP_ROOT . '/vendor/tecnickcom/tcpdf/tcpdf.php');
-  require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
-  require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
-  require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
+  $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
+
+  $BASE_DIR = $isProd
+    ? '/home/epgylzqu/finguer.com'
+    : '/var/www/finguer_com/public';
 
   // Defaults opts
   $opts = array_merge([
     'mode'     => 'F',      // 'I' navegador, 'F' fichero
     'force'    => false,
-    'base_dir' => APP_ROOT . '/storage',
-    'subdir'   => '/factures',
+    'base_dir' => $BASE_DIR,
+    'subdir'   => '/pdf/facturas',
   ], $opts);
 
   // 1) Datos factura (snapshot cliente + snapshot emisor) + reserva
@@ -186,7 +187,7 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
   $htmlContent = '
     <div style="margin:0;font-size:10px;line-height:12px;">
         <div style="font-size:10px; line-height:12px;">
-            <img alt="Finguer" src="https://finguer.com/public/img/logo-header.svg" width="150" height="70">
+            <img alt="Finguer" src="/img/logo-header.svg" width="150" height="70">
         </div>
 
         <div>
@@ -364,19 +365,19 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
   $pdf->writeHTML($htmlContent, true, false, true, false, '');
 
   // ===== MODO NAVEGADOR (intranet) =====
-  if (($opts['mode'] ?? 'F') === 'I') {
+  if (($opts['mode'] ?? 'F') === 'FD') {
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="' . $filename . '"');
-    $pdf->Output($filename, 'I');
+    $pdf->Output($filename, 'F');
 
     return [
       'status'  => 'success',
-      'mode'    => 'I',
+      'mode'    => 'F',
       'message' => 'PDF mostrado en navegador',
     ];
   }
 
-  // ===== MODO FICHERO (email / cron) =====
+  // ===== MODO FICHERO (email / cron) ===== 
   $dir = rtrim((string)$opts['base_dir'], '/') . '/' . trim((string)$opts['subdir'], '/');
 
   if (!is_dir($dir)) {

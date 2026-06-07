@@ -12,29 +12,40 @@ $reserva = $translations['reserva'] ?? [];
         <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva['finguer_title'] ?></strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
         </div>
 
         <p>Finguer, park your problems and fly away</p>
     </div>
 
-    <div class="row g-0 container-imatge">
-        <div class="col-12 col-md-6 ms-auto">
-            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_finguer.svg" alt="Tarifas del parking">
+    <div class="row g-3 container-imatge align-items-stretch">
+        <div class="col-12 col-md-4 text-center">
+            <a href="#reserva">
+                <img class="img-fluid img-limit" src="img/tarifa_finguer.svg" alt="Tarifas del parking">
+            </a>
         </div>
-        <div class="col-12 col-md-6">
-            <img class="img-responsive2" src="<?php APP_ROOT; ?>/public/img/tarifes_gold.svg" alt="Tarifas del parking">
+
+        <div class="col-12 col-md-4 text-center">
+            <a href="#reserva">
+                <img class="img-fluid img-limit" src="img/tarifa_gold.svg" alt="Tarifas del parking">
+            </a>
+        </div>
+
+        <div class="col-12 col-md-4 text-center">
+            <a href="#formulario">
+                <img class="img-fluid img-limit" src="img/tarifa_anual.svg" alt="Tarifas del parking">
+            </a>
         </div>
     </div>
 
     <style>
         /* Asegura que las imágenes ocupen el 100% del ancho de su contenedor */
-        .img-responsive2 {
+
+
+        .container-imatge img {
+            max-height: 350px;
             width: 100%;
-            height: auto;
-            /* Mantiene la proporción */
-            object-fit: cover;
-            /* Ajuste de la imagen */
+            object-fit: contain;
         }
 
         /* En pantallas grandes, las imágenes ocuparán el 50% del contenedor */
@@ -46,7 +57,7 @@ $reserva = $translations['reserva'] ?? [];
         }
     </style>
 
-    <div class="container quadre_reserves" style="margin-top:55px">
+    <div id="reserva" class="container quadre_reserves" style="margin-top:55px">
         <h1><?php echo $reserva['configura_reserva']; ?>:</h1>
 
         <div class="alert alert-danger" role="alert" id="avis_especial" style="padding:10px;display:none"> </div>
@@ -136,7 +147,7 @@ $reserva = $translations['reserva'] ?? [];
 
     <p>Pues ahora, esa sensación de que te ha tocado finguer, la puedes tener cuando piensas en qué hacer con tu coche cuando vas a viajar en avión. Porque cuando contratas Finguer, aparcas tus problemas y disfrutas más del viaje.</p>
 
-    <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/finguer-park.jpg" alt="Finguer">
+    <img class="img-responsive" src="<?php APP_ROOT; ?>/img/finguer-park.jpg" alt="Finguer">
 </div>
 
 <div class="container text-center" id="servicios" style="margin-top:50px">
@@ -156,7 +167,7 @@ $reserva = $translations['reserva'] ?? [];
 
         <div class="col-12 col-md-3 mx-3 finguer2 mb-4" style="background-color:red">
             <h3><strong>Gold Finguer Class</strong></h3>
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/keys.svg" alt="Gold finguer class">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/keys.svg" alt="Gold finguer class">
             <hr>
             <p>Este servicio es el que escogería el mismísimo James Bond.</p>
             <p>Con la Gold Finguer Class solo tienes que llegar con tu coche a la terminal que te haya tocado (muy importante que nos avises 20 minutos antes de llegar), darnos las llaves del coche y disfrutar de tu viaje. Y a tu vuelta, pues lo mismo. Llegas, sales de la terminal y allí te estaremos esperando con tu coche.</p>
@@ -165,7 +176,7 @@ $reserva = $translations['reserva'] ?? [];
 
         <div class="col-12 col-md-3 mx-3 finguer3 mb-4" style="background-color:red">
             <h3><strong>Anual Finguer Class</strong></h3>
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
             <hr>
             <p>Este es el servicio anual de Finguer.</p>
             <p>Con Annual Finguer Class podrás disfrutar de un servicio y una atención completamente personalizada. Aparca tu coche el tiempo y las veces que quieras.</p>
@@ -187,27 +198,27 @@ $reserva = $translations['reserva'] ?? [];
 
     <div class="row text-center justify-content-center servicios" style="margin-top:20px">
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-pago-online.svg" alt="Servicios">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-pago-online.svg" alt="Servicios">
             <p><strong>Pago online</strong><br><strong>seguro</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
             <p><strong>Servicio</strong><br><strong>personalizado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
             <p><strong>Máxima seguridad</strong><br><strong>e higiene</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
             <p><strong>Servicio </strong><br><strong>de lavado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
+            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
             <p><strong>Parking</strong><br><strong>vigilado 24 h</strong></p>
         </div>
     </div>
@@ -216,27 +227,193 @@ $reserva = $translations['reserva'] ?? [];
         <strong>Finguer es un parking para coches con servicio de traslado y recogida al aeropuerto de Barcelona. Pero nosotros nos consideramos más como un hotel para mascotas. Y es que en Finguer tratamos tu coche como si fuera tu perro o gato: lo vigilamos, lo lavamos, cuidamos que no se pelee con el resto de coches… Y si no tienes mascota, pero te lo estás pensando, los científicos que saben de esto aconsejan el <a href="https://hipertextual.com/2016/07/mascotas-exoticas" target="_blank" rel="noreferrer noopener">ciervo sika</a>, originario de Japón. ???</strong>
     </div>
 
-    <div class="container" style="margin-top:55px;margin-bottom:10px">
-        <div class="row">
-            <div class="col-12 col-md-2" id="donde-estamos">
-                <h2><strong>¿Dónde estamos?</strong></h2>
+    <div id="formulario" class="container my-5" style="margin-top:55px;margin-bottom:10px">
+        <h2 class="text-center"><strong>Información de contacto</strong></h2>
 
-                <p><strong>Nuestro horario de servicio es de</strong><br><strong>5:00 de la mañana a 23:30 de la noche</strong></p>
+        <div class="row g-4">
 
-                <p id="contacto"><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Carrer de l'Alt Camp, 9, 08830</a><br><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Sant Boi de Llobregat, Barcelona</a></p>
+            <!-- MAPA -->
+            <div class="col-lg-6">
+
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-0">
+
+                        <div id="mapa-finguer"></div>
+
+                        <div class="p-5">
+                            <p><strong>Nuestro horario de servicio es de</strong><br><strong>5:00 de la mañana a 23:30 de la noche</strong></p>
+
+                            <p id="contacto"><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Carrer de l'Alt Camp, 9, 08830</a><br><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Sant Boi de Llobregat, Barcelona</a></p>
 
 
-                <p><strong>Teléfonos de contacto</strong><a href="https://wa.link/1qe0pe" target="_blank"></a></p>
-                <p><a href="tel:+34689255821">+34 689 255 821</a><br>
-                    <a href="mailto:hello@finguer.com">hello@finguer.com</a>
-                </p>
+                            <p><strong>Teléfono y email de contacto</strong><a href="https://wa.link/1qe0pe" target="_blank"></a></p>
+                            <p><a href="tel:+34689255821">+34 689 255 821</a><br>
+                                <a href="mailto:hello@finguer.com">hello@finguer.com</a>
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="col-12 col-md-10">
-                <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/mapa-finguer.jpg" alt="Mapa Finguer localizacion">
+            <!-- FORMULARIO -->
+            <div class="col-lg-6">
+
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-4">
+
+                        <h2 class="mb-3">
+                            Solicita información
+                        </h2>
+
+                        <p class="text-muted mb-4">
+                            Déjanos tus datos y te contactaremos en breve. ¿Estás interesado en la tarifa Anual? Deja aquí tu mensaje.
+                        </p>
+
+                        <form id="form-anual-class">
+
+                            <div id="formMessageOk" class="alert alert-success d-none mt-3" role="alert"></div>
+                            <div id="formMessageErr" class="alert alert-danger d-none mt-3" role="alert"></div>
+
+                            <input type="text" name="website" style="display:none">
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Nombre y apellidos *
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="nombre"
+                                    name="nombre"
+                                    required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Teléfono *
+                                </label>
+                                <input
+                                    type="tel"
+                                    class="form-control"
+                                    name="telefono"
+                                    id="telefono"
+                                    required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    name="email"
+                                    id="email"
+                                    required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    Mensaje (opcional)
+                                </label>
+
+                                <textarea
+                                    class="form-control"
+                                    name="mensaje"
+                                    id="mensaje"
+                                    rows="5"></textarea>
+                            </div>
+
+                            <div class="form-check mb-4">
+
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="privacidad"
+                                    name="privacidad"
+                                    required>
+
+                                <label class="form-check-label small" for="privacidad">
+                                    He leído y acepto la
+                                    <a href="/politica-privacidad" target="_blank">
+                                        política de privacidad
+                                    </a>
+                                    y el tratamiento de mis datos para gestionar mi solicitud de información.
+                                </label>
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100">
+                                Solicitar información
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+
             </div>
+
         </div>
-    </div>
 
+
+    </div>
 </div>
-</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const parkingCoords = [41.30760669361178, 2.0662375088392118];
+        const aeropuertoCoords = [41.2974, 2.0833];
+
+        const mapa = L.map('mapa-finguer');
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }
+        ).addTo(mapa);
+
+        const parking = L.marker(parkingCoords)
+            .addTo(mapa)
+            .bindPopup(
+                '<strong>Parking Finguer</strong><br>Carrer de l\'Alt Camp, 9'
+            )
+            .bindTooltip('Finguer', {
+                permanent: true,
+                direction: 'top',
+                offset: [0, -10]
+            });
+
+        const aeropuerto = L.marker(aeropuertoCoords)
+            .addTo(mapa)
+            .bindPopup(
+                '<strong>Aeropuerto Barcelona-El Prat</strong>'
+            )
+            .bindTooltip('Aeropuerto', {
+                permanent: true,
+                direction: 'top',
+                offset: [0, -10]
+            });
+
+        // Línea entre ambos puntos
+        L.polyline(
+            [parkingCoords, aeropuertoCoords], {
+                weight: 4,
+                opacity: 0.7
+            }
+        ).addTo(mapa);
+
+        const grupo = L.featureGroup([
+            parking,
+            aeropuerto
+        ]);
+
+        mapa.fitBounds(grupo.getBounds().pad(0.30));
+
+    });
+</script>

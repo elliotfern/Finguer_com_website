@@ -12,7 +12,7 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
 $allowedOrigins = [
     'https://finguer.com',
-    'https://dev.finguer.com',
+    'http://finguer.local',
 ];
 
 // Si viene un Origin válido, lo devolvemos (nunca '*')
@@ -115,16 +115,23 @@ clearAuthCookies();
 
 $jwt = JWT::encode($payload, $jwtSecret, "HS256");
 
+$isProd = str_contains($_SERVER['HTTP_HOST'] ?? '', 'finguer.com');
+
 // ✅ SOLO UNA COOKIE: token
 // Mejor usando setcookie con array (PHP 7.3+)
-setcookie('token', $jwt, [
+$cookieOptions = [
     'expires'  => $expiration,
     'path'     => '/',
-    'domain'   => '.finguer.com',  // ✅ comparte entre finguer.com y dev.finguer.com
-    'secure'   => true,
     'httponly' => true,
-    'samesite' => 'Lax', // o 'Strict' si la intranet es 100% misma web
-]);
+    'samesite' => 'Lax',
+    'secure'   => $isProd,
+];
+
+if ($isProd) {
+    $cookieOptions['domain'] = '.finguer.com';
+}
+
+setcookie('token', $jwt, $cookieOptions);
 
 echo json_encode([
     "status" => "success",

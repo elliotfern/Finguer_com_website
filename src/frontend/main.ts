@@ -1,8 +1,5 @@
 // main.ts
 import { detectAndRedirect } from './utils/selectorIdioma';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './style.css';
-import 'bootstrap';
 
 import { reserves } from './components/intranet/reserves/reservesPendents';
 import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
@@ -13,6 +10,13 @@ import { reservesClientPage } from './components/intranet/clients/reservesClient
 import { nomUsuari } from './components/intranet/header/nomUsuari';
 import { setMe } from './components/intranet/auth/store';
 import { applyRoleToDom } from './components/intranet/auth/applyRole';
+import { login } from './components/intranet/login/login';
+import { homePage } from './components/homepage/homepage';
+import { pagament } from './components/pagament/pagament';
+import { areaClientLogin } from './components/areaClient/areaClientLogin';
+import { areaClientHistoricReserves } from './components/areaClient/areaClientHistoricReserves';
+import { header } from './components/intranet/header/header';
+import { finguerAnualContactForm } from './components/homepage/formulari';
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 
@@ -20,13 +24,9 @@ const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 const path = window.location.pathname.replace(/\/$/, '') || '/';
 
 // Normalizamos para la web multidioma (usa mismo path normalizado)
-const isReservaPage =
-  path === '/reserva' || supportedLanguages.some((lang) => path.startsWith(`/${lang}/reserva`));
+const isReservaPage = path === '/reserva' || path === '/' || supportedLanguages.some((lang) => path === `/${lang}` || path.startsWith(`/${lang}/reserva`));
 
-const isPagoPage =
-  path === '/pago' ||
-  supportedLanguages.some((lang) => path.startsWith(`/${lang}/pago`)) ||
-  /^\/pago\/[a-zA-Z0-9]+$/.test(path);
+const isPagoPage = path === '/pago' || supportedLanguages.some((lang) => path.startsWith(`/${lang}/pago`)) || /^\/pago\/[a-zA-Z0-9]+$/.test(path);
 
 function getUuidFromPath(prefix: string): string | undefined {
   // prefix ejemplo: '/control/usuaris/modifica-client'
@@ -41,50 +41,26 @@ function getUuidFromPath(prefix: string): string | undefined {
 // Web Finguer.com
 // --------------------
 if (isReservaPage) {
-  import('./components/homepage/homepage')
-    .then((module) => {
-      detectAndRedirect();
-      module.homePage();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo de la homepage:', error);
-    });
+  homePage();
+  finguerAnualContactForm();
 }
 
 if (isPagoPage) {
-  import('./components/pagament/pagament')
-    .then((module) => {
-      detectAndRedirect();
-      module.pagament();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo de pagament:', error);
-    });
+  console.log("pagina pago ?");
+  pagament();
 }
 
 // --------------------
 // Área cliente
 // --------------------
 if (path === '/area-cliente/login') {
-  import('./components/areaClient/areaClientLogin')
-    .then((module) => {
-      detectAndRedirect();
-      module.areaClientLogin();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo areaClientLogin:', error);
-    });
+  detectAndRedirect();
+  areaClientLogin();
 }
 
 if (path === '/area-cliente/reservas') {
-  import('./components/areaClient/areaClientHistoricReserves')
-    .then((module) => {
-      detectAndRedirect();
-      module.areaClientHistoricReserves();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo areaClientHistoricReserves:', error);
-    });
+  detectAndRedirect();
+  areaClientHistoricReserves();
 }
 
 // --------------------
@@ -97,9 +73,7 @@ async function initIntranet(): Promise<void> {
   const me = await nomUsuari();
   setMe(me);
 
-  // 2) renderizar header (para que existan nodos como #userDiv)
-  const headerModule = await import('./components/intranet/header/header');
-  headerModule.header();
+header();
 
   // 3) aplicar permisos visuales sobre HTML existente (PHP)
   if (me) applyRoleToDom(me.role);
@@ -168,18 +142,10 @@ function routeIntranet(p: string): void {
 
 // Arranque intranet (excepto login)
 if (isIntranet && path !== '/control/login') {
-  initIntranet().catch((error) => {
-    console.error('Error intranet init:', error);
-  });
+  initIntranet();
 }
 
 // LOGIN intranet (separado a propósito)
 if (path === '/control/login') {
-  import('./components/intranet/login/login')
-    .then((module) => {
-      module.login();
-    })
-    .catch((error) => {
-      console.error('Error al cargar el módulo login:', error);
-    });
+   login();
 }

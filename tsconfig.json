@@ -1,22 +1,27 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2020",
-    "moduleResolution": "node",
+    "target": "es2021",
+    "lib": ["DOM", "DOM.Iterable", "ES2021"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "strict": true,
-    "allowJs": true,
-    "outDir": "./dist",
-    "rootDir": "./src/frontend/",
-    "lib": ["es2017", "dom"],
+    "allowJs": false,
+    "outDir": "./public/dist",
+    "rootDir": "./src/",
+    "sourceMap": false,
+    "types": ["node"],
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["./node_modules/@types", "src/frontend/types"]
-  },
-  "include": [
-    "src/frontend",
+      },
+
+ "include": [
+    "src",
+    "src/types/**/*.d.ts",
+     "src/frontend",
     "src/frontend/types/global.d.ts",
     "src/frontend/types"
-  ],
-  "exclude": ["node_modules"]
+  ], 
+  "exclude": ["node_modules"],
 }

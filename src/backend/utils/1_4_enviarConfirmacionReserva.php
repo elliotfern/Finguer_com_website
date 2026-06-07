@@ -174,10 +174,6 @@ function enviarConfirmacionReserva(PDO $conn, int $reservaId, array $opts = []):
         return vp2_err('BREVO_API no configurada.', 'BREVO_API_MISSING');
     }
 
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
-
     try {
         $mail = new PHPMailer(true);
         $mail->isSMTP();

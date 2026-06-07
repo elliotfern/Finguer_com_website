@@ -1,6 +1,5 @@
-<?php
-require_once APP_ROOT . '/public/intranet/inc/header.php';
-
+<?php 
+require_once APP_ROOT . '/intranet/inc/header.php'; 
 $idReserva = $routeParams[0];
 
 // ✅ Usamos la nueva función flexible (solo lectura + consulta Redsys)
@@ -32,25 +31,25 @@ $ds   = (string)($response['data']['redsys']['ds_response'] ?? '');
 
             if ($paid) {
                 echo "<div class='alert alert-success text-center' role='alert'>
-                        <p><img src='" . APP_WEB . "/public/img/correct.png' alt='Pagament OK'></p>
+                        <p><img src='" . APP_WEB . "/img/correct.png' alt='Pagament OK'></p>
                         <p><strong>" . htmlspecialchars($msg) . "</strong></p>
                       </div>";
             } else {
                 // Redsys respondió pero NO está pagado → lo mostramos como aviso/error suave
                 echo "<div class='alert alert-danger text-center' role='alert'>
-                        <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Pagament No confirmat'></p>
+                        <p><img src='" . APP_WEB . "/img/warning.png' alt='Pagament No confirmat'></p>
                         <p><strong>" . htmlspecialchars($msg) . "</strong></p>
                       </div>";
             }
         } else {
             echo "<div class='alert alert-danger text-center' role='alert'>
-                    <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Pagament Error'></p>
+                    <p><img src='" . APP_WEB . "/img/warning.png' alt='Pagament Error'></p>
                     <p><strong>" . htmlspecialchars($response['message']) . "</strong></p>
                   </div>";
         }
     } else {
         echo "<div class='alert alert-danger text-center' role='alert'>
-                <p><img src='" . APP_WEB . "/public/img/warning.png' alt='Error'></p>
+                <p><img src='" . APP_WEB . "/img/warning.png' alt='Error'></p>
                 <p><strong>No se ha podido verificar el pago (respuesta inválida).</strong></p>
               </div>";
     }

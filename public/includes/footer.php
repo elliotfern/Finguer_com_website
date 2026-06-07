@@ -11,7 +11,7 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
         <div class="row justify-content-center">
 
             <div class="col-12 col-md-2">
-                <img class="img-responsive" src="<?php APP_ROOT; ?>/public/img/logo-header-sticky.png" alt="Finguer Parking Aeropuerto El Prat de Barcelona">
+                <img class="img-responsive" src="<?php APP_ROOT; ?>/img/logo-header-sticky.png" alt="Finguer Parking Aeropuerto El Prat de Barcelona">
             </div>
 
             <div class="col-12 col-md-2">
@@ -35,15 +35,17 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 
             <div class="col-12 col-md-2">
                 <h6><strong>SÍGUENOS</strong></h6>
-                <a href="https://www.instagram.com/finguer_parking" target="_blank"><img src="<?php APP_ROOT; ?>/public/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
+                <a href="https://www.instagram.com/finguer_parking" target="_blank"><img src="<?php APP_ROOT; ?>/img/icons-instagram.svg" alt="Instagram" class="img-responsive"></a>
             </div>
 
         </div>
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="<?= htmlspecialchars($bundleUrl, ENT_QUOTES) ?>?v=<?= $v ?>"></script>
-<script src="<?php APP_ROOT; ?>/public/js/cookies.js"></script>
+<script src="<?php APP_ROOT; ?>/js/cookies.js"></script>
 <script>
     window.APP_REDSYS_URL = "<?= htmlspecialchars($_ENV['URLREDSYS'] ?? '', ENT_QUOTES) ?>";
 </script>

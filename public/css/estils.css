@@ -11,6 +11,19 @@ body {
 }
 
 /* Estilos HOMEPAGE */
+#mapa-finguer {
+    width: 100%;
+    min-height: 550px;
+    border-radius: 0.5rem;
+}
+
+.leaflet-tooltip {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 4px 8px;
+}
 
 .quadre_reserves {
   border-style: solid;

@@ -69,8 +69,10 @@ export const pagamentTargeta = async (): Promise<void> => {
       form.appendChild(signatureInput);
 
       document.body.appendChild(form);
-      form.submit();
-      return;
+
+      setTimeout(() => {
+        form.submit();
+      }, 1000);
     }
 
     // Error al crear datos

@@ -66,12 +66,14 @@ if ($costTotal <= 0) {
 // OBJECTE REDSYS
 $miObj = new RedsysAPI;
 
+$BASE_DIR = 'https://finguer.com/api/notificacioRedsys';
+
 // Valores de entrada
 $fuc      = $token;
 $terminal = $token3;
 $moneda   = "978";
 $trans    = "0";
-$url      = "";
+$url      = $BASE_DIR;
 $urlOK    = $url_Ok;
 $urlKO    = $url_Ko;
 
@@ -94,6 +96,7 @@ $miObj->setParameter("DS_MERCHANT_TERMINAL", (string)$terminal);
 $miObj->setParameter("DS_MERCHANT_MERCHANTURL", (string)$url);
 $miObj->setParameter("DS_MERCHANT_URLOK", (string)$urlOK);
 $miObj->setParameter("DS_MERCHANT_URLKO", (string)$urlKO);
+
 
 // Generar parámetros + firma
 $params    = $miObj->createMerchantParameters();

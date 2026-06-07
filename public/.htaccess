@@ -1,0 +1,38 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. EXCEPCIÓN CRÍTICA (ESTÁTICOS)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # www → non-www (solo HTTP local seguro)
+    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    RewriteRule ^(.*)$ http://%1/$1 [L,R=301]
+
+    # Root → reserva
+    RewriteRule ^$ /reserva [R=301,L]
+
+    # Control panel redirect
+    RewriteRule ^control/?$ /control/reserves-pendents [R=301,L]
+
+    # Idiomas primero (más prioritario)
+    RewriteCond %{REQUEST_URI} ^/(es|fr|en|ca)(.*)$
+    RewriteRule ^(es|fr|en|ca)(.*)$ index.php?lang=$1&uri=$2 [QSA,L]
+
+    # Front controller fallback
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)$ index.php?uri=$1 [QSA,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
+
+<FilesMatch "\.svg$">
+    Header set Content-Type "image/svg+xml"
+</FilesMatch>

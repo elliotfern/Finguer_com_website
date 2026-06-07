@@ -1,6 +1,5 @@
 <?php
-require_once('inc/header.php');
-
+require_once APP_ROOT . '/intranet/inc/header.php'; 
 echo "<h2>Reserves cercadors</h2>";
 
 $sql = "SELECT rc1.idReserva,

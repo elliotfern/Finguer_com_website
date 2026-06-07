@@ -1,6 +1,5 @@
 <?php
-require_once('inc/header.php');
-
+require_once APP_ROOT . '/intranet/inc/header.php'; 
 if (isset($_GET['cercador'])) {
     $buscador = $_GET['cercador'];
 }

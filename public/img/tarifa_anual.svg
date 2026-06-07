@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="300"
+   height="350"
+   viewBox="0 0 79.374998 92.604166"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="tarifa_anual.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="189.15106"
+     inkscape:cy="218.84954"
+     inkscape:window-width="1865"
+     inkscape:window-height="1022"
+     inkscape:window-x="55"
+     inkscape:window-y="34"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2"
+     inkscape:lockguides="false"
+     showgrid="true">
+    <inkscape:grid
+       id="grid18"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="0.26458333"
+       spacingy="0.26458333"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect4-1"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,7.5335672,0,1 @ F,0,0,1,0,4.5693829,0,1 @ F,0,0,1,0,5.2286477,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect4"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,7.5335672,0,1 @ F,0,0,1,0,4.5693829,0,1 @ F,0,0,1,0,5.2286477,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+  </defs>
+  <rect
+     style="fill:#4d4d4d;fill-opacity:1;stroke-width:0.278111"
+     id="rect1-6"
+     width="79.375"
+     height="92.604164"
+     x="0"
+     y="1.9244073e-08"
+     rx="4.490128"
+     ry="4.490128"
+     inkscape:export-filename="01_finguer.com_web/public/img/tarifes_gold.svg"
+     inkscape:export-xdpi="96"
+     inkscape:export-ydpi="96"
+     sodipodi:insensitive="true" />
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.40833px;line-height:0.9;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;inline-size:87.4989;display:inline;fill:#ba801c;fill-opacity:1;stroke-width:0.264999"
+       x="5.8208332"
+       y="23.823866"
+       id="text1"
+       transform="translate(-1.8515626,0.35501726)"><tspan
+         x="5.8208332"
+         y="23.823866"
+         id="tspan8"><tspan
+           style="fill:#ffffff;stroke-width:0.265"
+           id="tspan2">Anual Finguer Class</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;inline-size:55.5499;display:inline;fill:#ffffff;fill-opacity:1;stroke-width:0.264999"
+       x="5.6616702"
+       y="39.329903"
+       id="text2"
+       transform="translate(-1.6928387,-5.6079331)"><tspan
+         x="5.6616702"
+         y="39.329903"
+         id="tspan24"><tspan
+           style="stroke-width:0.265"
+           id="tspan12">Tu parking, tu libertad total.
+</tspan></tspan><tspan
+         x="5.6616702"
+         y="43.563233"
+         id="tspan26"><tspan
+           style="stroke-width:0.265"
+           id="tspan25">Atención personalizada. </tspan></tspan><tspan
+         x="5.6616702"
+         y="47.796563"
+         id="tspan28"><tspan
+           style="stroke-width:0.265"
+           id="tspan27">Sin complicaciones.</tspan></tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.264999"
+       id="rect3"
+       width="22.945047"
+       height="14.297853"
+       x="129.83162"
+       y="56.453453"
+       inkscape:path-effect="#path-effect4"
+       sodipodi:type="rect"
+       d="m 137.36519,56.453453 h 10.84209 a 4.5693829,4.5693829 45 0 1 4.56939,4.569383 v 4.499823 a 5.2286477,5.2286477 135 0 1 -5.22865,5.228648 h -17.7164 V 63.98702 a 7.5335672,7.5335672 135 0 1 7.53357,-7.533567 z"
+       transform="matrix(-0.95722252,0,0,0.84285714,150.21053,-44.407196)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.70417px;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#4d4d4d;fill-opacity:1;stroke-width:0.264999"
+       x="7.7779536"
+       y="6.9556818"
+       id="text4"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.70417px;font-family:arial;-inkscape-font-specification:'arial Bold';fill:#4d4d4d;fill-opacity:1;stroke-width:0.265"
+         x="7.7779536"
+         y="6.9556818"
+         id="tspan15">solicita</tspan></text>
+    <g
+       id="layer1-5"
+       transform="translate(-0.89455145,-0.23166342)"
+       style="fill:#4d4d4d">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#4d4d4d;fill-opacity:1;stroke-width:0.264999"
+         x="8.3302736"
+         y="14.068547"
+         id="text5"><tspan
+           sodipodi:role="line"
+           id="tspan5-9"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:arial;-inkscape-font-specification:'arial Bold';fill:#4d4d4d;stroke-width:0.265"
+           x="8.3302736"
+           y="14.068547">info</tspan></text>
+    </g>
+    <g
+       id="layer1-4"
+       transform="translate(7.2760429,13.196073)">
+      <rect
+         style="fill:#aa0000;fill-opacity:1;stroke:#fdfdfd;stroke-width:0.278;stroke-dasharray:none;stroke-opacity:1"
+         id="rect1-3"
+         width="49.924046"
+         height="12.073225"
+         x="7.4494343"
+         y="63.936676"
+         rx="6.0366125"
+         ry="6.0366125"
+         inkscape:export-filename="01_finguer.com_web/public/img/tarifes_finguer2.svg"
+         inkscape:export-xdpi="96"
+         inkscape:export-ydpi="96" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.7625px;line-height:1;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:center;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#ba801c;fill-opacity:1;stroke-width:0.264999"
+         x="32.639351"
+         y="69.297745"
+         id="text1-7-0"><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.7625px;line-height:1;font-family:arial;-inkscape-font-specification:'arial Bold';fill:#ffffff;stroke-width:0.265"
+           x="32.639351"
+           y="69.297745"
+           id="tspan9-6">Envía formulario</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.7625px;line-height:1;font-family:arial;-inkscape-font-specification:'arial Bold';fill:#ffffff;stroke-width:0.265"
+           x="32.639351"
+           y="74.060242"
+           id="tspan16">de contacto</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.43958px;font-family:arial;-inkscape-font-specification:'arial Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;inline-size:73.047;display:inline;fill:#ffffff;fill-opacity:1;stroke-width:0.264999"
+       x="5.6616702"
+       y="49.384079"
+       id="text12"
+       transform="translate(-1.6928387,0.71311835)"><tspan
+         x="5.6616702"
+         y="49.384079"
+         id="tspan31"><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan29">Un servicio anual pensado para ti: </tspan><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan30">hasta 10 </tspan></tspan><tspan
+         x="5.6616702"
+         y="53.683552"
+         id="tspan34"><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan32">accesos incluidos. Con </tspan><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan33">atención </tspan></tspan><tspan
+         x="5.6616702"
+         y="57.983028"
+         id="tspan37"><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan35">completamente </tspan><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan36">personalizada.
+</tspan></tspan><tspan
+         x="5.6616702"
+         y="62.282505"
+         id="tspan39"><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan38">
+</tspan></tspan><tspan
+         x="5.6616702"
+         y="66.581982"
+         id="tspan41"><tspan
+           style="font-weight:normal;-inkscape-font-specification:arial"
+           id="tspan40">Contratación solo bajo presupuesto.</tspan></tspan></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="calendar">
+    <path
+       d="m 73.852353,14.790013 h -9.012109 c -0.452243,0 -0.819281,-0.367038 -0.819281,-0.819282 V 4.9586228 c 0,-0.4526536 0.367038,-0.8192825 0.819281,-0.8192825 h 0.819283 v 0.4096413 c 0,0.6787754 0.550146,1.2289236 1.228927,1.2289236 0.678774,0 1.228923,-0.5501482 1.228923,-1.2289236 V 4.1393403 h 2.457847 v 0.4096413 c 0,0.6787754 0.55056,1.2289236 1.228923,1.2289236 0.678364,0 1.228924,-0.5501482 1.228924,-1.2289236 V 4.1393403 h 0.819282 c 0.452243,0 0.819282,0.3666289 0.819282,0.8192825 v 9.0121082 c 0,0.452244 -0.367039,0.819282 -0.819282,0.819282 z m 0,-7.7831846 h -9.012109 v 6.9639026 h 9.012109 z m -6.963899,2.0482071 h -1.228927 v -1.228924 h 1.228927 z m 0,2.0482065 H 65.659527 V 9.8743186 h 1.228927 z m 0,2.048207 h -1.228927 v -1.228925 h 1.228927 z m 2.048205,-4.0964135 h -1.228923 v -1.228924 h 1.228923 z m 0,2.0482065 H 67.707736 V 9.8743186 h 1.228923 z m 0,2.048207 h -1.228923 v -1.228925 h 1.228923 z m 2.048206,-4.0964135 h -1.228923 v -1.228924 h 1.228923 z m 0,2.0482065 H 69.755942 V 9.8743186 h 1.228923 z m 0,2.048207 h -1.228923 v -1.228925 h 1.228923 z m 2.048206,-4.0964135 h -1.228924 v -1.228924 h 1.228924 z m 0,2.0482065 H 71.804147 V 9.8743186 h 1.228924 z m 0,2.048207 h -1.228924 v -1.228925 h 1.228924 z m -1.24162,-7.7831849 c -0.445697,0 -0.806586,-0.3613036 -0.806586,-0.8065837 V 3.7170002 c 0,-0.4456897 0.360889,-0.8065836 0.806586,-0.8065836 0.445688,0 0.806577,0.3608939 0.806577,0.8065836 v 0.8446802 c 0,0.4452801 -0.360889,0.8065837 -0.806577,0.8065837 z m -4.915702,0 c -0.445686,0 -0.80658,-0.3613036 -0.80658,-0.8065837 V 3.7170002 c 0,-0.4456897 0.360894,-0.8065836 0.80658,-0.8065836 0.445697,0 0.806585,0.3608939 0.806585,0.8065836 v 0.8446802 c 0,0.4452801 -0.361298,0.8065837 -0.806585,0.8065837 z"
+       style="fill:#ffffff;stroke-width:6.61455"
+       id="path1" />
+  </g>
+</svg>

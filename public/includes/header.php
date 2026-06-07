@@ -37,7 +37,12 @@ $generalTranslations = $translations['header'] ?? [];
   <title>Finguer - Parking Aeropuerto Barcelona El Prat T1 y T2</title>
   <meta name="description" content="Finguer es un parking para coches con servicio de traslado y recogida al aeropuerto de Barcelona. Pero nosotros nos consideramos más como un hotel para mascotas.">
   <meta name="keywords" content="Parking, Aeropuerto, El Prat, finguer, traslado">
-  <link rel="icon" href="<?php APP_ROOT; ?>/public/img/favicon.png" type="image/png">
+  <link rel="icon" href="<?php APP_ROOT; ?>/img/favicon.png" type="image/png">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- CSS personalizado -->
+  <link rel="stylesheet" href="/css/estils.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 
 <body class="d-flex flex-column" style="height: 100vh; margin: 0;">
@@ -45,7 +50,7 @@ $generalTranslations = $translations['header'] ?? [];
   <div class="container d-flex flex-column" style="flex: 1;">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a href="<?php echo APP_WEB . $base_url ?>"><img alt="Finguer" class="img-responsive" src="<?php APP_ROOT; ?>/public/img/logo-header.svg"></a>
+        <a href="<?php echo APP_WEB . $base_url ?>"><img alt="Finguer" class="img-responsive" src="<?php APP_ROOT; ?>/img/logo-header.svg"></a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -58,15 +63,15 @@ $generalTranslations = $translations['header'] ?? [];
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>reserva#servicios"><?php echo ($generalTranslations['servicios'] ?? 'Servicios') ?></a>
+              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>#servicios"><?php echo ($generalTranslations['servicios'] ?? 'Servicios') ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>reserva#donde-estamos"><?php echo ($generalTranslations['donde'] ?? 'Dónde estamos') ?></a>
+              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>#formulario"><?php echo ($generalTranslations['donde'] ?? 'Dónde estamos') ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>reserva#contacto"><?php echo ($generalTranslations['contacto'] ?? 'Contacto') ?></a>
+              <a class="nav-link" href="<?php echo APP_WEB . $base_url ?>#formulario"><?php echo ($generalTranslations['contacto'] ?? 'Contacto') ?></a>
             </li>
 
             <li class="nav-item">

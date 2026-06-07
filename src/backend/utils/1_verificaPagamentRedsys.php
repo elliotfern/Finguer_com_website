@@ -1,5 +1,7 @@
 <?php
 
+use App\Payments\RedsysClient;
+
 function verificarPagament(int $reservaId, array $opts = []): array
 {
     $opts = array_merge([
@@ -29,9 +31,22 @@ function verificarPagament(int $reservaId, array $opts = []): array
 
     $reserva = $p1['data']['reserva'];
     $order   = (string)$reserva['localizador'];
+    $merchantCode = $_ENV['MERCHANTCODE'];
+    $terminal =    $_ENV['TERMINAL'];
 
     // STEP 2
-    $p2 = consultaRedsys($order);
+    $client = new RedsysClient(
+    true
+    );
+
+
+    $p2 = $client->getTransaction(
+        $order,
+        $terminal,
+        $merchantCode
+    );
+
+
     if (($p2['status'] ?? '') !== 'success') {
         return array_merge($p2, [
             'step' => 2,

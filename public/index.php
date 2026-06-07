@@ -4,32 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Incluir configuraciones y rutas
-require_once __DIR__ . '/src/backend/config/config.php';
-require_once __DIR__ . '/src/backend/utils/uuidv7.php';
-require_once __DIR__ . '/src/backend/utils/getIdUserCookie.php';
-require_once __DIR__ . '/src/backend/utils/1_verificaPagamentRedsys.php';
-require_once __DIR__ . '/src/backend/utils/1_1_lecturaReserva.php';
-require_once __DIR__ . '/src/backend/utils/1_2_consultaPagamentRedsys.php';
-require_once __DIR__ . '/src/backend/utils/1_3_registrarCobroConfirmado.php';
-require_once __DIR__ . '/src/backend/utils/1_4_enviarConfirmacionReserva.php';
-require_once __DIR__ . '/src/backend/utils/1_5_creacionFacturaParaReserva.php';
-require_once __DIR__ . '/src/backend/utils/1_6_generarFacturaPdf.php';
-require_once __DIR__ . '/src/backend/utils/1_7_enviarFacturaEmail.php';
-
-require_once __DIR__ . '/src/backend/utils/reserva/cambiarEstadoReserva.php';
-require_once __DIR__ . '/src/backend/utils/reserva/cancelarReserva.php';
-require_once __DIR__ . '/src/backend/utils/reserva/reservaEstadoExceptions.php';
-require_once __DIR__ . '/src/backend/utils/verificacioSessio.php';
-
-require_once __DIR__ . '/src/backend/utils/generarNumeroFactura.php';
-require_once __DIR__ . '/src/backend/utils/registreLogsFactura.php';
-require_once __DIR__ . '/src/backend/utils/calcularHashFactura.php';
-require_once __DIR__ . '/src/backend/utils/generadorLocalizador.php';
-require_once __DIR__ . '/src/backend/utils/helpers.php';
-require_once __DIR__ . '/src/backend/routes/routes.php';
-require_once __DIR__ . '/src/backend/utils/auth.php';
-require_once __DIR__ . '/src/backend/utils/logoutDeleteCookies.php';
+require_once __DIR__ . '/../src/backend/bootstrap.php';
 
 function isApiRequest(): bool
 {
@@ -100,7 +75,7 @@ $_COOKIE['language'] = $language;
 
 
 // Cargar las traducciones correspondientes al idioma
-$translations = require __DIR__ . "/src/backend/locales/{$language}.php";
+$translations = require __DIR__ . "../../src/backend/locales/{$language}.php";
 
 // Inicializar una variable para los parámetros de la ruta
 $routeParams = [];
@@ -124,7 +99,7 @@ foreach ($routes as $route => $routeInfo) {
 
 // Si la ruta no es encontrada, asignamos la página 404
 if (!$routeFound) {
-    $view = 'public/404.php';
+    $view = '404.php';
     $noHeaderFooter = false;
 } else {
     // Verificar si la ruta requiere sesión
@@ -164,7 +139,7 @@ if (!$routeFound) {
 
 // Incluir encabezado y pie de página si no se especifica que no lo tenga
 if (!$noHeaderFooter) {
-    include 'public/includes/header.php';
+    include 'includes/header.php';
 }
 
 // Incluir la vista asociada a la ruta
@@ -172,5 +147,5 @@ include $view;
 
 // Incluir pie de página si no se especifica que no lo tenga
 if (!$noHeaderFooter) {
-    include 'public/includes/footer.php';
+    include 'includes/footer.php';
 }

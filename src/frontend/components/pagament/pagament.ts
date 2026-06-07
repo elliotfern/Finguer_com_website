@@ -25,7 +25,11 @@ export const pagament = async (): Promise<void> => {
   };
 
   if (targetaButton) {
-    targetaButton.addEventListener('click', () => handlePayment(() => pagamentTargeta()));
+   targetaButton.addEventListener('click', (e) => {
+  console.log('CLICK REAL');
+
+  handlePayment(() => pagamentTargeta());
+});
   }
 
   if (checkbox) {

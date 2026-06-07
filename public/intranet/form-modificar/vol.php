@@ -34,9 +34,9 @@ if (is_numeric($id)) {
                 global $pdo_conn;
           
                   if (empty($_POST["vuelo"])) {
-                    $vuelo = data_input($_POST["vuelo"], ENT_NOQUOTES);
+                    $vuelo = data_input($_POST["vuelo"]);
                   } else {
-                    $vuelo = data_input($_POST["vuelo"], ENT_NOQUOTES);
+                    $vuelo = data_input($_POST["vuelo"]);
                   }
           
                // Si no hi ha cap error, envia el formulari

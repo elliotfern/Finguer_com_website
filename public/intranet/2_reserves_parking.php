@@ -1,4 +1,4 @@
-<?php require_once APP_ROOT . '/public/intranet/inc/header.php'; ?>
+<?php require_once APP_ROOT . '/intranet/inc/header.php'; ?>
 
 <div class="container-fluid">
     <h2>Estat 2: Reserves al párking</h2>

@@ -1,4 +1,4 @@
-<?php require_once APP_ROOT . '/public/intranet/inc/header.php'; ?>
+<?php require_once APP_ROOT . '/intranet/inc/header.php'; ?>
 
 <div class="container" style="margin-bottom:100px">
     <h2>Gestió clients i usuaris web</h2>

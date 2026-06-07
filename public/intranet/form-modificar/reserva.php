@@ -1,7 +1,7 @@
 <?php
 global $conn;
 
-require_once APP_ROOT . '/public/intranet/inc/header.php';
+require_once APP_ROOT . '/intranet/inc/header.php';
 
 $id = $routeParams[0];
 

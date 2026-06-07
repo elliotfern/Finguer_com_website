@@ -13,8 +13,11 @@ finguer-web.code-workspace
 /node_modules/
 dev/
 vendor/
-pdf/
+public/pdf
+public/pdf/facturas
 .env
+.env.local
+.env.prod
 error_log
 .ftpquota
 .gitignore

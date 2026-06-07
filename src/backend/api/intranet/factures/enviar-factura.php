@@ -30,10 +30,21 @@ try {
         jsonResponse(vp2_err('Error al crear la factura para la reserva', 'ERROR_CREACION_FACTURA'), 500);
     }
 
+    $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
+
+    $BASE_DIR = $isProd
+        ? '/home/epgylzqu/finguer.com'
+        : '/var/www/finguer_com/public';
+
+        $WEB_DIR = $isProd
+        ? 'https://finguer.com'
+        : 'http://finguer.local';
+
+
     // 2) Generar el PDF
     $pdfRes = generarFacturaPdf($facturaId, [
         'mode'     => 'F', // Guardar en archivo
-        'base_dir' => '/home/epgylzqu/finguer.com', // Ruta completa a la raíz de tu servidor
+        'base_dir' => $BASE_DIR,
         'subdir'   => '/pdf/facturas', // Subdirectorio donde se guardará el PDF
         'force'    => false, // No forzar la generación si ya existe
     ]);
@@ -43,14 +54,14 @@ try {
     }
 
     // 3) Generar la URL pública del PDF
-    $pdfUrl = 'https://finguer.com/pdf/facturas/' . basename($pdfRes['path']); // Genera la URL pública
+    $pdfUrl = $WEB_DIR . '/pdf/facturas/' . basename($pdfRes['path']); // Genera la URL pública
 
     // 4) Enviar la factura por email
     $emailRes = enviarFacturaPorEmail($conn, $facturaId, [
         'origen'        => 'manual',
         'force_send'    => false,    // Puedes poner 'true' si quieres forzar el reenvío
         'force_pdf'     => false,    // Si quieres forzar la regeneración del PDF
-        'base_dir'      => '/home/epgylzqu/finguer.com',
+        'base_dir'      => $BASE_DIR,
         'subdir'        => '/pdf/facturas',
         'from_email'    => 'hello@finguer.com',
         'from_name'     => 'Finguer',

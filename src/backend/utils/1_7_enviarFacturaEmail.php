@@ -11,11 +11,18 @@ use PHPMailer\PHPMailer\Exception;
  */
 function enviarFacturaPorEmail(PDO $conn, int $idFactura, array $opts = []): array
 {
+
+ $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
+
+  $BASE_DIR = $isProd
+    ? '/home/epgylzqu/finguer.com'
+    : '/var/www/finguer_com/public';
+
     $opts = array_merge([
         'origen'        => 'cron',   // 'cron' | 'intranet'
         'force_send'    => false,    // true => reenvía aunque ya se haya enviado (intranet)
         'force_pdf'     => false,    // true => regenera PDF aunque exista
-        'base_dir'      => '/home/epgylzqu/finguer.com',
+        'base_dir'      => $BASE_DIR,
         'subdir'        => '/pdf/facturas',
         'from_email'    => 'web@finguer.com',
         'from_name'     => 'Finguer',
@@ -111,10 +118,6 @@ function enviarFacturaPorEmail(PDO $conn, int $idFactura, array $opts = []): arr
     }
 
     // 4) Enviar email
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/Exception.php');
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
-    require_once(APP_ROOT . '/vendor/phpmailer/phpmailer/src/SMTP.php');
-
     $brevoApi = (string)($_ENV['BREVO_API'] ?? '');
     if ($brevoApi === '') {
         return vp2_err('Falta BREVO_API en configuración.', 'BREVO_API_MISSING');

@@ -1,27 +1,54 @@
-const path = require("path");
+const path = require('path');
+const webpack = require('webpack');
 
-/** @type {import('webpack').Configuration} */
+const dotenv = require('dotenv');
+
+// SOLO local usa archivo
+const isCI = process.env.CI === 'true';
+
+let env = {};
+
+if (!isCI) {
+  const result = dotenv.config({ path: '.env.local' });
+  env = result.parsed || {};
+} else {
+  env = process.env; // CI injecta variables
+}
+
+const envKeys = Object.keys(env).reduce((acc, key) => {
+  acc[`process.env.${key}`] = JSON.stringify(env[key] || '');
+  return acc;
+}, {});
+
 module.exports = {
-  entry: "./src/frontend/main.ts",
+  entry: './src/frontend/main.ts',
+
   output: {
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "dist"),
-    clean: true
+    path: path.resolve(__dirname, 'public/dist'),
+    filename: 'bundle.js',
+    publicPath: '/dist/',
+    clean: true,
   },
+
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
+
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: "ts-loader",
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        use: 'ts-loader',
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      }
-    ]
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
   },
-  resolve: {
-    extensions: [".ts", ".js"]
-  }
+
+  plugins: [new webpack.DefinePlugin(envKeys)],
+
+  devtool: false,
 };
