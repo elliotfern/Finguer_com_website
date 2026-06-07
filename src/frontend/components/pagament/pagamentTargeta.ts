@@ -39,9 +39,19 @@ export const pagamentTargeta = async (): Promise<void> => {
     return;
   }
 
+  // 1. Validamos que la URL exista realmente
+  if (!redsysUrl || redsysUrl.trim() === '') {
+    console.error('Falta la URL de Redsys en la configuración');
+    return;
+  }
+
+  // 2. Crear formulario
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = redsysUrl;
+  
+  // Buena práctica: ocultarlo para evitar flashes visuales raros en el DOM
+  form.style.display = 'none'; 
 
   const mk = (n: string, v: string) => {
     const i = document.createElement('input');
@@ -57,10 +67,16 @@ export const pagamentTargeta = async (): Promise<void> => {
 
   document.body.appendChild(form);
 
-  console.log('SUBMIT REDSYS');
+  console.log('ENVIANDO FORMULARIO A REDSYS...');
 
-  // 🔥 IMPORTANTE: evita cualquier interferencia
-  setTimeout(() => {
-    form.submit();
-  }, 50);
-};
+  // 3. Envío seguro
+  requestAnimationFrame(() => {
+    // Usamos requestAnimationFrame en lugar de setTimeout para asegurar 
+    // que el DOM ya ha pintado/registrado el formulario.
+    try {
+      form.submit();
+    } catch (error) {
+      console.error('Error al hacer submit a Redsys:', error);
+    }
+  });
+}
