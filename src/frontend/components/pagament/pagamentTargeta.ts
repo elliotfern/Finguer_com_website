@@ -71,7 +71,7 @@ export const pagamentTargeta = async (): Promise<void> => {
       document.body.appendChild(form);
 
       form.submit();
-      return; // 🔥 CRÍTICO
+      return;
     }
 
     // Error al crear datos
