@@ -18,6 +18,7 @@ public/pdf/facturas
 .env
 .env.local
 .env.prod
+.env.staging
 error_log
 .ftpquota
 .gitignore
