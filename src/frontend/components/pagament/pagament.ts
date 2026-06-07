@@ -1,84 +1,48 @@
-import { pagamentTargeta } from './pagamentTargeta';
 import { botoPagament } from './botoPagament';
+import { executePaymentFlow } from './paymentFlow';
 import { recuperarCarroCompra } from './recuperarDadesCarritoCompra';
 
 let paymentInitialized = false;
 
 export const pagament = async (): Promise<void> => {
-
-  window.addEventListener('beforeunload', () => {
-  console.log('PAGE IS RELOADING OR NAVIGATING');
-});
-
-setInterval(() => {
-  console.log('ALIVE CHECK');
-}, 1000);
-
-
-  const snapshot = await recuperarCarroCompra();
-
-  if (!snapshot) {
-    console.error('No se pudo obtener los datos del carrito.');
-    return;
-  }
-
-  // Evita re-inicializar listeners (CRÍTICO)
   if (paymentInitialized) return;
   paymentInitialized = true;
 
-  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
-  if (!checkbox) {
+  const snapshot = await recuperarCarroCompra();
+  if (!snapshot) {
+    console.error('NO SNAPSHOT');
     return;
   }
 
-  checkbox.addEventListener('change', botoPagament);
-  botoPagament(); // inicializa estado
+  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
 
-  document.addEventListener('click', async (e) => {
-    const target = e.target as HTMLElement;
+  if (checkbox) {
+    checkbox.addEventListener('change', botoPagament);
+    botoPagament();
+  }
 
-    const button = target.closest('#pagamentTargeta');
-    if (!button) return;
+  document.addEventListener('click', onPaymentClick);
+};
 
-    //
+const onPaymentClick = async (e: Event) => {
+  const target = e.target as HTMLElement;
+  const button = target.closest('#pagamentTargeta');
 
-    console.log('CLICK REAL');
+  if (!button) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+  e.preventDefault();
+  e.stopPropagation();
 
-    console.log('PREVENT DEFAULT OK');
+  console.log('CLICK REAL');
 
-    //
+  const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
 
-    e.preventDefault();
+  if (!checkbox?.checked) {
+    console.log('CHECKBOX NOT OK');
+    return;
+  }
 
-    console.log('CLICK PAGO');
+  console.log('GO PAYMENT FLOW');
 
-    const snapshot = await recuperarCarroCompra();
-
-    console.log('SNAPSHOT', snapshot);
-
-    if (!snapshot) {
-      console.log('SNAPSHOT NULL');
-      return;
-    }
-
-    console.log('AFTER SNAPSHOT');
-
-    const checkbox = document.getElementById('terminos_condiciones') as HTMLInputElement | null;
-
-    console.log('CHECKBOX', checkbox?.checked);
-
-    if (!checkbox?.checked) {
-      console.log('CHECKBOX NOT OK');
-      return;
-    }
-
-    console.log('GO REDSYS');
-
-    await pagamentTargeta();
-
-    console.log('REDSYS RETURNED');
-  });
+  await executePaymentFlow();
 };
