@@ -5,6 +5,16 @@ import { recuperarCarroCompra } from './recuperarDadesCarritoCompra';
 let initialized = false;
 
 export const pagament = async (): Promise<void> => {
+  // Pégalo al principio de pagament.ts, antes de todo
+window.addEventListener('beforeunload', () => {
+  console.trace('🔴 PÁGINA SE VA A RECARGAR');
+});
+
+document.addEventListener('submit', (e) => {
+  console.trace('🔴 SUBMIT CAPTURADO EN:', e.target);
+  // NO pongas preventDefault aquí todavía, solo observa
+});
+
   const snapshot = await recuperarCarroCompra();
   if (!snapshot) {
     console.error('No snapshot');

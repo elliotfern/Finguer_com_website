@@ -242,7 +242,7 @@ $pago = $translations['paginaPago'] ?? [];
 
                         <!-- Botón de pagar dentro de un div oculto -->
                         <div id="div_pagar">
-                            <button type="button" id="pagamentTargeta" class="payButton" style="margin-top:25px">
+                            <button type="button" id="pagamentTargeta" style="margin-top:25px">
                                 <strong><?php echo $pago['pagoTarjeta']; ?> <span id="costeTotal2"></span> €</strong>
                             </button>
                            
