@@ -104,14 +104,27 @@ function renderDeviceInfoBlock(container: HTMLElement, data: DeviceInfoInput): v
   block.style.borderRadius = '8px';
   block.style.fontSize = '0.95rem';
 
-  block.innerHTML = `
-    <div><strong>Dispositiu:</strong> ${info.dispositiu ?? '-'}</div>
-    <div><strong>Navegador:</strong> ${info.navegador ?? '-'}</div>
-    <div><strong>Sistema Operatiu:</strong> ${info.sistema_operatiu ?? '-'}</div>
-    <div><strong>IP:</strong> ${info.ip ?? '-'}</div>
-  `;
+  const fields: [string, string][] = [
+    ['Dispositiu', info.dispositiu ?? '-'],
+    ['Navegador', info.navegador ?? '-'],
+    ['Sistema Operatiu', info.sistema_operatiu ?? '-'],
+    ['IP', info.ip ?? '-'],
+  ];
 
-  const closeBtn = container.querySelector('#btnTancarFinestra') ?? container.querySelector('[data-role="close-popup"]') ?? Array.from(container.querySelectorAll('button, a')).find((el) => (el.textContent ?? '').trim().toLowerCase().includes('tancar'));
+  for (const [label, value] of fields) {
+    const div = document.createElement('div');
+    const strong = document.createElement('strong');
+    strong.textContent = `${label}:`;
+    div.appendChild(strong);
+    div.appendChild(document.createTextNode(` ${value}`));
+    block.appendChild(div);
+  }
+
+  const closeBtn = container.querySelector('#btnTancarFinestra') 
+    ?? container.querySelector('[data-role="close-popup"]') 
+    ?? Array.from(container.querySelectorAll('button, a')).find(
+        (el) => (el.textContent ?? '').trim().toLowerCase().includes('tancar')
+      );
 
   if (closeBtn && closeBtn.parentElement) {
     closeBtn.parentElement.insertBefore(block, closeBtn);

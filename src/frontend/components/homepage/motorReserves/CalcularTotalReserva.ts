@@ -113,14 +113,26 @@ export const calcularTotalReserva = (): {
 
   if (reservaElement && diaEntradaElement && diaSalidaElement && totalElement && precioSubTotalElement && ivaElement && costeReservaElement && costeSeguroElement && costeLimpiezaElement && fechaEntrada && fechaSalida) {
     reservaElement.innerHTML = `Detalles de la Reserva:`;
-    diaEntradaElement.innerHTML = `<strong>Día de entrada:</strong> ${fechaEntrada} // ${horaEntradaValue}h.`;
-    diaSalidaElement.innerHTML = `<strong>Día de salida:</strong> ${fechaSalida} // ${horaSalidaValue}h.`;
+
+    // En vez de innerHTML con template literals:
+    diaEntradaElement.innerHTML = '';
+    const labelEntrada = document.createElement('strong');
+    labelEntrada.textContent = 'Día de entrada:';
+    diaEntradaElement.appendChild(labelEntrada);
+    diaEntradaElement.appendChild(document.createTextNode(` ${fechaEntrada} // ${horaEntradaValue}h.`));
+
+    diaSalidaElement.innerHTML = '';
+    const labelSalida = document.createElement('strong');
+    labelSalida.textContent = 'Día de salida:';
+    diaSalidaElement.appendChild(labelSalida);
+    diaSalidaElement.appendChild(document.createTextNode(` ${fechaSalida} // ${horaSalidaValue}h.`));
+
     costeReservaElement.innerHTML = `<strong>Coste Reserva (${diasReserva} ${diasReserva > 1 ? 'días' : 'día'}):</strong> ${precioReserva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
-    costeSeguroElement.innerHTML = costeSeguro !== 0 ? `Coste Seguro: ${costeSeguro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)` : '';
-    costeLimpiezaElement.innerHTML = costoLimpiezaSinIva !== 0 ? `Coste Limpieza: ${costoLimpiezaSinIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)` : ``;
-    precioSubTotalElement.innerHTML = `Subtotal: ${precioSubtotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
-    ivaElement.innerHTML = `IVA (21%): ${costeIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-    totalElement.innerHTML = `Precio Total: ${precioTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € IVA incluido`;
+    costeSeguroElement.textContent = costeSeguro !== 0 ? `Coste Seguro: ${costeSeguro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)` : '';
+    costeLimpiezaElement.textContent = costoLimpiezaSinIva !== 0 ? `Coste Limpieza: ${costoLimpiezaSinIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)` : ``;
+    precioSubTotalElement.textContent = `Subtotal: ${precioSubtotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (sin IVA)`;
+    ivaElement.textContent = `IVA (21%): ${costeIva.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+    totalElement.textContent = `Precio Total: ${precioTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € IVA incluido`;
 
     precioSubTotalElement.style.display = 'block';
     totalElement.style.display = 'block';

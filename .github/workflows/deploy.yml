@@ -3,6 +3,9 @@ name: "Build + Deploy (git pull + composer + bundle.js) Finguer"
 on:
   push:
     branches: [main, develop]
+    
+permissions:
+  contents: read
 
 jobs:
   deploy:
