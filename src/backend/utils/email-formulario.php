@@ -55,10 +55,11 @@ function enviarNotificacionContacto(PDO $conn, int $contactoId): array
 
         $mail->setFrom('hello@finguer.com', 'Finguer.com');
         $mail->addAddress('elliot@hispantic.com', 'Elliot Admin');
+         $mail->addAddress('hello@finguer.com', 'Finguer Admin');
 
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        $mail->Subject = 'Nuevo contacto desde formulario Finguer';
+        $mail->Subject = 'Nuevo contacto desde el formulario de Finguer.com';
 
         $mail->Body = '
         <!DOCTYPE html>
