@@ -6,12 +6,9 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
 
   $idFactura = (int)$idFactura;
 
-  $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
-
-  $BASE_DIR = $isProd
-    ? '/home/epgylzqu/finguer.com'
-    : '/var/www/finguer_com/public';
-
+    $BASE_DIR = $_ENV['APP_BASE_DIR'] ?? '/home/epgylzqu/finguer.com/public';
+    $WEB_DIR = $_ENV['DOMAIN_WEB'] ?? 'https://finguer.com';
+    
   // Defaults opts
   $opts = array_merge([
     'mode'     => 'F',      // 'I' navegador, 'F' fichero
