@@ -63,12 +63,21 @@ if (empty($data["email"])) {
 }
 
 // Teléfono
-if (empty($data["telefono"])) {
+$telefono = preg_replace('/[\s\-\.\(\)]/', '', $data["telefono"] ?? '');
+$telefono = ltrim($telefono, '+');
+// quitar prefijo internacional si empieza por 34 y tiene más de 9 dígitos
+if (strlen($telefono) > 9 && str_starts_with($telefono, '34')) {
+    $telefono = substr($telefono, 2);
+}
+
+if (empty($telefono)) {
     $errors["telefono"] = "El teléfono es obligatorio.";
     $hasError = true;
-} elseif (!preg_match("/^[0-9]{9,15}$/", $data["telefono"])) {
+} elseif (!preg_match("/^[0-9]{9,15}$/", $telefono)) {
     $errors["telefono"] = "Teléfono no válido.";
     $hasError = true;
+} else {
+    $data["telefono"] = $telefono; // guardar normalizado
 }
 
 // Privacidad (OBLIGATORIO)
