@@ -31,7 +31,7 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "main" ]; then
             echo "env_name=PROD" >> "$GITHUB_OUTPUT"
             echo "branch=main" >> "$GITHUB_OUTPUT"
-            echo "remote_dist_dir=/home/epgylzqu/finguer.com/dist" >> "$GITHUB_OUTPUT"
+            echo "remote_dist_dir=/home/epgylzqu/finguer.com/public/dist" >> "$GITHUB_OUTPUT"
             echo "remote_app_dir=/home/epgylzqu/finguer.com" >> "$GITHUB_OUTPUT"
           else
             echo "env_name=TEST" >> "$GITHUB_OUTPUT"
