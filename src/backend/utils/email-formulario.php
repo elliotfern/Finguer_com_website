@@ -53,9 +53,10 @@ function enviarNotificacionContacto(PDO $conn, int $contactoId): array
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        $mail->setFrom('hello@finguer.com', 'Finguer.com');
+        $mail->setFrom('noreply@finguer.com', 'Finguer.com');
+        $mail->addReplyTo('hello@finguer.com', 'Finguer.com');
         $mail->addAddress('elliot@hispantic.com', 'Elliot Admin');
-         $mail->addAddress('hello@finguer.com', 'Finguer Admin');
+        $mail->addAddress('hello@finguer.com', 'Finguer Admin');
 
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
