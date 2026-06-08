@@ -12,7 +12,7 @@ $reserva = $translations['reserva'] ?? [];
         <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva['finguer_title'] ?></strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
+            <img class="img-responsive" src="/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
         </div>
 
         <p>Finguer, park your problems and fly away</p>
@@ -21,19 +21,19 @@ $reserva = $translations['reserva'] ?? [];
     <div class="row g-3 container-imatge align-items-stretch">
         <div class="col-12 col-md-4 text-center">
             <a href="#reserva">
-                <img class="img-fluid img-limit" src="img/tarifa_finguer.svg" alt="Tarifas del parking">
+                <img class="img-fluid img-limit" src="/img/tarifa_finguer.svg" alt="Tarifas del parking">
             </a>
         </div>
 
         <div class="col-12 col-md-4 text-center">
             <a href="#reserva">
-                <img class="img-fluid img-limit" src="img/tarifa_gold.svg" alt="Tarifas del parking">
+                <img class="img-fluid img-limit" src="/img/tarifa_gold.svg" alt="Tarifas del parking">
             </a>
         </div>
 
         <div class="col-12 col-md-4 text-center">
             <a href="#formulario">
-                <img class="img-fluid img-limit" src="img/tarifa_anual.svg" alt="Tarifas del parking">
+                <img class="img-fluid img-limit" src="/img/tarifa_anual.svg" alt="Tarifas del parking">
             </a>
         </div>
     </div>
@@ -147,7 +147,7 @@ $reserva = $translations['reserva'] ?? [];
 
     <p>Pues ahora, esa sensación de que te ha tocado finguer, la puedes tener cuando piensas en qué hacer con tu coche cuando vas a viajar en avión. Porque cuando contratas Finguer, aparcas tus problemas y disfrutas más del viaje.</p>
 
-    <img class="img-responsive" src="<?php APP_ROOT; ?>/img/finguer-park.jpg" alt="Finguer">
+    <img class="img-responsive" src="/img/finguer-park.jpg" alt="Finguer">
 </div>
 
 <div class="container text-center" id="servicios" style="margin-top:50px">
@@ -167,7 +167,7 @@ $reserva = $translations['reserva'] ?? [];
 
         <div class="col-12 col-md-3 mx-3 finguer2 mb-4" style="background-color:red">
             <h3><strong>Gold Finguer Class</strong></h3>
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/keys.svg" alt="Gold finguer class">
+            <img class="img-responsive" src="/img/keys.svg" alt="Gold finguer class">
             <hr>
             <p>Este servicio es el que escogería el mismísimo James Bond.</p>
             <p>Con la Gold Finguer Class solo tienes que llegar con tu coche a la terminal que te haya tocado (muy importante que nos avises 20 minutos antes de llegar), darnos las llaves del coche y disfrutar de tu viaje. Y a tu vuelta, pues lo mismo. Llegas, sales de la terminal y allí te estaremos esperando con tu coche.</p>
@@ -176,7 +176,7 @@ $reserva = $translations['reserva'] ?? [];
 
         <div class="col-12 col-md-3 mx-3 finguer3 mb-4" style="background-color:red">
             <h3><strong>Anual Finguer Class</strong></h3>
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
+            <img class="img-responsive" src="/img/icons-fingueranualclass-gris.svg" height="60" alt="Anual Finguer class">
             <hr>
             <p>Este es el servicio anual de Finguer.</p>
             <p>Con Annual Finguer Class podrás disfrutar de un servicio y una atención completamente personalizada. Aparca tu coche el tiempo y las veces que quieras.</p>
@@ -198,27 +198,27 @@ $reserva = $translations['reserva'] ?? [];
 
     <div class="row text-center justify-content-center servicios" style="margin-top:20px">
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-pago-online.svg" alt="Servicios">
+            <img class="img-responsive" src="/img/icons-pago-online.svg" alt="Servicios">
             <p><strong>Pago online</strong><br><strong>seguro</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
+            <img class="img-responsive" src="/img/icons-servicio-personalizado.svg" alt="Servicio personalizado" height="140">
             <p><strong>Servicio</strong><br><strong>personalizado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
+            <img class="img-responsive" src="/img/icons-mascarilla.svg" alt="Máxima seguridad e higiene" height="140">
             <p><strong>Máxima seguridad</strong><br><strong>e higiene</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
+            <img class="img-responsive" src="/img/icons-parking-lavado.png" alt="Servicios de lavado" height="140">
             <p><strong>Servicio </strong><br><strong>de lavado</strong></p>
         </div>
 
         <div class="col-12 col-md-2 mx-3">
-            <img class="img-responsive" src="<?php APP_ROOT; ?>/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
+            <img class="img-responsive" src="/img/icons-parking-vigilado.svg" alt="Vigilado 24h" height="140">
             <p><strong>Parking</strong><br><strong>vigilado 24 h</strong></p>
         </div>
     </div>

@@ -50,7 +50,7 @@ $generalTranslations = $translations['header'] ?? [];
   <div class="container d-flex flex-column" style="flex: 1;">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a href="<?php echo APP_WEB . $base_url ?>"><img alt="Finguer" class="img-responsive" src="<?php APP_ROOT; ?>/img/logo-header.svg"></a>
+        <a href="<?php echo APP_WEB . $base_url ?>"><img alt="Finguer" class="img-responsive" src="/img/logo-header.svg"></a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
