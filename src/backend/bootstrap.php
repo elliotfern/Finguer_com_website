@@ -17,7 +17,6 @@ require_once __DIR__ . '/utils/uuidv7.php';
 require_once __DIR__ . '/utils/getIdUserCookie.php';
 require_once __DIR__ . '/utils/1_verificaPagamentRedsys.php';
 require_once __DIR__ . '/utils/1_1_lecturaReserva.php';
-require_once __DIR__ . '/utils/1_2_consultaPagamentRedsys.php';
 require_once __DIR__ . '/utils/1_3_registrarCobroConfirmado.php';
 require_once __DIR__ . '/utils/1_4_enviarConfirmacionReserva.php';
 require_once __DIR__ . '/utils/1_5_creacionFacturaParaReserva.php';

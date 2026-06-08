@@ -5,7 +5,7 @@ $idReserva = $routeParams[0];
 // ✅ Usamos la nueva función flexible (solo lectura + consulta Redsys)
 $response = verificarPagament($idReserva, [
     'solo_info'           => true,
-    'actualizar_bd'       => false,
+    'actualizar_bd'       => true,
     'enviar_confirmacion' => false,
     'crear_factura'       => false,
     'enviar_factura'      => false,
@@ -13,7 +13,7 @@ $response = verificarPagament($idReserva, [
 
 // Si quieres, puedes sacar info útil:
 $paid = (bool)($response['data']['redsys']['paid'] ?? false);
-$ds   = (string)($response['data']['redsys']['ds_response'] ?? '');
+$ds   = (string)($response['data']['redsys']['response_code'] ?? ''); // ← cambia ds_response por response_code
 ?>
 <div class='container' style='margin-bottom:150px'>
     <h2>Verificar el pagament de la reserva: <?php echo (int)$idReserva; ?></h2>
@@ -26,7 +26,7 @@ $ds   = (string)($response['data']['redsys']['ds_response'] ?? '');
             // Opcional: mensaje más preciso
             $msg = $response['message'];
             if (isset($response['data']['redsys'])) {
-                $msg .= ' (Ds_Response=' . htmlspecialchars($ds) . ')';
+                $msg;
             }
 
             if ($paid) {

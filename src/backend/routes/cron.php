@@ -9,7 +9,7 @@ $base_routes = [
 $routes = [
     // TREBALLS CRON RESERVES - SENSE SESSIO PRIVADA
     '/cron/reserves' => [
-        'view' => 'src/backend/api/cron/cron-pagats.php',
+        'view' => '../src/backend/api/cron/cron-pagats.php',
         'needs_session' => false,
         'no_header_footer' => true,
     ],

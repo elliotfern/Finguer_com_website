@@ -6,7 +6,7 @@ function verificarPagament(int $reservaId, array $opts = []): array
 {
     $opts = array_merge([
         'solo_info'           => true,
-        'actualizar_bd'       => false,
+        'actualizar_bd'       => true,
         'enviar_confirmacion' => false,
         'crear_factura'       => false,
         'enviar_factura'      => false,
@@ -35,17 +35,16 @@ function verificarPagament(int $reservaId, array $opts = []): array
     $terminal =    $_ENV['TERMINAL'];
 
     // STEP 2
+    $isProd = ($_ENV['APP_ENV'] ?? '') === 'prod';
+
     $client = new RedsysClient(
-    true
+        $_ENV['MERCHANTCODE'],
+        $_ENV['TERMINAL'],
+        $_ENV['KEY'],
+        !$isProd
     );
 
-
-    $p2 = $client->getTransaction(
-        $order,
-        $terminal,
-        $merchantCode
-    );
-
+    $p2 = $client->consultaOperacion($order);
 
     if (($p2['status'] ?? '') !== 'success') {
         return array_merge($p2, [
@@ -54,24 +53,36 @@ function verificarPagament(int $reservaId, array $opts = []): array
         ]);
     }
 
-    $redsys = $p2['data']['redsys'] ?? [];
-    $paid   = (bool)($redsys['paid'] ?? false);
+    $paid   = (bool)($p2['paid'] ?? false);
+    $redsys = [
+        'paid'          => $paid,
+        'response_code' => $p2['response_code'] ?? null,
+    ];
+
 
     if (!$paid) {
-        return vp2_ok($p2['message'] ?? 'Redsys: pago no confirmado.', [
+        return vp2_ok('Redsys: pago no confirmado.', [
             'reserva' => $reserva,
-            'redsys' => $redsys,
-            'opts' => $opts,
+            'redsys'  => $redsys,
+            'opts'    => $opts,
         ], ['step' => 2]);
     }
 
     if (empty($opts['actualizar_bd'])) {
-        return vp2_ok($p2['message'] ?? 'Redsys: pago confirmado.', [
+        return vp2_ok('Redsys: pago confirmado.', [
             'reserva' => $reserva,
-            'redsys' => $redsys,
-            'opts' => $opts,
+            'redsys'  => $redsys,
+            'opts'    => $opts,
         ], ['step' => 2]);
     }
+
+    $paid   = (bool)($p2['paid'] ?? false);
+$redsys = [
+    'paid'          => $paid,
+    'response_code' => $p2['response_code'] ?? null,
+];
+
+
 
     // STEP 3
     $p3 = registrarCobroConfirmado($conn, (int)$reserva['id'], [
@@ -80,6 +91,7 @@ function verificarPagament(int $reservaId, array $opts = []): array
         'referencia' => (string)$reserva['localizador'],
         'importe'    => null,
     ]);
+
     if (($p3['status'] ?? '') !== 'success') {
         return array_merge($p3, [
             'step' => 3,
