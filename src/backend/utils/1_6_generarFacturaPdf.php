@@ -6,9 +6,9 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
 
   $idFactura = (int)$idFactura;
 
-    $BASE_DIR = $_ENV['APP_BASE_DIR'] ?? '/home/epgylzqu/finguer.com/public';
-    $WEB_DIR = $_ENV['DOMAIN_WEB'] ?? 'https://finguer.com';
-    
+  $BASE_DIR = $_ENV['APP_BASE_DIR'] ?? '/home/epgylzqu/finguer.com/public';
+  $WEB_DIR = $_ENV['DOMAIN_WEB'] ?? 'https://finguer.com';
+
   // Defaults opts
   $opts = array_merge([
     'mode'     => 'F',      // 'I' navegador, 'F' fichero
@@ -396,6 +396,8 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
       'mode'    => 'F',
       'message' => 'PDF ya existía',
       'path'    => $path,
+      'subdir'  => '/' . trim((string)$opts['subdir'], '/') . '/',
+      'filename' => $filename,
     ];
   }
 
@@ -414,5 +416,7 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
     'mode'    => 'F',
     'message' => 'PDF generado correctamente',
     'path'    => $path,
+    'subdir'  => '/' . trim((string)$opts['subdir'], '/') . '/',
+    'filename' => $filename,
   ];
 }

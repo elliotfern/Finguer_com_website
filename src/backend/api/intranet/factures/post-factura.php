@@ -45,19 +45,14 @@ try {
     if ($pdfRes['status'] !== 'success') {
         jsonResponse(vp2_err('Error al generar el PDF', 'ERROR_GENERACION_PDF', $pdfRes), 500);
     }
-    // 3) Enviar la ruta pública del PDF en la respuesta
-    $pdfUrl = $WEB_DIR . $pdfRes['subdir'] . basename($pdfRes['path']); // Genera la URL pública
+
+    // Construir URL pública correctamente
+    $relativePath = '/pdf/facturas/' . basename($pdfRes['path']);
+    $pdfUrl = rtrim($WEB_DIR, '/') . $pdfRes['subdir'] . $pdfRes['filename'];
 
     jsonResponse(vp2_ok('Factura generada correctamente', [
-        'factura_id'    => $facturaId,
-        'pdf_url'       => $pdfUrl, // URL pública del PDF generado
-    ]), 200);
-
-    // Si todo ha ido bien, devolver la respuesta
-    jsonResponse(vp2_ok('Factura generada y enviada correctamente', [
-        'factura_id'    => $facturaId,
-        'pdf_url'       => $pdfUrl,
-        'email_sent'    => $emailRes['status'] === 'success',
+        'factura_id' => $facturaId,
+        'pdf_url'    => $pdfUrl,
     ]), 200);
 } catch (Throwable $e) {
     jsonResponse(vp2_err('Error al procesar la solicitud de factura', 'SERVER_ERROR', [
