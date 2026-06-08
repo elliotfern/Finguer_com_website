@@ -10,7 +10,8 @@ function isApiRequest(): bool
 {
     $uri = $_SERVER['REQUEST_URI'] ?? '';
     $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-    return str_starts_with($uri, '/api/') || str_contains($accept, 'application/json');
+    return str_starts_with($uri, '/api/') ||
+        str_contains($accept, 'application/json');
 }
 
 function denyAccess(int $code = 403, string $message = 'Accés denegat'): never
@@ -19,23 +20,27 @@ function denyAccess(int $code = 403, string $message = 'Accés denegat'): never
 
     if (isApiRequest()) {
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'status' => 'error',
-            'message' => $message,
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
+        echo json_encode(
+            [
+                'status' => 'error',
+                'message' => $message,
+            ],
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+        );
+        exit();
     }
 
     // HTML intranet
     // Opción A: mostrar mensaje simple
-    echo "<h1>{$code}</h1><p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>";
-    exit;
+    echo "<h1>{$code}</h1><p>" .
+        htmlspecialchars($message, ENT_QUOTES, 'UTF-8') .
+        '</p>';
+    exit();
 
     // Opción B: redirigir a una pantalla:
     // header('Location: /control/sense-permisos', true, 302);
     // exit;
 }
-
 
 // Obtener la ruta solicitada
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -56,13 +61,13 @@ if (preg_match('#^/(fr|en|ca)$#', $requestUri, $matches)) {
 
 // Detectar el idioma desde la URL (si existe en la ruta)
 preg_match('#^/(fr|en|ca)/#', $requestUri, $matches);
-$language = $matches[1] ?? null;  // Si hay un idioma en la URL, lo usamos
+$language = $matches[1] ?? null; // Si hay un idioma en la URL, lo usamos
 
 // Si no hay idioma en la URL y es la raíz (o idioma por defecto), usamos 'es'
 if (empty($language)) {
     // Comprobamos si la ruta es la raíz (ejemplo: /reserva) y no incluye idioma
     if (preg_match('#^/reserva$#', $requestUri)) {
-        $language = 'es';  // Asumimos que si está en la raíz, el idioma es 'es'
+        $language = 'es'; // Asumimos que si está en la raíz, el idioma es 'es'
     } else {
         // Si la cookie 'language' ya existe, usamos ese valor; sino, asignamos 'es' por defecto
         $language = $_COOKIE['language'] ?? 'es';
@@ -70,9 +75,8 @@ if (empty($language)) {
 }
 
 // Establecer la cookie del idioma
-setcookie('language', $language, time() + 3600 * 24 * 30, '/');  // 30 días
+setcookie('language', $language, time() + 3600 * 24 * 30, '/'); // 30 días
 $_COOKIE['language'] = $language;
-
 
 // Cargar las traducciones correspondientes al idioma
 $translations = require __DIR__ . "../../src/backend/locales/{$language}.php";
@@ -89,7 +93,7 @@ foreach ($routes as $route => $routeInfo) {
     if (preg_match('#^' . $pattern . '$#', $requestUri, $matches)) {
         // Si encontramos la ruta, extraemos los parámetros
         $routeFound = true;
-        $routeParams = array_slice($matches, 1);  // El primer elemento es la ruta misma, los parámetros son los siguientes
+        $routeParams = array_slice($matches, 1); // El primer elemento es la ruta misma, los parámetros son los siguientes
 
         // Asignamos la vista asociada a la ruta
         $view = $routeInfo['view'];

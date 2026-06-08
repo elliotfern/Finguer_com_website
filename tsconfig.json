@@ -1,27 +1,28 @@
 {
-  "compilerOptions": {
-    "target": "es2021",
-    "lib": ["DOM", "DOM.Iterable", "ES2021"],
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "allowJs": false,
-    "outDir": "./public/dist",
-    "rootDir": "./src/",
-    "sourceMap": false,
-    "types": ["node"],
-    "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["./node_modules/@types", "src/frontend/types"]
-      },
+    "compilerOptions": {
+        "target": "es2021",
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "allowJs": false,
+        "outDir": "./public/dist",
+        "rootDir": "./src/",
+        "sourceMap": false,
+        "types": ["node"],
+        "forceConsistentCasingInFileNames": true,
+        "typeRoots": ["./node_modules/@types", "src/frontend/types"]
+    },
 
- "include": [
-    "src",
-    "src/types/**/*.d.ts",
-     "src/frontend",
-    "src/frontend/types/global.d.ts",
-    "src/frontend/types"
-  ], 
-  "exclude": ["node_modules"],
+    "include": [
+        "src",
+        "src/types/**/*.d.ts",
+        "src/frontend",
+        "src/frontend/types",
+        "global.d.ts",
+        "**/*.ts"
+    ],
+    "exclude": ["node_modules"]
 }

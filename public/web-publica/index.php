@@ -1,6 +1,6 @@
 <?php
 // Obtener el idioma actual desde la cookie
-$currentLanguage = $_COOKIE['language'] ?? 'es';  // Si no está establecido, por defecto 'es'
+$currentLanguage = $_COOKIE['language'] ?? 'es'; // Si no está establecido, por defecto 'es'
 
 // Obtener traducciones generales
 $reserva = $translations['reserva'] ?? [];
@@ -9,7 +9,9 @@ $reserva = $translations['reserva'] ?? [];
 <div class="container" style="margin-bottom:30px">
     <div class="container text-center">
 
-        <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva['finguer_title'] ?></strong></h1>
+        <h1 class="container justify-content-center" style="margin-top:25px;width:75%"><strong><?php echo $reserva[
+            'finguer_title'
+        ]; ?></strong></h1>
 
         <div class="container justify-content-center" style="max-width:600px">
             <img class="img-responsive" src="/img/avion-finguer.jpg" alt="Finguer, parking aeropuerto de Barcelona">
@@ -66,27 +68,41 @@ $reserva = $translations['reserva'] ?? [];
             <div class="col-12 col-md-6 mb-4 text-start">
 
                 <!-- Selección del tipo de reserva -->
-                <label for="tipo_reserva"><?php echo $reserva['tipo_reserva']; ?>:</label>
+                <label for="tipo_reserva"><?php echo $reserva[
+                    'tipo_reserva'
+                ]; ?>:</label>
                 <select id="tipo_reserva" name="tipo_reserva">
-                    <option value="RESERVA_FINGUER"><?php echo $reserva['finguer_class']; ?></option>
-                    <option value="RESERVA_FINGUER_GOLD"><?php echo $reserva['gold_finguer']; ?></option>
+                    <option value="RESERVA_FINGUER"><?php echo $reserva[
+                        'finguer_class'
+                    ]; ?></option>
+                    <option value="RESERVA_FINGUER_GOLD"><?php echo $reserva[
+                        'gold_finguer'
+                    ]; ?></option>
                 </select>
 
                 <!-- Calendario para elegir fecha de entrada y salida -->
                 <form id="reservation-form">
-                    <label for="fecha_reserva"><?php echo $reserva['fechas_reserva']; ?>:</label>
-                    <input type="text" id="fecha_reserva" name="fecha_reserva" readonly placeholder="<?php echo $reserva['clic_abrir_calendario']; ?>">
+                    <label for="fecha_reserva"><?php echo $reserva[
+                        'fechas_reserva'
+                    ]; ?>:</label>
+                    <input type="text" id="fecha_reserva" name="fecha_reserva" readonly placeholder="<?php echo $reserva[
+                        'clic_abrir_calendario'
+                    ]; ?>">
 
                     <div class="row g-3" id="horarios_div">
                         <div class="col-md-6">
-                            <label for="horaEntrada"><?php echo $reserva['hora_entrada']; ?> *</label>
+                            <label for="horaEntrada"><?php echo $reserva[
+                                'hora_entrada'
+                            ]; ?> *</label>
                             <select class="form-select" id="horaEntrada" name="horaEntrada">
                                 <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="horaSalida"><?php echo $reserva['hora_salida']; ?> *</label>
+                            <label for="horaSalida"><?php echo $reserva[
+                                'hora_salida'
+                            ]; ?> *</label>
                             <select class="form-select" id="horaSalida" name="horaSalida">
                                 <!-- Las opciones se llenarán dinámicamente con JavaScript -->
                             </select>
@@ -94,25 +110,41 @@ $reserva = $translations['reserva'] ?? [];
                     </div>
 
                     <!-- Opciones de limpieza -->
-                    <label for="limpieza"><?php echo $reserva['opciones_limpieza']; ?></label>
+                    <label for="limpieza"><?php echo $reserva[
+                        'opciones_limpieza'
+                    ]; ?></label>
                     <select id="limpieza" name="limpieza">
-                        <option value="0"><?php echo $reserva['sin_limpieza']; ?></option>
-                        <option value="LIMPIEZA_EXT"><?php echo $reserva['limpieza_exterior']; ?></option>
-                        <option value="LIMPIEZA_EXT_INT"><?php echo $reserva['lavado_exterior']; ?></option>
-                        <option value="LIMPIEZA_PRO"><?php echo $reserva['lavado_pro']; ?></option>
+                        <option value="0"><?php echo $reserva[
+                            'sin_limpieza'
+                        ]; ?></option>
+                        <option value="LIMPIEZA_EXT"><?php echo $reserva[
+                            'limpieza_exterior'
+                        ]; ?></option>
+                        <option value="LIMPIEZA_EXT_INT"><?php echo $reserva[
+                            'lavado_exterior'
+                        ]; ?></option>
+                        <option value="LIMPIEZA_PRO"><?php echo $reserva[
+                            'lavado_pro'
+                        ]; ?></option>
                     </select>
 
                     <!-- Opciones de cancelación -->
-                    <label for="cancelacion"><?php echo $reserva['seguro_cancelacion']; ?> (<?php echo $reserva['opcional']; ?>)</label>
+                    <label for="cancelacion"><?php echo $reserva[
+                        'seguro_cancelacion'
+                    ]; ?> (<?php echo $reserva['opcional']; ?>)</label>
 
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" id="seguroSi" name="seguroCancelacion" value="1">
-                        <label class="form-check-label" for="seguroSi"><?php echo $reserva['si']; ?></label>
+                        <label class="form-check-label" for="seguroSi"><?php echo $reserva[
+                            'si'
+                        ]; ?></label>
                     </div>
 
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" id="seguroNo" name="seguroCancelacion" value="2" checked>
-                        <label class="form-check-label" for="seguroNo"><?php echo $reserva['no']; ?></label>
+                        <label class="form-check-label" for="seguroNo"><?php echo $reserva[
+                            'no'
+                        ]; ?></label>
                     </div>
             </div>
 
@@ -132,7 +164,9 @@ $reserva = $translations['reserva'] ?? [];
                 <div id="mensaje_error" style="color: red;"></div>
 
                 <!-- Botón de pagar -->
-                <button type="button" class="payButton" id="pagar" style="display: none;"><?php echo $reserva['pagar']; ?></button>
+                <button type="button" class="payButton" id="pagar" style="display: none;"><?php echo $reserva[
+                    'pagar'
+                ]; ?></button>
                 </form>
             </div>
         </div>
@@ -241,7 +275,7 @@ $reserva = $translations['reserva'] ?? [];
                         <div id="mapa-finguer"></div>
 
                         <div class="p-5">
-                            <p><strong>Nuestro horario de servicio es de</strong><br><strong>5:00 de la mañana a 23:30 de la noche</strong></p>
+                            <p><strong>Nuestro horario de servicio es de</strong><br><strong>7:00 de la mañana a 23:30 de la noche</strong></p>
 
                             <p id="contacto"><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Carrer de l'Alt Camp, 9, 08830</a><br><a href="https://www.google.com/maps/dir//41.3077704,2.0662899/@41.307698,2.066425,10z?hl=es" target="_blank" rel="noreferrer noopener">Sant Boi de Llobregat, Barcelona</a></p>
 
