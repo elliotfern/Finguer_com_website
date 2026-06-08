@@ -329,10 +329,8 @@ function updateLinks(container: HTMLElement, reservaId: string): void {
 
   const aMod = container.querySelector('#enlace3');
   if (aMod instanceof HTMLAnchorElement) {
-    aMod.href = `${urlWeb}/reserva/modificar/reserva/${reservaId}`;
+    aMod.href = `${urlWeb}/reserva/modificar/reserva/${encodeURIComponent(reservaId)}`;
   }
-
-  // ⛔ NO tocar enlace4 aquí (ahora es acción, no navegación)
 }
 
 /** API pública: abre popup (mantiene firma compatible con tu código actual). */
