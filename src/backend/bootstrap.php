@@ -10,7 +10,6 @@ if (file_exists($basePath . '/.env')) {
     Dotenv::createImmutable($basePath)->load();
 }
 
-
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/utils/uuidv7.php';
