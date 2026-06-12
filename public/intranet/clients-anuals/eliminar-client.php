@@ -16,12 +16,12 @@ if (!preg_match('/^[0-9a-f]{32}$/', $uuidHex)) {
 }
 
 global $conn;
-require_once APP_ROOT . '/public/intranet/inc/header.php';
-require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
+require_once APP_ROOT . '/intranet/inc/header.php';
+require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
 
 echo "<div class='container' style='margin-bottom:100px'>";
-echo "<h3>Clients amb Abonament anual</h3>";
-echo "<h4>Eliminació (desactivació) del client</h4>";
+echo '<h3>Clients amb Abonament anual</h3>';
+echo '<h4>Eliminació (desactivació) del client</h4>';
 
 $codi_resposta = 1;
 
@@ -44,15 +44,18 @@ if (!$row) {
     die('Cliente no encontrado');
 }
 
-$nom_old = (string)($row['nombre'] ?? '');
-$estado_actual = (string)($row['estado'] ?? '');
+$nom_old = (string) ($row['nombre'] ?? '');
+$estado_actual = (string) ($row['estado'] ?? '');
 
-echo "<p><strong>Client:</strong> " . htmlspecialchars($nom_old, ENT_QUOTES) . "</p>";
-echo "<p><strong>Estat actual:</strong> " . htmlspecialchars($estado_actual, ENT_QUOTES) . "</p>";
+echo '<p><strong>Client:</strong> ' .
+    htmlspecialchars($nom_old, ENT_QUOTES) .
+    '</p>';
+echo '<p><strong>Estat actual:</strong> ' .
+    htmlspecialchars($estado_actual, ENT_QUOTES) .
+    '</p>';
 
 // 2) Si confirman, soft delete => estado='eliminado'
-if (isset($_POST["remove-client"])) {
-
+if (isset($_POST['remove-client'])) {
     // Si quieres evitar re-eliminar o cambios innecesarios:
     if ($estado_actual === 'eliminado') {
         $codi_resposta = 3; // ya estaba eliminado, lo tratamos como OK
@@ -82,14 +85,18 @@ if ($codi_resposta == 3) {
             El client ha passat a estat <strong>eliminat</strong>.
           </div>';
 
-    echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-outline-secondary menuBtn">Tornar</a>';
+    echo '<a href="' .
+        APP_WEB .
+        '/control/clients-anuals/" class="btn btn-outline-secondary menuBtn">Tornar</a>';
 } elseif ($codi_resposta == 2) {
     echo '<div class="alert alert-danger" role="alert">
             <h4 class="alert-heading"><strong>Error</strong></h4>
             No s\'ha pogut actualitzar l\'estat del client.
           </div>';
 
-    echo '<a href="' . APP_WEB . '/control/clients-anuals/" class="btn btn-outline-secondary menuBtn">Tornar</a>';
+    echo '<a href="' .
+        APP_WEB .
+        '/control/clients-anuals/" class="btn btn-outline-secondary menuBtn">Tornar</a>';
 } else {
     // Confirmación
     echo '<form action="" method="post" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
@@ -100,7 +107,9 @@ if ($codi_resposta == 3) {
 
     echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
 
-    echo "<a href='" . APP_WEB . "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
+    echo "<a href='" .
+        APP_WEB .
+        "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
             Tornar
           </a>";
 
@@ -108,8 +117,8 @@ if ($codi_resposta == 3) {
             Marcar com eliminat
           </button>";
 
-    echo "</div>";
-    echo "</form>";
+    echo '</div>';
+    echo '</form>';
 }
 
 echo '</div>';

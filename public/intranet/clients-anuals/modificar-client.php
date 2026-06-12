@@ -17,11 +17,11 @@ if (!preg_match('/^[0-9a-f]{32}$/', $uuidHex)) {
 }
 
 global $conn;
-require_once APP_ROOT . '/public/intranet/inc/header.php';
-require_once(APP_ROOT . '/public/intranet/inc/header-reserves-anuals.php');
+require_once APP_ROOT . '/intranet/inc/header.php';
+require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
 
 echo "<div class='container' style='margin-bottom:100px'>";
-echo "<h3>Modificar dades client Abonament anual</h3>";
+echo '<h3>Modificar dades client Abonament anual</h3>';
 
 $codi_resposta = 2;
 
@@ -53,54 +53,75 @@ if (!$row) {
     die('Cliente no encontrado');
 }
 
-echo "<h4>Client: " . htmlspecialchars((string)$row['nombre'], ENT_QUOTES) . " </h4>";
+echo '<h4>Client: ' .
+    htmlspecialchars((string) $row['nombre'], ENT_QUOTES) .
+    ' </h4>';
 
 // Valores actuales (para pintar el form)
-$nom_old           = (string)($row['nombre'] ?? '');
-$telefon_old        = $row['telefono'] ?? null;
-$anualitat_old      = $row['anualitat'] ?? null;
+$nom_old = (string) ($row['nombre'] ?? '');
+$telefon_old = $row['telefono'] ?? null;
+$anualitat_old = $row['anualitat'] ?? null;
 
-$locale_old         = (string)($row['locale'] ?? 'ca');
-$email_old          = $row['email'] ?? null;
-$empresa_old        = $row['empresa'] ?? null;
-$nif_old            = $row['nif'] ?? null;
-$direccion_old      = $row['direccion'] ?? null;
-$ciudad_old         = $row['ciudad'] ?? null;
-$codigo_postal_old  = $row['codigo_postal'] ?? null;
-$pais_old           = $row['pais'] ?? null;
+$locale_old = (string) ($row['locale'] ?? 'ca');
+$email_old = $row['email'] ?? null;
+$empresa_old = $row['empresa'] ?? null;
+$nif_old = $row['nif'] ?? null;
+$direccion_old = $row['direccion'] ?? null;
+$ciudad_old = $row['ciudad'] ?? null;
+$codigo_postal_old = $row['codigo_postal'] ?? null;
+$pais_old = $row['pais'] ?? null;
 
 // 2) Procesar update
-if (isset($_POST["update-client"])) {
-
+if (isset($_POST['update-client'])) {
     // nombre obligatorio
-    if (empty($_POST["nombre"])) {
+    if (empty($_POST['nombre'])) {
         $hasError = true;
     } else {
-        $nombre = data_input($_POST["nombre"], ENT_NOQUOTES);
+        $nombre = data_input($_POST['nombre'], ENT_NOQUOTES);
     }
 
     // locale obligatorio (enum)
     $localesPermitidos = ['ca', 'es', 'fr', 'en', 'it'];
-    if (empty($_POST["locale"]) || !in_array($_POST["locale"], $localesPermitidos, true)) {
+    if (
+        empty($_POST['locale']) ||
+        !in_array($_POST['locale'], $localesPermitidos, true)
+    ) {
         $hasError = true;
     } else {
-        $locale = $_POST["locale"];
+        $locale = $_POST['locale'];
     }
 
     // opcionales
-    $telefono       = empty($_POST["telefono"]) ? null : data_input($_POST["telefono"], ENT_NOQUOTES);
-    $anualitat      = empty($_POST["anualitat"]) ? null : data_input($_POST["anualitat"], ENT_NOQUOTES);
+    $telefono = empty($_POST['telefono'])
+        ? null
+        : data_input($_POST['telefono'], ENT_NOQUOTES);
+    $anualitat = empty($_POST['anualitat'])
+        ? null
+        : data_input($_POST['anualitat'], ENT_NOQUOTES);
 
-    $email          = empty($_POST["email"]) ? null : data_input($_POST["email"], ENT_NOQUOTES);
-    $empresa        = empty($_POST["empresa"]) ? null : data_input($_POST["empresa"], ENT_NOQUOTES);
-    $nif            = empty($_POST["nif"]) ? null : data_input($_POST["nif"], ENT_NOQUOTES);
-    $direccion      = empty($_POST["direccion"]) ? null : data_input($_POST["direccion"], ENT_NOQUOTES);
-    $ciudad         = empty($_POST["ciudad"]) ? null : data_input($_POST["ciudad"], ENT_NOQUOTES);
-    $codigo_postal  = empty($_POST["codigo_postal"]) ? null : data_input($_POST["codigo_postal"], ENT_NOQUOTES);
-    $pais           = empty($_POST["pais"]) ? null : data_input($_POST["pais"], ENT_NOQUOTES);
+    $email = empty($_POST['email'])
+        ? null
+        : data_input($_POST['email'], ENT_NOQUOTES);
+    $empresa = empty($_POST['empresa'])
+        ? null
+        : data_input($_POST['empresa'], ENT_NOQUOTES);
+    $nif = empty($_POST['nif'])
+        ? null
+        : data_input($_POST['nif'], ENT_NOQUOTES);
+    $direccion = empty($_POST['direccion'])
+        ? null
+        : data_input($_POST['direccion'], ENT_NOQUOTES);
+    $ciudad = empty($_POST['ciudad'])
+        ? null
+        : data_input($_POST['ciudad'], ENT_NOQUOTES);
+    $codigo_postal = empty($_POST['codigo_postal'])
+        ? null
+        : data_input($_POST['codigo_postal'], ENT_NOQUOTES);
+    $pais = empty($_POST['pais'])
+        ? null
+        : data_input($_POST['pais'], ENT_NOQUOTES);
 
     if (!isset($hasError)) {
-
         $sql = "UPDATE usuarios SET
                     nombre = :nombre,
                     telefono = :telefono,
@@ -118,20 +139,56 @@ if (isset($_POST["update-client"])) {
 
         $stmt = $conn->prepare($sql);
 
-        $stmt->bindValue(":uuid_hex", $uuidHex, PDO::PARAM_STR);
-        $stmt->bindValue(":nombre", $nombre, PDO::PARAM_STR);
-        $stmt->bindValue(":locale", $locale, PDO::PARAM_STR);
+        $stmt->bindValue(':uuid_hex', $uuidHex, PDO::PARAM_STR);
+        $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $stmt->bindValue(':locale', $locale, PDO::PARAM_STR);
 
-        $stmt->bindValue(":telefono", $telefono, $telefono === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":anualitat", $anualitat, $anualitat === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stmt->bindValue(
+            ':telefono',
+            $telefono,
+            $telefono === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':anualitat',
+            $anualitat,
+            $anualitat === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
 
-        $stmt->bindValue(":email", $email, $email === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":empresa", $empresa, $empresa === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":nif", $nif, $nif === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":direccion", $direccion, $direccion === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":ciudad", $ciudad, $ciudad === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":codigo_postal", $codigo_postal, $codigo_postal === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-        $stmt->bindValue(":pais", $pais, $pais === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stmt->bindValue(
+            ':email',
+            $email,
+            $email === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':empresa',
+            $empresa,
+            $empresa === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':nif',
+            $nif,
+            $nif === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':direccion',
+            $direccion,
+            $direccion === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':ciudad',
+            $ciudad,
+            $ciudad === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':codigo_postal',
+            $codigo_postal,
+            $codigo_postal === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
+        $stmt->bindValue(
+            ':pais',
+            $pais,
+            $pais === null ? PDO::PARAM_NULL : PDO::PARAM_STR,
+        );
 
         if ($stmt->execute()) {
             $codi_resposta = 1;
@@ -154,7 +211,7 @@ if (isset($_POST["update-client"])) {
 
         if ($codi_resposta == 1) {
             echo '<div class="alert alert-success" role="alert"><h4 class="alert-heading"><strong>Modificació realitzada correctament.</strong></h4>';
-            echo "Client anual modificat amb èxit.</div>";
+            echo 'Client anual modificat amb èxit.</div>';
         } else {
             echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
             echo 'Les dades no s\'han transmès correctament.</div>';
@@ -173,34 +230,39 @@ echo '<h5>Dades obligatòries del client:</h5>';
 // nombre
 echo '<div class="col-md-3">';
 echo '<label>Nom i cognoms <span class="text-danger">*</span></label>';
-echo '<input type="text" class="form-control" id="nombre" name="nombre" required value="' . htmlspecialchars((string)$nom_old, ENT_QUOTES) . '">';
-    echo '<div class="form-text">
+echo '<input type="text" class="form-control" id="nombre" name="nombre" required value="' .
+    htmlspecialchars((string) $nom_old, ENT_QUOTES) .
+    '">';
+echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
 echo '</div>';
 
 // telefono
 echo '<div class="col-md-3">';
-   echo '<label>Telèfon <span class="text-danger">*</span></label>';
-echo '<input type="text" class="form-control" id="telefono" name="telefono" required value="' . htmlspecialchars((string)($telefon_old ?? ''), ENT_QUOTES) . '">';
-    echo '<div class="form-text">
+echo '<label>Telèfon <span class="text-danger">*</span></label>';
+echo '<input type="text" class="form-control" id="telefono" name="telefono" required value="' .
+    htmlspecialchars((string) ($telefon_old ?? ''), ENT_QUOTES) .
+    '">';
+echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
 echo '</div>';
 
 // anualitat
 echo '<div class="col-md-3">';
-  echo '<label>Anualitat client dia/mes/any <span class="text-danger">*</span></label>';
-echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' . htmlspecialchars((string)($anualitat_old ?? ''), ENT_QUOTES) . '" required>';
-    echo '<div class="form-text">
+echo '<label>Anualitat client dia/mes/any <span class="text-danger">*</span></label>';
+echo '<input type="text" class="form-control" id="anualitat" name="anualitat" value="' .
+    htmlspecialchars((string) ($anualitat_old ?? ''), ENT_QUOTES) .
+    '" required>';
+echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
 echo '</div>';
 
-
 // locale
 echo '<div class="col-md-3">';
-    echo '<label>Idioma preferit del client <span class="text-danger">*</span></label>';
+echo '<label>Idioma preferit del client <span class="text-danger">*</span></label>';
 echo '<select class="form-select" id="locale" name="locale" required>';
 
 $locales = [
@@ -208,77 +270,93 @@ $locales = [
     'es' => 'Espanyol',
     'fr' => 'Francès',
     'en' => 'Anglès',
-    'it' => 'Italià'
+    'it' => 'Italià',
 ];
 foreach ($locales as $code => $label) {
-    $selected = ($locale_old === $code) ? 'selected' : '';
+    $selected = $locale_old === $code ? 'selected' : '';
     echo "<option value=\"$code\" $selected>$label</option>";
 }
 echo '</select>';
-    echo '<div class="form-text">
+echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
 echo '</div>';
 
 // email
 echo '<div class="col-md-3">';
-    echo '<label>Email <span class="text-danger">*</span></label>';
-echo '<input type="email" class="form-control" id="email" name="email" value="' . htmlspecialchars((string)($email_old ?? ''), ENT_QUOTES) . '" required>';
-    echo '<div class="form-text">
+echo '<label>Email <span class="text-danger">*</span></label>';
+echo '<input type="email" class="form-control" id="email" name="email" value="' .
+    htmlspecialchars((string) ($email_old ?? ''), ENT_QUOTES) .
+    '" required>';
+echo '<div class="form-text">
         <span class="text-danger">*</span> Camp obligatori
         </div>';
 echo '</div>';
 
-    echo '<hr>';
-    echo '<h5>Dades del client opcionals:</h5>';
+echo '<hr>';
+echo '<h5>Dades del client opcionals:</h5>';
 
 // empresa
 echo '<div class="col-md-3">';
 echo '<label>Empresa:</label>';
-echo '<input type="text" class="form-control" id="empresa" name="empresa" value="' . htmlspecialchars((string)($empresa_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="empresa" name="empresa" value="' .
+    htmlspecialchars((string) ($empresa_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // nif
 echo '<div class="col-md-3">';
 echo '<label>NIF:</label>';
-echo '<input type="text" class="form-control" id="nif" name="nif" value="' . htmlspecialchars((string)($nif_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="nif" name="nif" value="' .
+    htmlspecialchars((string) ($nif_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // direccion
 echo '<div class="col-md-3">';
 echo '<label>Direcció:</label>';
-echo '<input type="text" class="form-control" id="direccion" name="direccion" value="' . htmlspecialchars((string)($direccion_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="direccion" name="direccion" value="' .
+    htmlspecialchars((string) ($direccion_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // ciudad
 echo '<div class="col-md-3">';
 echo '<label>Ciutat:</label>';
-echo '<input type="text" class="form-control" id="ciudad" name="ciudad" value="' . htmlspecialchars((string)($ciudad_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="ciudad" name="ciudad" value="' .
+    htmlspecialchars((string) ($ciudad_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // codigo_postal
 echo '<div class="col-md-3">';
 echo '<label>Codi postal:</label>';
-echo '<input type="text" class="form-control" id="codigo_postal" name="codigo_postal" value="' . htmlspecialchars((string)($codigo_postal_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="codigo_postal" name="codigo_postal" value="' .
+    htmlspecialchars((string) ($codigo_postal_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // pais
 echo '<div class="col-md-3">';
 echo '<label>País:</label>';
-echo '<input type="text" class="form-control" id="pais" name="pais" value="' . htmlspecialchars((string)($pais_old ?? ''), ENT_QUOTES) . '">';
+echo '<input type="text" class="form-control" id="pais" name="pais" value="' .
+    htmlspecialchars((string) ($pais_old ?? ''), ENT_QUOTES) .
+    '">';
 echo '</div>';
 
 // BOTO ENVIAR FORM
 echo "<div class='col-12 d-flex flex-column flex-md-row justify-content-between gap-2'>";
 
-echo "<a href='" . APP_WEB . "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
+echo "<a href='" .
+    APP_WEB .
+    "/control/clients-anuals/' class='btn btn-outline-secondary menuBtn'>
         Tornar
       </a>";
 
 echo "<button id='update-client' name='update-client' type='submit' class='btn btn-primary'>Modifica client</button> ";
-echo "</div>";
+echo '</div>';
 
-echo "</form>";
+echo '</form>';
 
 echo '</div>';
-echo "</div>";
+echo '</div>';
