@@ -47,9 +47,6 @@ export interface ClienteAnualFitxa {
 
   createdAt?: string | null;
   updatedAt?: string | null;
-
-  // 👇 NUEVO: datos del abono
-  abono?: {
     fecha_inicio?: string | null;
     fecha_fin?: string | null;
     limite_reservas?: number | null;
@@ -57,7 +54,7 @@ export interface ClienteAnualFitxa {
     vehiculo?: string | null;
     matricula?: string | null;
     observaciones?: string | null;
-  };
+  
 }
 
 function setHidden(id: string, value: string) {
@@ -85,9 +82,6 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
   if (!isUpdate) {
     setTitle(`<h5>Clients/usuaris: alta nou client client</h5>`);
     btn.textContent = 'Inserir dades';
-
-    setHidden('uuid', '');
-    setHidden('estado', 'activo');
 
     form.addEventListener(
     'submit',
@@ -121,12 +115,10 @@ if (!res || !isOk(res)) {
   return;
 }
 
-const data = res.data.usuario;
+const data = res.data;
 
 // 👉 relleno campos usuario
 renderFormInputs(data);
-
-setHidden('uuid', data.uuid ?? uuid);
 
 form.addEventListener(
     'submit',
