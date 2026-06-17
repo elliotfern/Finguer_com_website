@@ -1,6 +1,6 @@
 <?php
 global $conn;
-require_once APP_ROOT . '/intranet/inc/header.php'; 
+require_once APP_ROOT . '/intranet/inc/header.php';
 require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
 
 echo "<div class='container' style='margin-bottom:100px'>";
@@ -59,68 +59,80 @@ $result = $pdo_statement->fetchAll();
         </thead>
         <tbody>
 
-        <?php
-        foreach ($result as $row) {
+            <?php
+            foreach ($result as $row) {
 
-            $nom = $row['nom'];
-            $telefon = $row['telefon'];
-            $id = $row['uuid_hex'];
-            $fecha_fin = $row['fecha_fin'];
-            $estado = htmlspecialchars($row['estado'], ENT_QUOTES);
-            $reservas_completadas = $row['reservas_completadas'];
+                $nom = $row['nom'];
+                $telefon = $row['telefon'];
+                $id = $row['uuid_hex'];
+                $fecha_fin = $row['fecha_fin'];
+                $estado = htmlspecialchars($row['estado'], ENT_QUOTES);
+                $reservas_completadas = $row['reservas_completadas'];
 
-            // ---- ALERTA 30 DÍAS ----
-            $hoy = new DateTime();
-            $caducaPronto = false;
+                // ---- ALERTA 30 DÍAS ----
+                $hoy = new DateTime();
+                $caducaPronto = false;
+                $fechaFinHtml = $fecha_fin;
 
-            if ($fecha_fin) {
-                $fin = new DateTime($fecha_fin);
-                $diffDias = $hoy->diff($fin)->days;
+                if (!empty($fecha_fin)) {
 
-                $caducaPronto = ($fin > $hoy && $diffDias <= 30);
-            }
+                    $fin = new DateTime($fecha_fin);
 
-            $rowClass = $caducaPronto ? "table-danger" : "";
+                    // días restantes (negativo si ya ha caducado)
+                    $diasRestantes = (int) $hoy->diff($fin)->format('%r%a');
 
-            echo "<tr class='{$rowClass}'>";
+                    if ($diasRestantes <= 30) {
 
-            echo "<td>{$nom}</td>";
-            echo "<td>{$telefon}</td>";
-            echo "<td>{$fecha_fin}</td>";
-            echo "<td><strong>{$reservas_completadas}</strong></td>";
-            echo "<td><span class='badge bg-secondary'>{$estado}</span></td>";
+                        $caducaPronto = true;
 
-            if (auth_is_admin()) {
+                        $fechaFinHtml =
+                            "<span class='badge bg-danger'>
+                    ⚠ Caduca {$fecha_fin}
+                </span>";
+                    }
+                }
+
+                $rowClass = $caducaPronto ? "table-danger" : "";
+
+                echo "<tr class='{$rowClass}'>";
+
+                echo "<td>{$nom}</td>";
+                echo "<td>{$telefon}</td>";
+                echo "<td>{$fechaFinHtml}</td>";
+                echo "<td><strong>{$reservas_completadas}</strong></td>";
+                echo "<td><span class='badge bg-secondary'>{$estado}</span></td>";
+
+                if (auth_is_admin()) {
+
+                    echo "<td>
+            <a href='" . APP_WEB . "/control/clients-anuals/modifica-client/{$id}'
+               class='btn btn-warning btn-sm'>
+               Actualitzar dades
+            </a>
+        </td>";
+
+                    echo "<td>
+            <a href='" . APP_WEB . "/control/clients-anuals/eliminar-client/{$id}'
+               class='btn btn-danger btn-sm'>
+               Eliminar client
+            </a>
+        </td>";
+                } else {
+
+                    echo "<td class='text-muted text-center'>–</td>";
+                    echo "<td class='text-muted text-center'>–</td>";
+                }
 
                 echo "<td>
-                    <a href='" . APP_WEB . "/control/clients-anuals/modifica-client/{$id}'
-                       class='btn btn-warning btn-sm'>
-                       Actualitzar dades
-                    </a>
-                </td>";
+        <a href='" . APP_WEB . "/control/clients-anuals/crear-reserva/{$id}'
+           class='btn btn-info btn-sm'>
+           Crear reserva
+        </a>
+    </td>";
 
-                echo "<td>
-                    <a href='" . APP_WEB . "/control/clients-anuals/eliminar-client/{$id}'
-                       class='btn btn-danger btn-sm'>
-                       Eliminar client
-                    </a>
-                </td>";
-
-            } else {
-                echo "<td class='text-muted text-center'>–</td>";
-                echo "<td class='text-muted text-center'>–</td>";
+                echo "</tr>";
             }
-
-            echo "<td>
-                <a href='" . APP_WEB . "/control/clients-anuals/crear-reserva/{$id}'
-                   class='btn btn-info btn-sm'>
-                   Crear reserva
-                </a>
-            </td>";
-
-            echo "</tr>";
-        }
-        ?>
+            ?>
 
         </tbody>
     </table>
