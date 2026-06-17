@@ -6,14 +6,6 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
 <div class='container' style='margin-bottom:100px'>
     <h3>Formulari client Abonament anual</h3>
 
-    <!-- Missatges resposta servidor -->
-<div id="okMessage" class="alert alert-success mt-3" style="display:none">
-    <span id="okText"></span>
-</div>
-<div id="errMessage" class="alert alert-danger mt-3" style="display:none">
-    <span id="errText"></span>
-</div>
-
     <form method="POST" id="formclientAnual" class="row g-3 p-4 bg-light rounded">
 
     <input type="hidden" id="uuid" name="uuid">
