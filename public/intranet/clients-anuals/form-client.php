@@ -6,6 +6,14 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
 <div class='container' style='margin-bottom:100px'>
     <h3>Formulari client Abonament anual</h3>
 
+    <!-- Missatges resposta servidor -->
+<div id="okMessage" class="alert alert-success mt-3" style="display:none">
+    <span id="okText"></span>
+</div>
+<div id="errMessage" class="alert alert-danger mt-3" style="display:none">
+    <span id="errText"></span>
+</div>
+
     <form method="POST" id="formclientAnual" class="row g-3 p-4 bg-light rounded">
 
     <input type="hidden" id="uuid" name="uuid">
@@ -134,7 +142,7 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
         <!-- Estado abono -->
         <div class="col-md-4">
             <label class="form-label">Estat abonament</label>
-            <select class="form-select" name="abono_estado" id="abono_estado">
+            <select class="form-select" name="estado" id="estado">
                 <option value="activo">Actiu</option>
                 <option value="pendiente">Pendent</option>
                 <option value="caducado">Caducat</option>
