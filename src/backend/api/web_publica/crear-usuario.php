@@ -254,14 +254,14 @@ if ($skipInsertUser) {
 
     // No insertamos usuario, ya existe
     $usuario_uuid = $existingUser['uuid'];
-    $uuidStr2   = bin2hex($usuario_uuid);
+    $usuario_uuid_hex = bin2hex($usuario_uuid);
 
     echo json_encode([
         "status" => "success",
-        "usuario_uuid" => $usuario_uuid,                 // UUID con guiones (legible)
-        "usuario_uuid_hex" => bin2hex($uuidStr2),  // 32 hex (URL/UNHEX friendly)
-        "message" => "Cliente creado con exito."
+        "usuario_uuid_hex" => $usuario_uuid_hex,
+        "message" => "Usuario reutilizado"
     ]);
+    exit;
 
     exit;
 } else {
@@ -290,14 +290,12 @@ if ($skipInsertUser) {
     $stmt->execute();
 
     $usuario_uuid = $uuidBytes;
-    $uuidStr2   = bin2hex($usuario_uuid);
+    $usuario_uuid_hex = bin2hex($usuario_uuid);
 
     echo json_encode([
         "status" => "success",
-        "usuario_uuid" => $usuario_uuid,                 // UUID con guiones (legible)
-        "usuario_uuid_hex" => bin2hex($uuidStr2),  // 32 hex (URL/UNHEX friendly)
-        "message" => "Cliente creado con exito."
+        "usuario_uuid_hex" => $usuario_uuid_hex,
+        "message" => "Usuario creado"
     ]);
+    exit;
 }
-
-exit;
