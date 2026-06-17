@@ -2,6 +2,8 @@
 
 use Ramsey\Uuid\Uuid;
 
+// endpoint creacio usuari bd
+
 // CORS + tipos
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
