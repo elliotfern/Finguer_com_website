@@ -219,7 +219,6 @@ if ($existingUser) {
 
     // IMPORTANTE: no insertamos usuario nuevo
     $skipInsertUser = true;
-
 } else {
 
     // Usuario nuevo → generamos UUID
@@ -255,7 +254,15 @@ if ($skipInsertUser) {
 
     // No insertamos usuario, ya existe
     $usuario_uuid = $existingUser['uuid'];
+    $uuidStr2   = $usuario_uuid->toString();
 
+    echo json_encode([
+        "status" => "success",
+        "usuario_uuid" => $uuidStr2,
+        "message" => $existingUser ? "Usuario reutilizado" : "Usuario creado"
+    ]);
+
+    exit;
 } else {
 
     $sql = "INSERT INTO usuarios SET uuid = :uuid, estado=:estado, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
@@ -282,4 +289,13 @@ if ($skipInsertUser) {
     $stmt->execute();
 
     $usuario_uuid = $uuidBytes;
+    $uuidStr2   = $usuario_uuid->toString();
+
+    echo json_encode([
+        "status" => "success",
+        "usuario_uuid" => $uuidStr2,
+        "message" => $existingUser ? "Usuario reutilizado" : "Usuario creado"
+    ]);
 }
+
+exit;
