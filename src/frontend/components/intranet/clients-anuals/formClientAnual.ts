@@ -126,27 +126,7 @@ const data = res.data.usuario;
 // 👉 relleno campos usuario
 renderFormInputs(data);
 
-// 👉 relleno campos abono manualmente
-if (data.abono) {
-  const mapFields: Record<string, string> = {
-    fecha_inicio: 'fecha_inicio',
-    fecha_fin: 'fecha_fin',
-    limite_reservas: 'limite_reservas',
-    vehiculo: 'vehiculo',
-    matricula: 'matricula',
-    observaciones: 'observaciones',
-  };
-
-  Object.entries(mapFields).forEach(([key]) => {
-    const el = document.getElementById(key) as HTMLInputElement | null;
-    if (el && data.abono?.[key as keyof typeof data.abono] !== undefined) {
-      el.value = String(data.abono[key as keyof typeof data.abono] ?? '');
-    }
-  });
-}
-
 setHidden('uuid', data.uuid ?? uuid);
-setHidden('estado', 'activo');
 
 form.addEventListener(
     'submit',
