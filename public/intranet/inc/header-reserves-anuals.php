@@ -9,7 +9,7 @@
 
         <?php if (auth_can('menu.admin')): ?>
             <div class="col-sm">
-                <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear-client" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear client</a>
+                <a href="<?php APP_SERVER; ?>/control/clients-anuals/nou-client" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear client</a>
             </div>
 
             <div class="col-sm">

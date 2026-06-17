@@ -17,6 +17,7 @@ import { areaClientLogin } from './components/areaClient/areaClientLogin';
 import { areaClientHistoricReserves } from './components/areaClient/areaClientHistoricReserves';
 import { header } from './components/intranet/header/header';
 import { finguerAnualContactForm } from './components/homepage/formulari';
+import { formClientAnual } from './components/intranet/clients-anuals/formClientAnual';
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 
@@ -107,6 +108,17 @@ function routeIntranet(p: string): void {
   }
   if (p === '/control/clients-anuals/completades') {
     reserves('salido', '3');
+    return;
+  }
+
+  if (p === '/control/clients-anuals/nou-client') {
+     formClientAnual(false);
+    return;
+  }
+
+  if (p === '/control/clients-anuals/modifica-client') {
+     const uuid = getUuidFromPath('/control/clients-anuals/modifica-client');
+     formClientAnual(true, uuid);
     return;
   }
 

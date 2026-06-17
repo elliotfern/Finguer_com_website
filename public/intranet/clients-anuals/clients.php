@@ -49,7 +49,7 @@ $result = $pdo_statement->fetchAll();
 
                 if (auth_is_admin()) {
                     echo "<td>
-            <a href='" . APP_WEB . "/control/clients-anuals/modificar/client/{$id}'
+            <a href='" . APP_WEB . "/control/clients-anuals/modificar-client/{$id}'
                class='btn btn-warning btn-sm'
                role='button'>
                Actualitzar dades
@@ -57,7 +57,7 @@ $result = $pdo_statement->fetchAll();
           </td>";
 
                     echo "<td>
-            <a href='" . APP_WEB . "/control/clients-anuals/eliminar/client/{$id}'
+            <a href='" . APP_WEB . "/control/clients-anuals/eliminar-client/{$id}'
                class='btn btn-danger btn-sm'
                role='button'>
                Eliminar client

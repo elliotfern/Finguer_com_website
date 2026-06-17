@@ -148,12 +148,19 @@ $routes = [
         'roles' => ['admin', 'trabajador'],
     ],
 
-    '/control/clients-anuals/modificar/client/{idClient}' => [
-        'view' => './intranet/clients-anuals/modificar-client.php',
+        '/control/clients-anuals/nou-client' => [
+        'view' => './intranet/clients-anuals/form-client.php',
         'needs_session' => true,
         'roles' => ['admin'],
     ],
-    '/control/clients-anuals/eliminar/client/{idClient}' => [
+
+    '/control/clients-anuals/modificar-client/{idClient}' => [
+        'view' => './intranet/clients-anuals/form-client.php',
+        'needs_session' => true,
+        'roles' => ['admin'],
+    ],
+    
+    '/control/clients-anuals/eliminar-client/{idClient}' => [
         'view' => './intranet/clients-anuals/eliminar-client.php',
         'needs_session' => true,
         'roles' => ['admin'],
@@ -169,11 +176,7 @@ $routes = [
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
     ],
-    '/control/clients-anuals/crear-client' => [
-        'view' => './intranet/clients-anuals/crear-client.php',
-        'needs_session' => true,
-        'roles' => ['admin'],
-    ],
+
 
     // ALTRES
     '/control/cercador-reserva' => [

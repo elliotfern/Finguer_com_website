@@ -123,7 +123,7 @@ try {
         ]));
     }
 
-        // =========================================================
+    // =========================================================
     // type=get  (detalle usuario por uuid)
     // GET ?type=get&uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     // =========================================================
@@ -208,6 +208,116 @@ try {
     }
 
 
+    // =========================================================
+    // type=clienteAnual  (detalle cliente anual por uuid)
+    // GET ?type=clienteAnual&uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    // =========================================================
+    if ($type === 'clienteAnual') {
+
+        $uuidStr = isset($_GET['uuid']) ? trim((string)$_GET['uuid']) : '';
+        if ($uuidStr === '') {
+            jsonResponse(vp2_err('Falta parámetro uuid', 'BAD_UUID'), 400);
+        }
+
+        try {
+            $uuidBin = uuid_bin_from_string($uuidStr);
+        } catch (Throwable $e) {
+            jsonResponse(vp2_err('UUID inválido', 'BAD_UUID'), 400);
+        }
+
+        // =========================
+        // USUARIO
+        // =========================
+        $sqlUser = "
+        SELECT *
+        FROM usuarios
+        WHERE uuid = :uuid
+        LIMIT 1
+    ";
+
+        $stmt = $conn->prepare($sqlUser);
+        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt->execute();
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            jsonResponse(vp2_err('Usuario no encontrado', 'NOT_FOUND'), 404);
+        }
+
+        // =========================
+        // ABONO ANUAL
+        // =========================
+        $sqlAbono = "
+        SELECT *
+        FROM usuarios_abonos
+        WHERE usuario_uuid = :uuid
+        LIMIT 1
+    ";
+
+        $stmt2 = $conn->prepare($sqlAbono);
+        $stmt2->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt2->execute();
+
+        $abono = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+        // =========================
+        // RESERVAS USADAS
+        // =========================
+        $sqlReservas = "
+        SELECT COUNT(*) 
+        FROM parking_reservas
+        WHERE usuario_uuid = :uuid
+    ";
+
+        $stmt3 = $conn->prepare($sqlReservas);
+        $stmt3->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt3->execute();
+
+        $reservasUsadas = (int)$stmt3->fetchColumn();
+
+        // =========================
+        // RESPONSE UNIFICADO PARA TYPESCRIPT
+        // =========================
+        jsonResponse(vp2_ok('OK', [
+            'data' => [
+                'usuario' => [
+                    'uuid'          => uuid_string_from_bin($user['uuid']),
+                    'nombre'        => (string)$user['nombre'],
+                    'email'         => (string)$user['email'],
+                    'estado'        => (string)$user['estado'],
+                    'empresa'       => $user['empresa'],
+                    'nif'           => $user['nif'],
+                    'direccion'     => $user['direccion'],
+                    'ciudad'        => $user['ciudad'],
+                    'codigo_postal' => $user['codigo_postal'],
+                    'pais'          => $user['pais'],
+                    'telefono'      => $user['telefono'],
+                    'tipo_rol'      => (string)$user['tipo_rol'],
+                    'locale'        => (string)$user['locale'],
+                    'createdAt'     => $user['created_at'],
+                    'updatedAt'     => $user['updated_at'] ?? null,
+                ],
+
+                'abono' => $abono ? [
+                    'fecha_inicio'     => $abono['fecha_inicio'],
+                    'fecha_fin'        => $abono['fecha_fin'],
+                    'limite_reservas'  => (int)$abono['limite_reservas'],
+                    'vehiculo'         => $abono['vehiculo'],
+                    'matricula'        => $abono['matricula'],
+                    'observaciones'    => $abono['observaciones'],
+                    'estado'           => $abono['estado'],
+                ] : null,
+
+                'reservas' => [
+                    'usadas'       => $reservasUsadas,
+                    'disponibles'  => $abono
+                        ? max(0, (int)$abono['limite_reservas'] - $reservasUsadas)
+                        : null
+                ]
+            ]
+        ]));
+    }
     // Si llega aquí, type no válido
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
         'allowed' => ['list', 'get']
