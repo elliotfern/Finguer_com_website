@@ -238,6 +238,11 @@ if ($type === 'clienteAnual-update') {
 
         $uuidBin = uuid_bin_from_string($uuidStr);
 
+        // ID BINARY 16
+        $idObj   = Ramsey\Uuid\Uuid::uuid7();
+        $idBin   = $idObj->getBytes();
+        $idStr   = $idObj->toString();
+
         // =========================
         // 1. UPDATE USUARIO
         // =========================
@@ -315,6 +320,7 @@ if ($type === 'clienteAnual-update') {
             // INSERT ABONO (fallback)
             $sqlAbono = "
                 INSERT INTO usuarios_abonos (
+                    id,
                     usuario_uuid,
                     fecha_inicio,
                     fecha_fin,
@@ -325,6 +331,7 @@ if ($type === 'clienteAnual-update') {
                     created_at,
                     updated_at
                 ) VALUES (
+                    :id,
                     :uuid,
                     :fecha_inicio,
                     :fecha_fin,
@@ -340,6 +347,7 @@ if ($type === 'clienteAnual-update') {
             $stmt2 = $conn->prepare($sqlAbono);
         }
 
+        $stmt2->bindValue(':id', $idBin, PDO::PARAM_LOB);
         $stmt2->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
         $stmt2->bindValue(':fecha_inicio', $data['fecha_inicio'] ?? null);
         $stmt2->bindValue(':fecha_fin', $data['fecha_fin'] ?? null);
