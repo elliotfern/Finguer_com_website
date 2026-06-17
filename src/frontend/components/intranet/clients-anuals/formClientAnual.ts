@@ -92,6 +92,7 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
     form.addEventListener(
       'submit',
       (event) => {
+         event.preventDefault(); // 🔥 ESTO ES CRÍTICO
         transmissioDadesDB<UsuarioCreateData>(event, 'POST', 'formclientAnual', URLS.POST.USUARIOS_CREATE, false, 'hide');
       },
       { once: true }
@@ -146,4 +147,14 @@ if (data.abono) {
 
 setHidden('uuid', data.uuid ?? uuid);
 setHidden('estado', 'activo');
+
+ form.addEventListener(
+      'submit',
+      (event) => {
+         event.preventDefault(); // 🔥 ESTO ES CRÍTICO
+        transmissioDadesDB<UsuarioCreateData>(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
+      },
+      { once: true }
+    );
+
 }
