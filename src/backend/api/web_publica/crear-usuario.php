@@ -194,6 +194,42 @@ if ($hasError) {
 
 global $conn;
 
+// ===============================
+// 1. NORMALIZAR EMAIL
+// ===============================
+$email = strtolower(trim($email));
+
+// ===============================
+// 2. COMPROBAR SI YA EXISTE USUARIO
+// ===============================
+$sqlCheck = "SELECT uuid FROM usuarios WHERE email = :email LIMIT 1";
+$stmtCheck = $conn->prepare($sqlCheck);
+$stmtCheck->bindParam(":email", $email, PDO::PARAM_STR);
+$stmtCheck->execute();
+
+$existingUser = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+if ($existingUser) {
+
+    // Usuario ya existe → reutilizar UUID
+    $uuidBytes = $existingUser['uuid'];
+
+    // también puedes devolverlo si quieres
+    $uuidStr = null; // opcional, o puedes reconstruirlo si lo necesitas
+
+    // IMPORTANTE: no insertamos usuario nuevo
+    $skipInsertUser = true;
+
+} else {
+
+    // Usuario nuevo → generamos UUID
+    $uuidObj = Uuid::uuid7();
+    $uuidBytes = $uuidObj->getBytes();
+    $uuidStr   = $uuidObj->toString();
+
+    $skipInsertUser = false;
+}
+
 // 🔁 CAMBIO IMPORTANTE: nueva BD + nueva tabla
 $sql = "INSERT INTO usuarios SET uuid = :uuid, estado=:estado, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
 
@@ -216,20 +252,35 @@ $stmt->bindParam(":navegador", $navegador, PDO::PARAM_STR);
 $stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
 $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
 
-if ($stmt->execute()) {
+if ($skipInsertUser) {
 
-    // response output
-    // Devolver respuesta de éxito
-    echo json_encode([
-        "status" => "success",
-        "usuario_uuid" => $uuidStr,                 // UUID con guiones (legible)
-        "usuario_uuid_hex" => bin2hex($uuidBytes),  // 32 hex (URL/UNHEX friendly)
-        "message" => "Cliente creado con exito."
-    ]);
+    // No insertamos usuario, ya existe
+    $usuario_uuid = $existingUser['uuid'];
+
 } else {
-    // response output - data error
-    echo json_encode([
-        "status" => "error",
-        "message" => "Error en la base de datos."
-    ]);
+
+    $sql = "INSERT INTO usuarios SET uuid = :uuid, estado=:estado, nombre=:nombre, email=:email, empresa=:empresa, nif=:nif, direccion=:direccion, ciudad=:ciudad, codigo_postal=:codigo_postal, pais=:pais, telefono=:telefono, tipo_rol=:tipo_rol, locale=:locale, dispositiu=:dispositiu, navegador=:navegador, sistema_operatiu=:sistema_operatiu, ip=:ip";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindValue(":uuid", $uuidBytes, PDO::PARAM_LOB);
+    $stmt->bindValue(":estado", $estado, PDO::PARAM_STR);
+    $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
+    $stmt->bindParam(":email", $email, PDO::PARAM_STR);
+    $stmt->bindParam(":empresa", $empresa, PDO::PARAM_STR);
+    $stmt->bindParam(":nif", $nif, PDO::PARAM_STR);
+    $stmt->bindParam(":direccion", $direccion, PDO::PARAM_STR);
+    $stmt->bindParam(":ciudad", $ciudad, PDO::PARAM_STR);
+    $stmt->bindParam(":codigo_postal", $codigo_postal, PDO::PARAM_STR);
+    $stmt->bindParam(":pais", $pais, PDO::PARAM_STR);
+    $stmt->bindParam(":telefono", $telefono, PDO::PARAM_STR);
+    $stmt->bindParam(":tipo_rol", $tipoUsuario, PDO::PARAM_STR);
+    $stmt->bindParam(":locale", $locale, PDO::PARAM_STR);
+    $stmt->bindParam(":dispositiu", $dispositiu, PDO::PARAM_STR);
+    $stmt->bindParam(":navegador", $navegador, PDO::PARAM_STR);
+    $stmt->bindParam(":sistema_operatiu", $sistema_operatiu, PDO::PARAM_STR);
+    $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
+
+    $stmt->execute();
+
+    $usuario_uuid = $uuidBytes;
 }

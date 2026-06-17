@@ -2,6 +2,7 @@
 
 // Rutas principales sin idioma explícito (solo para el idioma por defecto)
 $routes = [
+
     '/api/area-client/login' => ['view' => '../src/backend/api/area-client/authClient.php', 'needs_session' => false, 'no_header_footer' => true],
 
     '/api/area-client/reservas' => ['view' => '../src/backend/api/area-client/reservas.php', 'needs_session' => false, 'no_header_footer' => true],
