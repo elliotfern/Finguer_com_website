@@ -280,33 +280,35 @@ try {
         // RESPONSE UNIFICADO PARA TYPESCRIPT
         // =========================
         jsonResponse(vp2_ok('OK', [
-                'uuid'          => uuid_string_from_bin($user['uuid']),
-                'nombre'        => (string)$user['nombre'],
-                'email'         => (string)$user['email'],
-                'empresa'       => $user['empresa'],
-                'nif'           => $user['nif'],
-                'direccion'     => $user['direccion'],
-                'ciudad'        => $user['ciudad'],
-                'codigo_postal' => $user['codigo_postal'],
-                'pais'          => $user['pais'],
-                'telefono'      => $user['telefono'],
-                'tipo_rol'      => (string)$user['tipo_rol'],
-                'locale'        => (string)$user['locale'],
-                'createdAt'     => $user['created_at'],
-                'updatedAt'     => $user['updated_at'] ?? null,
-                'fecha_inicio'     => $abono['fecha_inicio'],
-                'fecha_fin'        => $abono['fecha_fin'],
-                'limite_reservas'  => (int)$abono['limite_reservas'],
-                'vehiculo'         => $abono['vehiculo'],
-                'matricula'        => $abono['matricula'],
-                'observaciones'    => $abono['observaciones'],
-                'estado'           => $abono['estado'],
-                'usadas'       => $reservasUsadas,
-                'disponibles'  => $abono
-                    ? max(0, (int)$abono['limite_reservas'] - $reservasUsadas)
-                    : null
-            ]
-        ));
+            'uuid'          => uuid_string_from_bin($user['uuid']),
+            'nombre'        => (string)$user['nombre'],
+            'email'         => (string)$user['email'],
+            'empresa'       => $user['empresa'] ?? null,
+            'nif'           => $user['nif'] ?? null,
+            'direccion'     => $user['direccion'] ?? null,
+            'ciudad'        => $user['ciudad'] ?? null,
+            'codigo_postal' => $user['codigo_postal'] ?? null,
+            'pais'          => $user['pais'] ?? null,
+            'telefono'      => $user['telefono'] ?? null,
+            'tipo_rol'      => (string)$user['tipo_rol'],
+            'locale'        => (string)$user['locale'],
+            'createdAt'     => $user['created_at'] ?? null,
+            'updatedAt'     => $user['updated_at'] ?? null,
+
+            // 👇 todos los campos de $abono protegidos
+            'fecha_inicio'    => $abono['fecha_inicio']    ?? null,
+            'fecha_fin'       => $abono['fecha_fin']       ?? null,
+            'limite_reservas' => $abono ? (int)$abono['limite_reservas'] : null,
+            'vehiculo'        => $abono['vehiculo']        ?? null,
+            'matricula'       => $abono['matricula']       ?? null,
+            'observaciones'   => $abono['observaciones']   ?? null,
+            'estado'          => $abono['estado']          ?? null,
+
+            'usadas'      => $reservasUsadas,
+            'disponibles' => $abono
+                ? max(0, (int)$abono['limite_reservas'] - $reservasUsadas)
+                : null,
+        ]));
     }
     // Si llega aquí, type no válido
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
