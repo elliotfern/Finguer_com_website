@@ -104,10 +104,19 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
     return;
   }
 
+  // Registrar submit SIEMPRE, antes del fetch
+form.addEventListener(
+  'submit',
+  (event) => {
+    transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
+  },
+  { once: true }
+);
+
   setTitle(`<h5>Clients anuals: modificació dades</h5>`);
   btn.textContent = 'Modificar dades';
 
-  const res = await fetchDataGet<ApiResponse<{ usuario: ClienteAnualFitxa }>>(URLS.GET.USUARIOS_GET(uuid));
+  const res = await fetchDataGet<ApiResponse<ClienteAnualFitxa>>(URLS.GET.USUARIOS_GET(uuid));
 
 if (!res || !isOk(res)) {
   setTitle(`<h2>Clients anuals: modificació</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
@@ -119,14 +128,5 @@ const data = res.data;
 
 // 👉 relleno campos usuario
 renderFormInputs(data);
-
-form.addEventListener(
-    'submit',
-    (event) => {
-      transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
-    },
-    { once: true }
-  );
-
 
 }
