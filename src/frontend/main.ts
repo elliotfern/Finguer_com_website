@@ -87,57 +87,39 @@ header();
 }
 
 function routeIntranet(p: string): void {
-  // RESERVES
-  if (p.startsWith('/control')  || p.startsWith('/control/reserves-pendents') ) {
-    reserves('pendiente_entrada');
-    return;
-  }
-  if (p === '/control/reserves-parking') {
-    reserves('dentro');
-    return;
-  }
-  if (p === '/control/reserves-completades') {
-    reserves('salido');
+
+  // -------------------------
+  // CLIENTS ANUALS (PRIMERO)
+  // -------------------------
+  if (p.startsWith('/control/clients-anuals/nou-client')) {
+    formClientAnual(false);
     return;
   }
 
-  // CLIENTS ANUALS (tipo=3)
+  if (p.startsWith('/control/clients-anuals/modifica-client')) {
+    const uuid = getUuidFromPath('/control/clients-anuals/modifica-client');
+    formClientAnual(true, uuid);
+    return;
+  }
+
   if (p.startsWith('/control/clients-anuals/pendents')) {
     reserves('pendiente_entrada', '3');
     return;
   }
-  if (p.startsWith( '/control/clients-anuals/parking')) {
+
+  if (p.startsWith('/control/clients-anuals/parking')) {
     reserves('dentro', '3');
     return;
   }
+
   if (p.startsWith('/control/clients-anuals/completades')) {
     reserves('salido', '3');
     return;
   }
 
-  if (p.startsWith('/control/clients-anuals/nou-client')) {
-     formClientAnual(false);
-    return;
-  }
-
-  if (p.startsWith('/control/clients-anuals/modifica-client')) {
-     const uuid = getUuidFromPath('/control/clients-anuals/modifica-client');
-     formClientAnual(true, uuid);
-    return;
-  }
-
-  // FACTURACIÓ
-  if (p.startsWith('/control/facturacio')) {
-    initTaulaFacturacio();
-    return;
-  }
-
+  // -------------------------
   // USUARIS
-  if (p.startsWith('/control/usuaris')) {
-    clientsUsersTable();
-    return;
-  }
-
+  // -------------------------
   if (p.startsWith('/control/usuaris/alta-client')) {
     formUsuarios(false);
     return;
@@ -151,6 +133,37 @@ function routeIntranet(p: string): void {
 
   if (p.startsWith('/control/usuaris/reserves-client')) {
     reservesClientPage();
+    return;
+  }
+
+  if (p.startsWith('/control/usuaris')) {
+    clientsUsersTable();
+    return;
+  }
+
+  // -------------------------
+  // FACTURACIÓ
+  // -------------------------
+  if (p.startsWith('/control/facturacio')) {
+    initTaulaFacturacio();
+    return;
+  }
+
+  // -------------------------
+  // RESERVES ESPECÍFICAS
+  // -------------------------
+  if (p === '/control/reserves-parking') {
+    reserves('dentro');
+    return;
+  }
+
+  if (p === '/control/reserves-completades') {
+    reserves('salido');
+    return;
+  }
+
+  if (p === '/control' || p === '/control/reserves-pendents') {
+    reserves('pendiente_entrada');
     return;
   }
 }
