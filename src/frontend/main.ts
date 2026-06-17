@@ -21,8 +21,12 @@ import { formClientAnual } from './components/intranet/clients-anuals/formClient
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 
+function normalizePath(): string {
+  return window.location.pathname.replace(/\/+$/, '') || '/';
+}
+
 // Ruta normalizada: sin barra final (excepto "/")
-const path = window.location.pathname.replace(/\/$/, '') || '/';
+const path = normalizePath();
 
 // Normalizamos para la web multidioma (usa mismo path normalizado)
 const isReservaPage = path === '/reserva' || path === '/' || supportedLanguages.some((lang) => path === `/${lang}` || path.startsWith(`/${lang}/reserva`));
@@ -84,7 +88,7 @@ header();
 
 function routeIntranet(p: string): void {
   // RESERVES
-  if (p === '/control' || p === '/control/reserves-pendents') {
+  if (p.startsWith('/control')  || p.startsWith('/control/reserves-pendents') ) {
     reserves('pendiente_entrada');
     return;
   }
@@ -98,43 +102,43 @@ function routeIntranet(p: string): void {
   }
 
   // CLIENTS ANUALS (tipo=3)
-  if (p === '/control/clients-anuals/pendents') {
+  if (p.startsWith('/control/clients-anuals/pendents')) {
     reserves('pendiente_entrada', '3');
     return;
   }
-  if (p === '/control/clients-anuals/parking') {
+  if (p.startsWith( '/control/clients-anuals/parking')) {
     reserves('dentro', '3');
     return;
   }
-  if (p === '/control/clients-anuals/completades') {
+  if (p.startsWith('/control/clients-anuals/completades')) {
     reserves('salido', '3');
     return;
   }
 
-  if (p === '/control/clients-anuals/nou-client') {
+  if (p.startsWith('/control/clients-anuals/nou-client')) {
      formClientAnual(false);
     return;
   }
 
-  if (p === '/control/clients-anuals/modifica-client') {
+  if (p.startsWith('/control/clients-anuals/modifica-client')) {
      const uuid = getUuidFromPath('/control/clients-anuals/modifica-client');
      formClientAnual(true, uuid);
     return;
   }
 
   // FACTURACIÓ
-  if (p === '/control/facturacio') {
+  if (p.startsWith('/control/facturacio')) {
     initTaulaFacturacio();
     return;
   }
 
   // USUARIS
-  if (p === '/control/usuaris') {
+  if (p.startsWith('/control/usuaris')) {
     clientsUsersTable();
     return;
   }
 
-  if (p === '/control/usuaris/alta-client') {
+  if (p.startsWith('/control/usuaris/alta-client')) {
     formUsuarios(false);
     return;
   }
