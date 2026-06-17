@@ -89,25 +89,14 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
     setHidden('uuid', '');
     setHidden('estado', 'activo');
 
-    document.addEventListener('submit', (event) => {
-    const form = event.target as HTMLFormElement;
+    form.addEventListener(
+    'submit',
+    (event) => {
+      transmissioDadesDB(event, 'POST', 'formclientAnual', URLS.POST.USUARIOS_CREATE);
+    },
+    { once: true }
+  );
 
-    if (!form || form.id !== 'formclientAnual') return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    console.log('SUBMIT INTERCEPTADO OK');
-
-    transmissioDadesDB(
-      event,
-      form.method?.toUpperCase() as any || 'POST',
-      form.id,
-      URLS.POST.USUARIOS_CREATE,
-      false,
-      'hide'
-    );
-  }, true);
 
     return;
   }
@@ -159,24 +148,13 @@ if (data.abono) {
 setHidden('uuid', data.uuid ?? uuid);
 setHidden('estado', 'activo');
 
- document.addEventListener('submit', (event) => {
-  const form = event.target as HTMLFormElement;
-
-  if (!form || form.id !== 'formclientAnual') return;
-
-  event.preventDefault();
-  event.stopPropagation();
-
-  console.log('SUBMIT INTERCEPTADO OK');
-
-  transmissioDadesDB(
-    event,
-    form.method?.toUpperCase() as any || 'POST',
-    form.id,
-    URLS.PUT.USUARIOS_UPDATE,
-    false,
-    'hide'
+form.addEventListener(
+    'submit',
+    (event) => {
+      transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
+    },
+    { once: true }
   );
-}, true);
+
 
 }
