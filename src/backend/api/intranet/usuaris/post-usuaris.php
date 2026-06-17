@@ -187,11 +187,146 @@ try {
         ]), 201);
     }
 
+  // =========================================================
+// type=clienteAnual-create  (POST)
+// =========================================================
+if ($type === 'clienteAnual-create') {
+
+    $input = readJsonBody(true);
+    $data  = validarInputUsuario($input);
+
+    if (!$data) {
+        jsonResponse(vp2_err('Datos inválidos', 'BAD_INPUT'), 400);
+    }
+
+    global $conn;
+
+    try {
+        $conn->beginTransaction();
+
+        // =========================
+        // UUID
+        // =========================
+        $uuidObj   = Ramsey\Uuid\Uuid::uuid7();
+        $uuidBin   = $uuidObj->getBytes();
+        $uuidStr   = $uuidObj->toString();
+
+        // =========================
+        // USUARIO
+        // =========================
+        $sqlUser = "
+            INSERT INTO usuarios (
+                uuid,
+                nombre,
+                email,
+                estado,
+                empresa,
+                nif,
+                direccion,
+                ciudad,
+                codigo_postal,
+                pais,
+                telefono,
+                tipo_rol,
+                locale,
+                created_at,
+                updated_at
+            ) VALUES (
+                :uuid,
+                :nombre,
+                :email,
+                :estado,
+                :empresa,
+                :nif,
+                :direccion,
+                :ciudad,
+                :codigo_postal,
+                :pais,
+                :telefono,
+                :tipo_rol,
+                :locale,
+                NOW(),
+                NOW()
+            )
+        ";
+
+        $stmt = $conn->prepare($sqlUser);
+        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt->bindValue(':nombre', $data['nombre']);
+        $stmt->bindValue(':email', strtolower(trim($data['email'])));
+        $stmt->bindValue(':estado', 'activo');
+        $stmt->bindValue(':empresa', $data['empresa'] ?? null);
+        $stmt->bindValue(':nif', $data['nif'] ?? null);
+        $stmt->bindValue(':direccion', $data['direccion'] ?? null);
+        $stmt->bindValue(':ciudad', $data['ciudad'] ?? null);
+        $stmt->bindValue(':codigo_postal', $data['codigo_postal'] ?? null);
+        $stmt->bindValue(':pais', $data['pais'] ?? null);
+        $stmt->bindValue(':telefono', $data['telefono'] ?? null);
+        $stmt->bindValue(':tipo_rol', 'cliente_anual');
+        $stmt->bindValue(':locale', $data['locale'] ?? 'es');
+        $stmt->execute();
+
+        // =========================
+        // ABONO CLIENTE ANUAL
+        // =========================
+        $sqlAbono = "
+            INSERT INTO usuarios_abonos (
+                usuario_uuid,
+                fecha_inicio,
+                fecha_fin,
+                limite_reservas,
+                vehiculo,
+                matricula,
+                observaciones,
+                created_at,
+                updated_at
+            ) VALUES (
+                :usuario_uuid,
+                :fecha_inicio,
+                :fecha_fin,
+                :limite_reservas,
+                :vehiculo,
+                :matricula,
+                :observaciones,
+                NOW(),
+                NOW()
+            )
+        ";
+
+        $stmt2 = $conn->prepare($sqlAbono);
+        $stmt2->bindValue(':usuario_uuid', $uuidBin, PDO::PARAM_LOB);
+
+        $stmt2->bindValue(':fecha_inicio', $data['fecha_inicio'] ?? null);
+        $stmt2->bindValue(':fecha_fin', $data['fecha_fin'] ?? null);
+
+        $stmt2->bindValue(':limite_reservas', 10, PDO::PARAM_INT);
+
+        $stmt2->bindValue(':vehiculo', $data['vehiculo'] ?? null);
+        $stmt2->bindValue(':matricula', $data['matricula'] ?? null);
+        $stmt2->bindValue(':observaciones', $data['observaciones'] ?? null);
+
+        $stmt2->execute();
+
+        $conn->commit();
+
+        jsonResponse(vp2_ok('OK', [
+            'uuid' => $uuidStr
+        ]));
+
+    } catch (Throwable $e) {
+        $conn->rollBack();
+
+        jsonResponse(vp2_err('Error creando cliente anual', 'CREATE_ERROR', [
+            'details' => $e->getMessage()
+        ]), 500);
+    }
+}
+    
     // =========================================================
     // type=... (otros endpoints POST futuros)
     // =========================================================
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
-        'allowed' => ['usuarios-create'],
+        'allowed' => ['usuarios-create', 'clienteAnual-create'],
     ]), 400);
 
 } catch (InvalidArgumentException $e) {

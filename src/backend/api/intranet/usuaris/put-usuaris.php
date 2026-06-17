@@ -211,11 +211,164 @@ try {
         ]), 200);
     }
 
+ // =========================================================
+// type=clienteAnual-update  (PUT)
+// =========================================================
+if ($type === 'clienteAnual-update') {
+
+    $input = readJsonBody(true);
+    $data  = validarInputUsuario($input);
+
+    if (!$data) {
+        jsonResponse(vp2_err('Datos inválidos', 'BAD_INPUT'), 400);
+    }
+
+    global $conn;
+
+    try {
+        $conn->beginTransaction();
+
+        // =========================
+        // UUID usuario
+        // =========================
+        $uuidStr = $data['uuid'] ?? '';
+        if (!$uuidStr) {
+            jsonResponse(vp2_err('UUID requerido', 'MISSING_UUID'), 400);
+        }
+
+        $uuidBin = uuid_bin_from_string($uuidStr);
+
+        // =========================
+        // 1. UPDATE USUARIO
+        // =========================
+        $sqlUser = "
+            UPDATE usuarios SET
+                nombre = :nombre,
+                email = :email,
+                empresa = :empresa,
+                nif = :nif,
+                direccion = :direccion,
+                ciudad = :ciudad,
+                codigo_postal = :codigo_postal,
+                pais = :pais,
+                telefono = :telefono,
+                locale = :locale,
+                updated_at = NOW()
+            WHERE uuid = :uuid
+            LIMIT 1
+        ";
+
+        $stmt = $conn->prepare($sqlUser);
+
+        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt->bindValue(':nombre', $data['nombre']);
+        $stmt->bindValue(':email', strtolower(trim($data['email'])));
+        $stmt->bindValue(':empresa', $data['empresa'] ?? null);
+        $stmt->bindValue(':nif', $data['nif'] ?? null);
+        $stmt->bindValue(':direccion', $data['direccion'] ?? null);
+        $stmt->bindValue(':ciudad', $data['ciudad'] ?? null);
+        $stmt->bindValue(':codigo_postal', $data['codigo_postal'] ?? null);
+        $stmt->bindValue(':pais', $data['pais'] ?? null);
+        $stmt->bindValue(':telefono', $data['telefono'] ?? null);
+        $stmt->bindValue(':locale', $data['locale'] ?? 'es');
+
+        $stmt->execute();
+
+        // =========================
+        // 2. CHECK SI EXISTE ABONO
+        // =========================
+        $sqlCheck = "
+            SELECT id
+            FROM usuarios_abonos
+            WHERE usuario_uuid = :uuid
+            LIMIT 1
+        ";
+
+        $stmtCheck = $conn->prepare($sqlCheck);
+        $stmtCheck->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmtCheck->execute();
+
+        $abono = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        // =========================
+        // 3. UPSERT ABONO
+        // =========================
+        if ($abono) {
+
+            // UPDATE ABONO
+            $sqlAbono = "
+                UPDATE usuarios_abonos SET
+                    fecha_inicio = :fecha_inicio,
+                    fecha_fin = :fecha_fin,
+                    vehiculo = :vehiculo,
+                    matricula = :matricula,
+                    observaciones = :observaciones,
+                    updated_at = NOW()
+                WHERE usuario_uuid = :uuid
+                LIMIT 1
+            ";
+
+            $stmt2 = $conn->prepare($sqlAbono);
+
+        } else {
+
+            // INSERT ABONO (fallback)
+            $sqlAbono = "
+                INSERT INTO usuarios_abonos (
+                    usuario_uuid,
+                    fecha_inicio,
+                    fecha_fin,
+                    limite_reservas,
+                    vehiculo,
+                    matricula,
+                    observaciones,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    :uuid,
+                    :fecha_inicio,
+                    :fecha_fin,
+                    10,
+                    :vehiculo,
+                    :matricula,
+                    :observaciones,
+                    NOW(),
+                    NOW()
+                )
+            ";
+
+            $stmt2 = $conn->prepare($sqlAbono);
+        }
+
+        $stmt2->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt2->bindValue(':fecha_inicio', $data['fecha_inicio'] ?? null);
+        $stmt2->bindValue(':fecha_fin', $data['fecha_fin'] ?? null);
+        $stmt2->bindValue(':vehiculo', $data['vehiculo'] ?? null);
+        $stmt2->bindValue(':matricula', $data['matricula'] ?? null);
+        $stmt2->bindValue(':observaciones', $data['observaciones'] ?? null);
+
+        $stmt2->execute();
+
+        $conn->commit();
+
+        jsonResponse(vp2_ok('OK', [
+            'uuid' => $uuidStr
+        ]));
+
+    } catch (Throwable $e) {
+        $conn->rollBack();
+
+        jsonResponse(vp2_err('Error actualizando cliente anual', 'UPDATE_ERROR', [
+            'details' => $e->getMessage()
+        ]), 500);
+    }
+}
+
     // =========================================================
     // type=... (otros endpoints PUT futuros)
     // =========================================================
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
-        'allowed' => ['usuarios-update'],
+        'allowed' => ['usuarios-update', 'clienteAnual-update'],
     ]), 400);
 
 } catch (InvalidArgumentException $e) {
