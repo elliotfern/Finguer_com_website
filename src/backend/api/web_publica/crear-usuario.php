@@ -258,8 +258,9 @@ if ($skipInsertUser) {
 
     echo json_encode([
         "status" => "success",
-        "usuario_uuid" => $uuidStr2,
-        "message" => $existingUser ? "Usuario reutilizado" : "Usuario creado"
+        "usuario_uuid" => $usuario_uuid,                 // UUID con guiones (legible)
+        "usuario_uuid_hex" => bin2hex($uuidStr2),  // 32 hex (URL/UNHEX friendly)
+        "message" => "Cliente creado con exito."
     ]);
 
     exit;
@@ -293,8 +294,9 @@ if ($skipInsertUser) {
 
     echo json_encode([
         "status" => "success",
-        "usuario_uuid" => $uuidStr2,
-        "message" => $existingUser ? "Usuario reutilizado" : "Usuario creado"
+        "usuario_uuid" => $usuario_uuid,                 // UUID con guiones (legible)
+        "usuario_uuid_hex" => bin2hex($uuidStr2),  // 32 hex (URL/UNHEX friendly)
+        "message" => "Cliente creado con exito."
     ]);
 }
 
