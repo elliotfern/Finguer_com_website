@@ -193,7 +193,7 @@ try {
 if ($type === 'clienteAnual-create') {
 
     $input = readJsonBody(true);
-    $data  = validarInputUsuario($input);
+    $data  = $input;
 
     if (!$data) {
         jsonResponse(vp2_err('Datos inválidos', 'BAD_INPUT'), 400);
