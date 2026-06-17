@@ -154,7 +154,7 @@ $routes = [
         'roles' => ['admin'],
     ],
 
-    '/control/clients-anuals/modificar-client/{idClient}' => [
+    '/control/clients-anuals/modifica-client/{idClient}' => [
         'view' => './intranet/clients-anuals/form-client.php',
         'needs_session' => true,
         'roles' => ['admin'],

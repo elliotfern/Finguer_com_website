@@ -49,7 +49,7 @@ $result = $pdo_statement->fetchAll();
 
                 if (auth_is_admin()) {
                     echo "<td>
-            <a href='" . APP_WEB . "/control/clients-anuals/modificar-client/{$id}'
+            <a href='" . APP_WEB . "/control/clients-anuals/modifica-client/{$id}'
                class='btn btn-warning btn-sm'
                role='button'>
                Actualitzar dades
