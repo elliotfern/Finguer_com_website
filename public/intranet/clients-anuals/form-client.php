@@ -8,6 +8,16 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
 
     <form method="POST" id="formclientAnual" class="row g-3 p-4 bg-light rounded">
 
+        <!-- ✅ Divs de missatges — necessaris per transmissioDadesDB -->
+        <div class="col-12">
+            <div id="okMessage" class="alert alert-success" style="display:none">
+                <span id="okText"></span>
+            </div>
+            <div id="errMessage" class="alert alert-danger" style="display:none">
+                <span id="errText"></span>
+            </div>
+        </div>
+
     <input type="hidden" id="uuid" name="uuid">
 
 

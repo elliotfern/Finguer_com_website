@@ -104,14 +104,11 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
     return;
   }
 
-  // Registrar submit SIEMPRE, antes del fetch
-form.addEventListener(
-  'submit',
-  (event) => {
-    transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
-  },
-  { once: true }
-);
+// Por esto:
+const handleSubmit = (event: Event) => {
+  transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
+};
+form.addEventListener('submit', handleSubmit);
 
   setTitle(`<h5>Clients anuals: modificació dades</h5>`);
   btn.textContent = 'Modificar dades';
