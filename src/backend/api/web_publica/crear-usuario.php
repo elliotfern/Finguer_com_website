@@ -254,7 +254,7 @@ if ($skipInsertUser) {
 
     // No insertamos usuario, ya existe
     $usuario_uuid = $existingUser['uuid'];
-    $uuidStr2   = $usuario_uuid->toString();
+    $uuidStr2   = bin2hex($usuario_uuid);
 
     echo json_encode([
         "status" => "success",
@@ -289,7 +289,7 @@ if ($skipInsertUser) {
     $stmt->execute();
 
     $usuario_uuid = $uuidBytes;
-    $uuidStr2   = $usuario_uuid->toString();
+    $uuidStr2   = bin2hex($usuario_uuid);
 
     echo json_encode([
         "status" => "success",
