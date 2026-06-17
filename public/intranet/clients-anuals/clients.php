@@ -27,7 +27,7 @@ LEFT JOIN (
     FROM parking_reservas r
     INNER JOIN usuarios_abonos a2 
         ON a2.usuario_uuid = r.usuario_uuid
-    WHERE r.estado = 'completada'
+    WHERE r.estado = 'anual'
       AND r.fecha_reserva BETWEEN a2.fecha_inicio AND a2.fecha_fin
     GROUP BY r.usuario_uuid
 ) r 
