@@ -28,8 +28,8 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
 
             <select
                 class="form-select"
-                name="usuario_uuid_hex"
-                id="usuario_uuid_hex"
+                name="usuario_uuid"
+                id="usuario_uuid"
                 required>
             </select>
 

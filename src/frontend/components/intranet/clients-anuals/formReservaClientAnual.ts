@@ -1,4 +1,5 @@
 import { API_BASE } from '../../../config/globals';
+import { auxiliarSelect } from '../../../services/auxiliarSelect/auxiliarSelect';
 import { ApiOk, ApiResponse } from '../../../types/api';
 import { fetchDataGet } from '../../../utils/fetchDataGet';
 import { renderFormInputs } from '../../../utils/renderFormInputs';
@@ -6,7 +7,7 @@ import { transmissioDadesDB } from '../../../utils/transmissioDadesBD';
 
 export const URLS = {
   GET: {
-    USUARIOS_GET: (uuid: string) => `${API_BASE}/clients/get/clientAnualReserva&uuid=${encodeURIComponent(uuid)}`,
+    USUARIOS_GET: (uuid: string) => `${API_BASE}/clients/get/clientAnualReserva?uuid=${encodeURIComponent(uuid)}`,
   },
   POST: {
     USUARIOS_CREATE: `${API_BASE}/clients/post/?type=clienteAnual-create`,
@@ -18,7 +19,7 @@ export const URLS = {
 
 export interface ClienteAnualFitxa {
   [key: string]: unknown;
-  uuid: string;
+  uuid_hex: string;
   nombre: string;
   email: string;
   estado?: string;
@@ -107,6 +108,8 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
 
     // 👉 relleno campos usuario
     renderFormInputs(data);
+
+      await auxiliarSelect(data.uuid_hex, '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom');
 
   }
 
