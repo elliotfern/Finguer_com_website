@@ -47,7 +47,7 @@ try {
 
                     WHERE c.tipo_rol = 'cliente_anual'
                     AND c.estado <> 'eliminado'
-                    ORDER BY c.fecha_fin ASC;";
+                    ORDER BY a.fecha_fin ASC;";
 
         $stmt = $conn->prepare($query);
         $stmt->execute();
