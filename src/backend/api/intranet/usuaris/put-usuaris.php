@@ -316,7 +316,7 @@ try {
             vehiculo = :vehiculo,
             matricula = :matricula,
             observaciones = :observaciones,
-            updated_at = NOW()
+            updated_at = NOW(),
             estado = :estado
         WHERE usuario_uuid = :uuid
         LIMIT 1
