@@ -124,7 +124,7 @@ if ($slug === 'createReservaAnual') {
             ) VALUES (
                 UNHEX(:usuario_uuid),
                 :localizador,
-                'pendiente',
+                'anual',
                 'pendiente_entrada',
                 NOW(),
                 :entrada_prevista,
