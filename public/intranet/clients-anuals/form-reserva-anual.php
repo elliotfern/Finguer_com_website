@@ -22,7 +22,7 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
         </div>
 
         <div class="col-md-4">
-            <label for="usuario_uuid_hex" class="form-label">
+            <label for="usuario_uuid" class="form-label">
                 Selecciona un client anual <span class="text-danger">*</span>
             </label>
 

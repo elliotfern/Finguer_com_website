@@ -24,6 +24,7 @@ try {
                         c.nombre AS nom,
                         c.telefono AS telefon,
                         HEX(c.uuid) AS uuid_hex,
+                        HEX(c.uuid) AS id,
                         c.estado,
                         a.fecha_inicio,
                         a.fecha_fin,
@@ -72,7 +73,11 @@ try {
         if (empty($uuidHex)) {
             jsonResponse(vp2_err('UUID obligatori', 'BAD_REQUEST'), 400);
         }
-        $query = " SELECT HEX(u.uuid) AS uuid_hex, ua.vehiculo, ua.matricula 
+        $query = " SELECT 
+         HEX(u.uuid) AS uuid_hex,
+         HEX(u.uuid) AS id,
+         ua.vehiculo,
+         ua.matricula 
          FROM usuarios u
          LEFT JOIN usuarios_abonos ua ON ua.usuario_uuid = u.uuid 
          WHERE u.uuid = UNHEX(:uuid_hex) 

@@ -20,32 +20,6 @@ export const URLS = {
 export interface ClienteAnualFitxa {
   [key: string]: unknown;
   uuid_hex: string;
-  nombre: string;
-  email: string;
-  estado?: string;
-
-  empresa?: string | null;
-  nif?: string | null;
-  direccion?: string | null;
-  ciudad?: string | null;
-  codigo_postal?: string | null;
-  pais?: string | null;
-  telefono?: string | null;
-
-  tipo_rol: string;
-  locale: string;
-
-  dispositiu?: string | null;
-  navegador?: string | null;
-  sistema_operatiu?: string | null;
-  ip?: string | null;
-
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  fecha_inicio?: string | null;
-  fecha_fin?: string | null;
-  limite_reservas?: number | null;
-
   vehiculo?: string | null;
   matricula?: string | null;
   observaciones?: string | null;
