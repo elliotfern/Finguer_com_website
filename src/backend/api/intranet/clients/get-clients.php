@@ -57,9 +57,7 @@ try {
             jsonResponse(vp2_err('Reserva no encontrada', 'NOT_FOUND'), 404);
         }
 
-        jsonResponse(vp2_ok('OK', [
-             $rows,
-        ]), 200);
+        jsonResponse(vp2_ok('OK', $rows), 200);
     }
 
     // Si llega aquí, type no válido
