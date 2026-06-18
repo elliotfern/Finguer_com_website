@@ -13,7 +13,7 @@ if (!isset($conn) || !($conn instanceof PDO)) {
 
 /* =========================
    Router POST por type
-========================= */
+=========================   */
 $slug = $routeParams[0];
 
 if ($slug === 'updateReservaAnual') {
