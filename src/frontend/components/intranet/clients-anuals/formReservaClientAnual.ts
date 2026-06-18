@@ -65,7 +65,7 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
 
     // Por esto:
     const handleSubmit = (event: Event) => {
-      transmissioDadesDB(event, 'PUT', 'formReservaAnual', URLS.PUT.USUARIOS_UPDATE);
+      transmissioDadesDB(event, 'POST', 'formReservaAnual', URLS.POST.USUARIOS_CREATE);
     };
     form.addEventListener('submit', handleSubmit);
 
