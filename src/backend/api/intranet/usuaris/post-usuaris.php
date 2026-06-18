@@ -285,7 +285,8 @@ if ($type === 'clienteAnual-create') {
                 matricula,
                 observaciones,
                 created_at,
-                updated_at
+                updated_at,
+                estado
             ) VALUES (
                 :id,
                 :usuario_uuid,
@@ -296,7 +297,8 @@ if ($type === 'clienteAnual-create') {
                 :matricula,
                 :observaciones,
                 NOW(),
-                NOW()
+                NOW(),
+                :estado
             )
         ";
 
@@ -312,6 +314,7 @@ if ($type === 'clienteAnual-create') {
         $stmt2->bindValue(':vehiculo', $data['vehiculo'] ?? null);
         $stmt2->bindValue(':matricula', $data['matricula'] ?? null);
         $stmt2->bindValue(':observaciones', $data['observaciones'] ?? null);
+        $stmt2->bindValue(':estado', $data['estado'] ?? null);
 
         $stmt2->execute();
 
