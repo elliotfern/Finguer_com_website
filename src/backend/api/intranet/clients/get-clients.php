@@ -25,7 +25,7 @@ try {
                         c.telefono AS telefon,
                         HEX(c.uuid) AS uuid_hex,
                         HEX(c.uuid) AS id,
-                        c.estado,
+                        a.estado,
                         a.fecha_inicio,
                         a.fecha_fin,
                         COALESCE(r.reservas_completadas, 0) AS reservas_completadas,
