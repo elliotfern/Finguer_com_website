@@ -5,6 +5,7 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
 
 <div class='container' style='margin-bottom:100px'>
     <h3>Formulari client Abonament anual</h3>
+    <div id="titolForm"></div>
 
     <form method="POST" id="formclientAnual" class="row g-3 p-4 bg-light rounded">
 
@@ -19,8 +20,6 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
         </div>
 
     <input type="hidden" id="uuid" name="uuid">
-
-
         <h5 class="mb-3">Dades obligatòries del client anual</h5>
 
         <!-- Nombre -->

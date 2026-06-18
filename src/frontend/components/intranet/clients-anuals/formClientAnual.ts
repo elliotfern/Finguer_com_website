@@ -4,11 +4,6 @@ import { fetchDataGet } from '../../../utils/fetchDataGet';
 import { renderFormInputs } from '../../../utils/renderFormInputs';
 import { transmissioDadesDB } from '../../../utils/transmissioDadesBD';
 
-type UsuarioCreateData = {
-  uuid: string;
-  estado: string;
-};
-
 export const URLS = {
   GET: {
     USUARIOS_GET: (uuid: string) => `${API_BASE}/usuaris/get/?type=clienteAnual&uuid=${encodeURIComponent(uuid)}`,
@@ -20,7 +15,6 @@ export const URLS = {
     USUARIOS_UPDATE: `${API_BASE}/usuaris/put/?type=clienteAnual-update`,
   },
 };
-
 
 export interface ClienteAnualFitxa {
     [key: string]: unknown;
@@ -57,11 +51,6 @@ export interface ClienteAnualFitxa {
   
 }
 
-function setHidden(id: string, value: string) {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  if (el) el.value = value;
-}
-
 function setTitle(html: string) {
   const div = document.getElementById('titolForm') as HTMLDivElement | null;
   if (div) div.innerHTML = html;
@@ -80,19 +69,13 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
   // CREATE
   // =========================
   if (!isUpdate) {
-    setTitle(`<h5>Clients/usuaris: alta nou client client</h5>`);
+    setTitle(`<h5>Client anual: alta nou client</h5>`);
     btn.textContent = 'Inserir dades';
 
-    form.addEventListener(
-    'submit',
-    (event) => {
+    const handleSubmit = (event: Event) => {
       transmissioDadesDB(event, 'POST', 'formclientAnual', URLS.POST.USUARIOS_CREATE);
-    },
-    { once: true }
-  );
-
-
-    return;
+    };
+    form.addEventListener('submit', handleSubmit);
   }
 
   // =========================

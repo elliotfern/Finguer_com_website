@@ -10,9 +10,9 @@ require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
         <table class="table table-striped" id="taula-clients-anuals">
             <thead class="table-dark">
                 <tr>
-                    <th>Nom i cognoms ↓</th>
+                    <th>Nom i cognoms</th>
                     <th>Telèfon</th>
-                    <th>Fi Anualitat</th>
+                    <th>Fi Anualitat ↓</th>
                     <th>Reserves completades</th>
                     <th>Estat</th>
                     <th>Modificar dades</th>
