@@ -22,61 +22,75 @@ if ($slug === 'createReservaAnual') {
         $input = json_decode(file_get_contents("php://input"), true);
 
         // =========================
-        // SANITIZACIÓN BÁSICA
+        // INPUT RAW (form real)
         // =========================
         $usuarioUuid = isset($input['usuario_uuid']) ? trim((string)$input['usuario_uuid']) : null;
-        $entradaPrevista = isset($input['entrada_prevista']) ? trim((string)$input['entrada_prevista']) : null;
-        $salidaPrevista  = isset($input['salida_prevista']) ? trim((string)$input['salida_prevista']) : null;
+
+        $diaEntrada = $input['diaEntrada'] ?? null;
+        $horaEntrada = $input['horaEntrada'] ?? null;
+
+        $diaSalida = $input['diaSalida'] ?? null;
+        $horaSalida = $input['horaSalida'] ?? null;
 
         $vehiculo = isset($input['vehiculo']) ? trim((string)$input['vehiculo']) : null;
         $matricula = isset($input['matricula']) ? trim((string)$input['matricula']) : null;
         $vuelo = isset($input['vuelo']) ? trim((string)$input['vuelo']) : null;
-        $notas = isset($input['notas']) ? trim((string)$input['notas']) : null;
+        $notas = isset($input['notes']) ? trim((string)$input['notes']) : null;
 
         // =========================
-        // VALIDACIONES OBLIGATORIAS
+        // VALIDACIONES BÁSICAS
         // =========================
-        if (!$usuarioUuid || !$entradaPrevista) {
-            jsonResponse(vp2_err('Datos obligatorios faltantes', 'BAD_REQUEST'), 400);
+        if (!$usuarioUuid) {
+            jsonResponse(vp2_err('Usuario obligatorio', 'BAD_REQUEST'), 400);
         }
 
-        // UUID HEX (32 chars)
         if (!preg_match('/^[a-fA-F0-9]{32}$/', $usuarioUuid)) {
             jsonResponse(vp2_err('UUID inválido', 'BAD_UUID'), 400);
         }
 
+        if (!$diaEntrada || !$horaEntrada) {
+            jsonResponse(vp2_err('Entrada obligatoria', 'BAD_DATE'), 400);
+        }
+
         // =========================
-        // VALIDACIÓN FECHAS
+        // CONSTRUIR DATETIME
         // =========================
-        $entradaDT = DateTime::createFromFormat('Y-m-d H:i:s', $entradaPrevista);
+        $entradaStr = $diaEntrada . ' ' . $horaEntrada . ':00';
+        $entradaDT = DateTime::createFromFormat('Y-m-d H:i:s', $entradaStr);
+
         if (!$entradaDT) {
             jsonResponse(vp2_err('Formato entrada inválido', 'BAD_DATE'), 400);
         }
 
         $salidaDT = null;
-        if (!empty($salidaPrevista)) {
-            $salidaDT = DateTime::createFromFormat('Y-m-d H:i:s', $salidaPrevista);
+
+        if ($diaSalida && $horaSalida) {
+            $salidaStr = $diaSalida . ' ' . $horaSalida . ':00';
+            $salidaDT = DateTime::createFromFormat('Y-m-d H:i:s', $salidaStr);
+
             if (!$salidaDT) {
                 jsonResponse(vp2_err('Formato salida inválido', 'BAD_DATE'), 400);
             }
-        }
 
-        // entrada < salida (si existe salida)
-        if ($salidaDT && $salidaDT <= $entradaDT) {
-            jsonResponse(vp2_err('La salida debe ser posterior a la entrada', 'BAD_DATE_RANGE'), 400);
+            if ($salidaDT <= $entradaDT) {
+                jsonResponse(vp2_err('La salida debe ser posterior a la entrada', 'BAD_DATE_RANGE'), 400);
+            }
         }
 
         // =========================
-        // VALIDAR QUE USUARIO EXISTE
+        // VALIDAR USUARIO EXISTE
         // =========================
-        $check = $conn->prepare("
+        $checkUser = $conn->prepare("
             SELECT COUNT(*) 
             FROM usuarios 
             WHERE uuid = UNHEX(:uuid)
         ");
-        $check->execute([':uuid' => $usuarioUuid]);
 
-        if ($check->fetchColumn() == 0) {
+        $checkUser->execute([
+            ':uuid' => $usuarioUuid
+        ]);
+
+        if ($checkUser->fetchColumn() == 0) {
             jsonResponse(vp2_err('Usuario no existe', 'USER_NOT_FOUND'), 404);
         }
 
@@ -110,7 +124,7 @@ if ($slug === 'createReservaAnual') {
             ) VALUES (
                 UNHEX(:usuario_uuid),
                 :localizador,
-                'anual',
+                'pendiente',
                 'pendiente_entrada',
                 NOW(),
                 :entrada_prevista,
@@ -133,8 +147,8 @@ if ($slug === 'createReservaAnual') {
         $stmt->execute([
             ':usuario_uuid' => $usuarioUuid,
             ':localizador' => $localizador,
-            ':entrada_prevista' => $entradaPrevista,
-            ':salida_prevista' => $salidaPrevista,
+            ':entrada_prevista' => $entradaDT->format('Y-m-d H:i:s'),
+            ':salida_prevista' => $salidaDT ? $salidaDT->format('Y-m-d H:i:s') : null,
             ':vehiculo' => $vehiculo,
             ':matricula' => $matricula,
             ':vuelo' => $vuelo,

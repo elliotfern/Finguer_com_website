@@ -22,17 +22,20 @@ if ($slug === 'updateReservaAnual') {
         $input = json_decode(file_get_contents("php://input"), true);
 
         // =========================
-        // SANITIZACIÓN
+        // INPUT RAW FORM
         // =========================
         $localizador = isset($input['localizador']) ? trim((string)$input['localizador']) : null;
 
-        $entradaPrevista = isset($input['entrada_prevista']) ? trim((string)$input['entrada_prevista']) : null;
-        $salidaPrevista  = isset($input['salida_prevista']) ? trim((string)$input['salida_prevista']) : null;
+        $diaEntrada = $input['diaEntrada'] ?? null;
+        $horaEntrada = $input['horaEntrada'] ?? null;
+
+        $diaSalida = $input['diaSalida'] ?? null;
+        $horaSalida = $input['horaSalida'] ?? null;
 
         $vehiculo = isset($input['vehiculo']) ? trim((string)$input['vehiculo']) : null;
         $matricula = isset($input['matricula']) ? trim((string)$input['matricula']) : null;
         $vuelo = isset($input['vuelo']) ? trim((string)$input['vuelo']) : null;
-        $notas = isset($input['notas']) ? trim((string)$input['notas']) : null;
+        $notas = isset($input['notes']) ? trim((string)$input['notes']) : null;
 
         // =========================
         // VALIDACIONES BÁSICAS
@@ -41,38 +44,37 @@ if ($slug === 'updateReservaAnual') {
             jsonResponse(vp2_err('Localizador requerido', 'BAD_REQUEST'), 400);
         }
 
-        // localizador seguridad básica
-        if (strlen($localizador) > 50) {
-            jsonResponse(vp2_err('Localizador inválido', 'BAD_LOCALIZADOR'), 400);
+        if (!$diaEntrada || !$horaEntrada) {
+            jsonResponse(vp2_err('Fecha y hora de entrada obligatorias', 'BAD_DATE'), 400);
         }
 
         // =========================
-        // VALIDACIÓN FECHAS
+        // CONSTRUIR DATETIME
         // =========================
-        if (!$entradaPrevista) {
-            jsonResponse(vp2_err('Entrada prevista obligatoria', 'BAD_REQUEST'), 400);
-        }
+        $entradaStr = $diaEntrada . ' ' . $horaEntrada . ':00';
+        $entradaDT = DateTime::createFromFormat('Y-m-d H:i:s', $entradaStr);
 
-        $entradaDT = DateTime::createFromFormat('Y-m-d H:i:s', $entradaPrevista);
         if (!$entradaDT) {
-            jsonResponse(vp2_err('Formato entrada inválido', 'BAD_DATE'), 400);
+            jsonResponse(vp2_err('Entrada inválida', 'BAD_DATE'), 400);
         }
 
         $salidaDT = null;
-        if (!empty($salidaPrevista)) {
-            $salidaDT = DateTime::createFromFormat('Y-m-d H:i:s', $salidaPrevista);
+
+        if ($diaSalida && $horaSalida) {
+            $salidaStr = $diaSalida . ' ' . $horaSalida . ':00';
+            $salidaDT = DateTime::createFromFormat('Y-m-d H:i:s', $salidaStr);
+
             if (!$salidaDT) {
-                jsonResponse(vp2_err('Formato salida inválido', 'BAD_DATE'), 400);
+                jsonResponse(vp2_err('Salida inválida', 'BAD_DATE'), 400);
+            }
+
+            if ($salidaDT <= $entradaDT) {
+                jsonResponse(vp2_err('La salida debe ser posterior a la entrada', 'BAD_DATE_RANGE'), 400);
             }
         }
 
-        // coherencia lógica
-        if ($salidaDT && $salidaDT <= $entradaDT) {
-            jsonResponse(vp2_err('La salida debe ser posterior a la entrada', 'BAD_DATE_RANGE'), 400);
-        }
-
         // =========================
-        // VALIDAR QUE EXISTE RESERVA
+        // VALIDAR EXISTENCIA
         // =========================
         $check = $conn->prepare("
             SELECT COUNT(*) 
@@ -80,6 +82,7 @@ if ($slug === 'updateReservaAnual') {
             WHERE localizador = :localizador 
               AND estado = 'anual'
         ");
+
         $check->execute([
             ':localizador' => $localizador
         ]);
@@ -108,8 +111,8 @@ if ($slug === 'updateReservaAnual') {
         $stmt = $conn->prepare($query);
 
         $stmt->execute([
-            ':entrada_prevista' => $entradaPrevista,
-            ':salida_prevista' => $salidaPrevista,
+            ':entrada_prevista' => $entradaDT->format('Y-m-d H:i:s'),
+            ':salida_prevista' => $salidaDT ? $salidaDT->format('Y-m-d H:i:s') : null,
             ':vehiculo' => $vehiculo,
             ':matricula' => $matricula,
             ':vuelo' => $vuelo,
