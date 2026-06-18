@@ -10,10 +10,10 @@ export const URLS = {
     USUARIOS_GET: (uuid: string) => `${API_BASE}/clients/get/clientAnualReserva?uuid=${encodeURIComponent(uuid)}`,
   },
   POST: {
-    USUARIOS_CREATE: `${API_BASE}/clients/post/?type=clienteAnual-create`,
+    USUARIOS_CREATE: `${API_BASE}/reserves/post/createReservaAnual`,
   },
   PUT: {
-    USUARIOS_UPDATE: `${API_BASE}/clients/put/?type=clienteAnual-update`,
+    USUARIOS_UPDATE: `${API_BASE}/reserves/put/updateReservaAnual`,
   },
 };
 
@@ -69,13 +69,13 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
     };
     form.addEventListener('submit', handleSubmit);
 
-    setTitle(`<h5>Clients anuals: modificació Reserva</h5>`);
-    btn.textContent = 'Modificar dades';
+    setTitle(`<h5>Clients anuals: alta nova Reserva</h5>`);
+    btn.textContent = 'Introduir dades';
 
     const res = await fetchDataGet<ApiResponse<ClienteAnualFitxa>>(URLS.GET.USUARIOS_GET(uuid));
 
     if (!res || !isOk(res)) {
-      setTitle(`<h2>Clients anuals: modificació Reserva</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
+      setTitle(`<h2>Clients anuals: alta Reserva</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
       btn.disabled = true;
       return;
     }

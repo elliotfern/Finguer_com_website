@@ -50,6 +50,19 @@ $routes = [
     // /api/factures/logs' => ['view' => '../src/backend/api/intranet/factures/logs.php', 'needs_session' => false, 'no_header_footer' => true],
     '/api/factures/hash' => ['view' => '../src/backend/api/intranet/factures/hash.php', 'needs_session' => false, 'no_header_footer' => true],
 
+     // API RESERVES
+   '/api/reserves/post/{slug}' => [
+        'view' => '../src/backend/api/intranet/reserves/post-reserves.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/reserves/put/{slug}' => [
+        'view' => '../src/backend/api/intranet/reserves/put-reserves.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
     // API USUARIS / CLIENTS
     '/api/usuaris/get' => [
         'view' => '../src/backend/api/intranet/usuaris/get-usuaris.php',
