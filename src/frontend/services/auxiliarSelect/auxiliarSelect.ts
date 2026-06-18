@@ -77,21 +77,26 @@ export async function auxiliarSelect(selected: number | string | Array<number | 
     });
 
     if (disabled) {
-      choices.disable();
-      selectElement.setAttribute('disabled', 'true');
+  choices.disable();
+  selectElement.setAttribute('disabled', 'true');
 
-      const container = choices.containerOuter.element;
+  const container = choices.containerOuter.element;
+  const inner = container.querySelector('.choices__inner') as HTMLElement;
 
-      // 🔥 mantener legible pero bloqueado
-      container.style.opacity = '1';
-      container.style.filter = 'none';
-      container.style.pointerEvents = 'none';
+  if (inner) {
+    // 🔥 FORZAR estilo legible
+    inner.style.backgroundColor = '#fff';
+    inner.style.color = '#212529';
+    inner.style.opacity = '1';
+    inner.style.filter = 'none';
+    inner.style.cursor = 'default';
+    inner.style.border = '1px solid #dee2e6';
+    inner.style.boxShadow = 'none';
+  }
 
-      // 👇 mejora visual tipo Bootstrap form-control-plaintext
-      container.style.backgroundColor = '#fff';
-      container.style.border = '1px solid #dee2e6';
-      container.style.color = '#212529';
-    }
+  // quitar overlay gris de Choices
+  container.classList.remove('is-disabled');
+}
 
     // Construir opciones
     const options = data.map((item) => {
