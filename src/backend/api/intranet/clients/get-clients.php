@@ -58,8 +58,7 @@ try {
         }
 
         jsonResponse(vp2_ok('OK', [
-            'status' => "success",
-            'data'  => $rows,
+             $rows,
         ]), 200);
     }
 
