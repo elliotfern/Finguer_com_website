@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 requireMethod('PUT');
@@ -10,38 +11,45 @@ if (!isset($conn) || !($conn instanceof PDO)) {
     jsonResponse(vp2_err('DB connection not available', 'DB_NOT_AVAILABLE'), 500);
 }
 
-const USUARIOS_ROL_ALLOWED     = ['cliente','cliente_anual','trabajador','admin'];
-const USUARIOS_LOCALE_ALLOWED  = ['ca','es','fr','en','it'];
+const USUARIOS_ROL_ALLOWED     = ['cliente', 'cliente_anual', 'trabajador', 'admin'];
+const USUARIOS_LOCALE_ALLOWED  = ['ca', 'es', 'fr', 'en', 'it'];
 const ESTADO_FORZADO_INTRANET  = 'activo';
 
 /* =========================
    Helpers comunes
 ========================= */
-function normalizarEmail(string $email): string {
+function normalizarEmail(string $email): string
+{
     return mb_strtolower(trim($email));
 }
-function validarEmail(string $email): bool {
+function validarEmail(string $email): bool
+{
     return (bool)filter_var($email, FILTER_VALIDATE_EMAIL);
 }
-function opt(array $input, string $k): ?string {
+function opt(array $input, string $k): ?string
+{
     if (!isset($input[$k])) return null;
     $v = trim((string)$input[$k]);
     return $v === '' ? null : $v;
 }
-function clientIp(): string {
+function clientIp(): string
+{
     return substr((string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'), 0, 45);
 }
-function userAgent(): string {
+function userAgent(): string
+{
     return substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
 }
-function detectarDispositivo(string $ua): ?string {
+function detectarDispositivo(string $ua): ?string
+{
     $u = mb_strtolower($ua);
     if ($u === '') return null;
     if (str_contains($u, 'mobile') || str_contains($u, 'iphone') || str_contains($u, 'android')) return 'mobile';
     if (str_contains($u, 'ipad') || str_contains($u, 'tablet')) return 'tablet';
     return 'desktop';
 }
-function detectarNavegador(string $ua): ?string {
+function detectarNavegador(string $ua): ?string
+{
     $u = mb_strtolower($ua);
     if ($u === '') return null;
     if (str_contains($u, 'edg/')) return 'Edge';
@@ -50,7 +58,8 @@ function detectarNavegador(string $ua): ?string {
     if (str_contains($u, 'safari/') && !str_contains($u, 'chrome/')) return 'Safari';
     return null;
 }
-function detectarSistemaOperativo(string $ua): ?string {
+function detectarSistemaOperativo(string $ua): ?string
+{
     $u = mb_strtolower($ua);
     if ($u === '') return null;
     if (str_contains($u, 'windows')) return 'Windows';
@@ -90,14 +99,14 @@ function validarInputUsuario(array $input): array
         'locale'  => $locale,
         'passwordPlain' => $passwordPlain,
 
-        'empresa' => opt($input,'empresa'),
-        'nif' => opt($input,'nif'),
-        'direccion' => opt($input,'direccion'),
-        'ciudad' => opt($input,'ciudad'),
-        'codigo_postal' => opt($input,'codigo_postal'),
-        'pais' => opt($input,'pais'),
-        'telefono' => opt($input,'telefono'),
-        'anualitat'=> opt($input,'anualitat'),
+        'empresa' => opt($input, 'empresa'),
+        'nif' => opt($input, 'nif'),
+        'direccion' => opt($input, 'direccion'),
+        'ciudad' => opt($input, 'ciudad'),
+        'codigo_postal' => opt($input, 'codigo_postal'),
+        'pais' => opt($input, 'pais'),
+        'telefono' => opt($input, 'telefono'),
+        'anualitat' => opt($input, 'anualitat'),
     ];
 }
 
@@ -192,7 +201,7 @@ try {
             ':pais' => $data['pais'],
 
             ':telefono' => $data['telefono'],
-            ':anualitat'=> $data['anualitat'],
+            ':anualitat' => $data['anualitat'],
 
             ':tipo_rol' => $data['tipo_rol'],
             ':locale' => $data['locale'],
@@ -211,42 +220,42 @@ try {
         ]), 200);
     }
 
- // =========================================================
-// type=clienteAnual-update  (PUT)
-// =========================================================
-if ($type === 'clienteAnual-update') {
+    // =========================================================
+    // type=clienteAnual-update  (PUT)
+    // =========================================================
+    if ($type === 'clienteAnual-update') {
 
-    $input = readJsonBody(true);
-    $data  = $input;
+        $input = readJsonBody(true);
+        $data  = $input;
 
-    if (!$data) {
-        jsonResponse(vp2_err('Datos inválidos', 'BAD_INPUT'), 400);
-    }
-
-    global $conn;
-
-    try {
-        $conn->beginTransaction();
-
-        // =========================
-        // UUID usuario
-        // =========================
-        $uuidStr = $data['uuid'] ?? '';
-        if (!$uuidStr) {
-            jsonResponse(vp2_err('UUID requerido', 'MISSING_UUID'), 400);
+        if (!$data) {
+            jsonResponse(vp2_err('Datos inválidos', 'BAD_INPUT'), 400);
         }
 
-        $uuidBin = uuid_bin_from_string($uuidStr);
+        global $conn;
 
-        // ID BINARY 16
-        $idObj   = Ramsey\Uuid\Uuid::uuid7();
-        $idBin   = $idObj->getBytes();
-        $idStr   = $idObj->toString();
+        try {
+            $conn->beginTransaction();
 
-        // =========================
-        // 1. UPDATE USUARIO
-        // =========================
-        $sqlUser = "
+            // =========================
+            // UUID usuario
+            // =========================
+            $uuidStr = $data['uuid'] ?? '';
+            if (!$uuidStr) {
+                jsonResponse(vp2_err('UUID requerido', 'MISSING_UUID'), 400);
+            }
+
+            $uuidBin = uuid_bin_from_string($uuidStr);
+
+            // ID BINARY 16
+            $idObj   = Ramsey\Uuid\Uuid::uuid7();
+            $idBin   = $idObj->getBytes();
+            $idStr   = $idObj->toString();
+
+            // =========================
+            // 1. UPDATE USUARIO
+            // =========================
+            $sqlUser = "
             UPDATE usuarios SET
                 nombre = :nombre,
                 email = :email,
@@ -263,114 +272,112 @@ if ($type === 'clienteAnual-update') {
             LIMIT 1
         ";
 
-        $stmt = $conn->prepare($sqlUser);
+            $stmt = $conn->prepare($sqlUser);
 
-        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
-        $stmt->bindValue(':nombre', $data['nombre']);
-        $stmt->bindValue(':email', strtolower(trim($data['email'])));
-        $stmt->bindValue(':empresa', $data['empresa'] ?? null);
-        $stmt->bindValue(':nif', $data['nif'] ?? null);
-        $stmt->bindValue(':direccion', $data['direccion'] ?? null);
-        $stmt->bindValue(':ciudad', $data['ciudad'] ?? null);
-        $stmt->bindValue(':codigo_postal', $data['codigo_postal'] ?? null);
-        $stmt->bindValue(':pais', $data['pais'] ?? null);
-        $stmt->bindValue(':telefono', $data['telefono'] ?? null);
-        $stmt->bindValue(':locale', $data['locale'] ?? 'es');
+            $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+            $stmt->bindValue(':nombre', $data['nombre']);
+            $stmt->bindValue(':email', strtolower(trim($data['email'])));
+            $stmt->bindValue(':empresa', $data['empresa'] ?? null);
+            $stmt->bindValue(':nif', $data['nif'] ?? null);
+            $stmt->bindValue(':direccion', $data['direccion'] ?? null);
+            $stmt->bindValue(':ciudad', $data['ciudad'] ?? null);
+            $stmt->bindValue(':codigo_postal', $data['codigo_postal'] ?? null);
+            $stmt->bindValue(':pais', $data['pais'] ?? null);
+            $stmt->bindValue(':telefono', $data['telefono'] ?? null);
+            $stmt->bindValue(':locale', $data['locale'] ?? 'es');
 
-        $stmt->execute();
+            $stmt->execute();
 
-        // =========================
-        // 2. CHECK SI EXISTE ABONO
-        // =========================
-        $sqlCheck = "
+            // =========================
+            // 2. CHECK SI EXISTE ABONO
+            // =========================
+            $sqlCheck = "
             SELECT id
             FROM usuarios_abonos
             WHERE usuario_uuid = :uuid
             LIMIT 1
         ";
 
-        $stmtCheck = $conn->prepare($sqlCheck);
-        $stmtCheck->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
-        $stmtCheck->execute();
+            $stmtCheck = $conn->prepare($sqlCheck);
+            $stmtCheck->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+            $stmtCheck->execute();
 
-        $abono = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+            $abono = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        // =========================
-        // 3. UPSERT ABONO
-        // =========================
-        if ($abono) {
+            // =========================
+            // 3. UPSERT ABONO
+            // =========================
+            if ($abono) {
 
-            // UPDATE ABONO
-            $sqlAbono = "
-                UPDATE usuarios_abonos SET
-                    fecha_inicio = :fecha_inicio,
-                    fecha_fin = :fecha_fin,
-                    vehiculo = :vehiculo,
-                    matricula = :matricula,
-                    observaciones = :observaciones,
-                    updated_at = NOW()
-                WHERE usuario_uuid = :uuid
-                LIMIT 1
-            ";
+                $sqlAbono = "
+        UPDATE usuarios_abonos SET
+            fecha_inicio = :fecha_inicio,
+            fecha_fin = :fecha_fin,
+            vehiculo = :vehiculo,
+            matricula = :matricula,
+            observaciones = :observaciones,
+            updated_at = NOW()
+        WHERE usuario_uuid = :uuid
+        LIMIT 1
+    ";
 
-            $stmt2 = $conn->prepare($sqlAbono);
+                $stmt2 = $conn->prepare($sqlAbono);
+            } else {
 
-        } else {
+                $sqlAbono = "
+        INSERT INTO usuarios_abonos (
+            id,
+            usuario_uuid,
+            fecha_inicio,
+            fecha_fin,
+            limite_reservas,
+            vehiculo,
+            matricula,
+            observaciones,
+            created_at,
+            updated_at
+        ) VALUES (
+            :id,
+            :uuid,
+            :fecha_inicio,
+            :fecha_fin,
+            10,
+            :vehiculo,
+            :matricula,
+            :observaciones,
+            NOW(),
+            NOW()
+        )
+    ";
 
-            // INSERT ABONO (fallback)
-            $sqlAbono = "
-                INSERT INTO usuarios_abonos (
-                    id,
-                    usuario_uuid,
-                    fecha_inicio,
-                    fecha_fin,
-                    limite_reservas,
-                    vehiculo,
-                    matricula,
-                    observaciones,
-                    created_at,
-                    updated_at
-                ) VALUES (
-                    :id,
-                    :uuid,
-                    :fecha_inicio,
-                    :fecha_fin,
-                    10,
-                    :vehiculo,
-                    :matricula,
-                    :observaciones,
-                    NOW(),
-                    NOW()
-                )
-            ";
+                $stmt2 = $conn->prepare($sqlAbono);
 
-            $stmt2 = $conn->prepare($sqlAbono);
+                // ✅ Solo en INSERT
+                $stmt2->bindValue(':id', $idBin, PDO::PARAM_LOB);
+            }
+
+            // Params comunes a UPDATE e INSERT
+            $stmt2->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+            $stmt2->bindValue(':fecha_inicio', $data['fecha_inicio'] ?? null);
+            $stmt2->bindValue(':fecha_fin', $data['fecha_fin'] ?? null);
+            $stmt2->bindValue(':vehiculo', $data['vehiculo'] ?? null);
+            $stmt2->bindValue(':matricula', $data['matricula'] ?? null);
+            $stmt2->bindValue(':observaciones', $data['observaciones'] ?? null);
+
+            $stmt2->execute();
+            $conn->commit();
+
+            jsonResponse(vp2_ok('OK', [
+                'uuid' => $uuidStr
+            ]));
+        } catch (Throwable $e) {
+            $conn->rollBack();
+
+            jsonResponse(vp2_err('Error actualizando cliente anual', 'UPDATE_ERROR', [
+                'details' => $e->getMessage()
+            ]), 500);
         }
-
-        $stmt2->bindValue(':id', $idBin, PDO::PARAM_LOB);
-        $stmt2->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
-        $stmt2->bindValue(':fecha_inicio', $data['fecha_inicio'] ?? null);
-        $stmt2->bindValue(':fecha_fin', $data['fecha_fin'] ?? null);
-        $stmt2->bindValue(':vehiculo', $data['vehiculo'] ?? null);
-        $stmt2->bindValue(':matricula', $data['matricula'] ?? null);
-        $stmt2->bindValue(':observaciones', $data['observaciones'] ?? null);
-
-        $stmt2->execute();
-
-        $conn->commit();
-
-        jsonResponse(vp2_ok('OK', [
-            'uuid' => $uuidStr
-        ]));
-
-    } catch (Throwable $e) {
-        $conn->rollBack();
-
-        jsonResponse(vp2_err('Error actualizando cliente anual', 'UPDATE_ERROR', [
-            'details' => $e->getMessage()
-        ]), 500);
     }
-}
 
     // =========================================================
     // type=... (otros endpoints PUT futuros)
@@ -378,7 +385,6 @@ if ($type === 'clienteAnual-update') {
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', [
         'allowed' => ['usuarios-update', 'clienteAnual-update'],
     ]), 400);
-
 } catch (InvalidArgumentException $e) {
     $code = $e->getMessage();
 
@@ -386,11 +392,10 @@ if ($type === 'clienteAnual-update') {
     if ($code === 'BAD_NOMBRE')   jsonResponse(vp2_err('Nombre inválido', 'BAD_NOMBRE'), 400);
     if ($code === 'BAD_EMAIL')    jsonResponse(vp2_err('Email inválido', 'BAD_EMAIL'), 400);
     if ($code === 'BAD_PASSWORD') jsonResponse(vp2_err('Contraseña inválida (mínimo 8)', 'BAD_PASSWORD'), 400);
-    if ($code === 'BAD_TIPO_ROL') jsonResponse(vp2_err('tipo_rol inválido','BAD_TIPO_ROL',['allowed'=>USUARIOS_ROL_ALLOWED]),400);
-    if ($code === 'BAD_LOCALE')   jsonResponse(vp2_err('locale inválido','BAD_LOCALE',['allowed'=>USUARIOS_LOCALE_ALLOWED]),400);
+    if ($code === 'BAD_TIPO_ROL') jsonResponse(vp2_err('tipo_rol inválido', 'BAD_TIPO_ROL', ['allowed' => USUARIOS_ROL_ALLOWED]), 400);
+    if ($code === 'BAD_LOCALE')   jsonResponse(vp2_err('locale inválido', 'BAD_LOCALE', ['allowed' => USUARIOS_LOCALE_ALLOWED]), 400);
 
     jsonResponse(vp2_err('Parámetros inválidos', 'BAD_PARAM'), 400);
-
 } catch (Throwable $e) {
     jsonResponse(vp2_err('Error del servidor', 'SERVER_ERROR', [
         'details' => $e->getMessage(),
