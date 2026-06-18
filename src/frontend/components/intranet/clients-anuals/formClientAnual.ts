@@ -17,7 +17,7 @@ export const URLS = {
 };
 
 export interface ClienteAnualFitxa {
-    [key: string]: unknown;
+  [key: string]: unknown;
   uuid: string;
   nombre: string;
   email: string;
@@ -41,14 +41,14 @@ export interface ClienteAnualFitxa {
 
   createdAt?: string | null;
   updatedAt?: string | null;
-    fecha_inicio?: string | null;
-    fecha_fin?: string | null;
-    limite_reservas?: number | null;
+  fecha_inicio?: string | null;
+  fecha_fin?: string | null;
+  limite_reservas?: number | null;
 
-    vehiculo?: string | null;
-    matricula?: string | null;
-    observaciones?: string | null;
-  
+  vehiculo?: string | null;
+  matricula?: string | null;
+  observaciones?: string | null;
+
 }
 
 function setTitle(html: string) {
@@ -76,37 +76,38 @@ export async function formClientAnual(isUpdate: boolean, uuid?: string) {
       transmissioDadesDB(event, 'POST', 'formclientAnual', URLS.POST.USUARIOS_CREATE);
     };
     form.addEventListener('submit', handleSubmit);
+  } else {
+    // =========================
+    // UPDATE
+    // =========================
+    if (!uuid) {
+      setTitle(`<h5>Clients anuals: modificació dades</h5><p>Falta UUID per a carregar l'usuari.</p>`);
+      btn.disabled = true;
+      return;
+    }
+
+    // Por esto:
+    const handleSubmit = (event: Event) => {
+      transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
+    };
+    form.addEventListener('submit', handleSubmit);
+
+    setTitle(`<h5>Clients anuals: modificació dades</h5>`);
+    btn.textContent = 'Modificar dades';
+
+    const res = await fetchDataGet<ApiResponse<ClienteAnualFitxa>>(URLS.GET.USUARIOS_GET(uuid));
+
+    if (!res || !isOk(res)) {
+      setTitle(`<h2>Clients anuals: modificació</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
+      btn.disabled = true;
+      return;
+    }
+
+    const data = res.data;
+
+    // 👉 relleno campos usuario
+    renderFormInputs(data);
+
   }
-
-  // =========================
-  // UPDATE
-  // =========================
-  if (!uuid) {
-    setTitle(`<h5>Clients anuals: modificació dades</h5><p>Falta UUID per a carregar l'usuari.</p>`);
-    btn.disabled = true;
-    return;
-  }
-
-// Por esto:
-const handleSubmit = (event: Event) => {
-  transmissioDadesDB(event, 'PUT', 'formclientAnual', URLS.PUT.USUARIOS_UPDATE);
-};
-form.addEventListener('submit', handleSubmit);
-
-  setTitle(`<h5>Clients anuals: modificació dades</h5>`);
-  btn.textContent = 'Modificar dades';
-
-  const res = await fetchDataGet<ApiResponse<ClienteAnualFitxa>>(URLS.GET.USUARIOS_GET(uuid));
-
-if (!res || !isOk(res)) {
-  setTitle(`<h2>Clients anuals: modificació</h2><p>No s'ha pogut carregar les dades de l'usuari.</p>`);
-  btn.disabled = true;
-  return;
-}
-
-const data = res.data;
-
-// 👉 relleno campos usuario
-renderFormInputs(data);
 
 }
