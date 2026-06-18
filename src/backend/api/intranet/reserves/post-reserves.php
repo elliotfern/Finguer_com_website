@@ -32,6 +32,14 @@ if ($slug === 'createReservaAnual') {
         $diaSalida = $input['diaSalida'] ?? null;
         $horaSalida = $input['horaSalida'] ?? null;
 
+        if (!is_string($diaSalida) || trim($diaSalida) === '') {
+            $diaSalida = '2030-01-01';
+        }
+
+        if (!is_string($horaSalida) || trim($horaSalida) === '') {
+            $horaSalida = '00:00';
+        }
+
         $vehiculo = isset($input['vehiculo']) ? trim((string)$input['vehiculo']) : null;
         $matricula = isset($input['matricula']) ? trim((string)$input['matricula']) : null;
         $vuelo = isset($input['vuelo']) ? trim((string)$input['vuelo']) : null;
