@@ -85,7 +85,13 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
     // 👉 relleno campos usuario
     renderFormInputs(data);
 
-      await auxiliarSelect(data.uuid_hex, '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom', undefined, undefined, true);
+    const usuari = document.getElementById('usuario_uuid_hidden') as HTMLInputElement | null;
+
+    if (usuari) {
+      usuari.value = data.uuid_hex;
+    }
+    
+    await auxiliarSelect(data.uuid_hex, '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom', undefined, undefined, true);
 
   }
 

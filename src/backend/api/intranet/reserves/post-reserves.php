@@ -24,7 +24,7 @@ if ($slug === 'createReservaAnual') {
         // =========================
         // INPUT RAW (form real)
         // =========================
-        $usuarioUuid = isset($input['usuario_uuid']) ? trim((string)$input['usuario_uuid']) : null;
+        $usuarioUuid = isset($input['usuario_uuid_hidden']) ? trim((string)$input['usuario_uuid_hidden']) : null;
 
         $diaEntrada = $input['diaEntrada'] ?? null;
         $horaEntrada = $input['horaEntrada'] ?? null;

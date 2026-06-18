@@ -21,6 +21,8 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
             </div>
         </div>
 
+        <input type="hidden" name="usuario_uuid_hidden" id="usuario_uuid_hidden">
+
         <div class="col-md-4">
             <label for="usuario_uuid" class="form-label">
                 Selecciona un client anual <span class="text-danger">*</span>
