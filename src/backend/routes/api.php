@@ -36,7 +36,10 @@ $routes = [
 
     '/api/pagamentRedsysBizum' => ['view' => '../src/backend/api/web_publica/pagament-redsys-bizum.php', 'needs_session' => false, 'no_header_footer' => true],
 
-     '/api/notificacioRedsys' => ['view' => '../src/backend/api/web_publica/redsys-notificacio.php', 'needs_session' => false, 'no_header_footer' => true],
+    '/api/notificacioRedsys' => ['view' => '../src/backend/api/web_publica/redsys-notificacio.php', 'needs_session' => false, 'no_header_footer' => true],
+
+    // GESTIO CLIENTS I CLIENTS ANUALS
+    '/api/clients/get/{slug}' => ['view' => '../src/backend/api/intranet/clients/get-clients.php', 'needs_session' => false, 'no_header_footer' => true],
 
     // API FACTURES
     '/api/factures/send' => ['view' => '../src/backend/api/intranet/factures/enviar-factura.php', 'needs_session' => false, 'no_header_footer' => true],
@@ -78,7 +81,7 @@ $routes = [
         'no_header_footer' => true,
         'needs_session' => false,
     ],
-    
+
 ];
 
 
