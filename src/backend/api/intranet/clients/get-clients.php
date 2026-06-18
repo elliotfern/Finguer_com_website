@@ -27,7 +27,8 @@ try {
                         c.estado,
                         a.fecha_inicio,
                         a.fecha_fin,
-                        COALESCE(r.reservas_completadas, 0) AS reservas_completadas
+                        COALESCE(r.reservas_completadas, 0) AS reservas_completadas,
+                        a.limite_reservas
                     FROM usuarios AS c
                     LEFT JOIN usuarios_abonos AS a 
                         ON c.uuid = a.usuario_uuid

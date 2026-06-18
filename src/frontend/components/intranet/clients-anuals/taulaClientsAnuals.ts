@@ -7,6 +7,7 @@ interface ClientAnual {
     fecha_fin: string | null;
     estado: string;
     reservas_completadas: number;
+    limite_reservas: number;
     is_admin: boolean;
     app_web: string;
 }
@@ -101,7 +102,7 @@ function construirFila(client: ClientAnual): HTMLTableRowElement {
         <td>${escaparHtml(client.nom)}</td>
         <td>${escaparHtml(client.telefon)}</td>
         <td>${fechaHtml}</td>
-        <td><strong>${client.reservas_completadas}</strong></td>
+        <td><strong>${client.reservas_completadas} de ${client.limite_reservas}</strong></td>
         <td><span class="badge bg-secondary">${escaparHtml(client.estado)}</span></td>
         ${celdaAccionesAdmin(client.uuid_hex, baseUrl)}
         <td>
