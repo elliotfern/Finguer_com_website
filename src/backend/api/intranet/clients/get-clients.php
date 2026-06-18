@@ -61,6 +61,32 @@ try {
         jsonResponse(vp2_ok('OK', $rows), 200);
     }
 
+    // =========================================================
+    // slug/clientAnualReserva (info reserva clientes anuales)
+    // finguer.com/api/clients/get/clientAnualReserva?uuid=33333
+    // =========================================================
+    if ($slug === 'clientAnualReserva') {
+
+        $uuidHex = isset($_GET['uuid']) ? trim((string)$_GET['uuid']) : '';
+
+        if (empty($uuidHex)) {
+            jsonResponse(vp2_err('UUID obligatori', 'BAD_REQUEST'), 400);
+        }
+        $query = " SELECT HEX(u.uuid) AS uuid_hex, ua.vehiculo, ua.matricula 
+         FROM usuarios u
+         LEFT JOIN usuarios_abonos ua ON ua.usuario_uuid = u.uuid 
+         WHERE u.uuid = UNHEX(:uuid_hex) 
+         LIMIT 1 ";
+      
+        $stmt = $conn->prepare($query);
+        $stmt->execute([':uuid_hex' => $uuidHex]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            jsonResponse(vp2_err('Client anual no trobat', 'NOT_FOUND'), 404);
+        }
+        jsonResponse(vp2_ok('OK', $row), 200);
+    }
     // Si llega aquí, type no válido
     jsonResponse(vp2_err('type inválido', 'BAD_TYPE', ['allowed' => ['reserves', 'reservaId', 'verificaPagament']]), 400);
 } catch (Throwable $e) {

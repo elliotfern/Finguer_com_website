@@ -13,7 +13,7 @@
             </div>
 
             <div class="col-sm">
-                <a href="<?php APP_SERVER; ?>/control/clients-anuals/crear-reserva" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear reserva</a>
+                <a href="<?php APP_SERVER; ?>/control/clients-anuals/nova-reserva" class="btn btn-secondary menuBtn" role="button" aria-disabled="false">Crear reserva</a>
             </div>
         <?php endif; ?>
 

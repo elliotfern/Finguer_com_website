@@ -19,6 +19,7 @@ import { header } from './components/intranet/header/header';
 import { finguerAnualContactForm } from './components/homepage/formulari';
 import { formClientAnual } from './components/intranet/clients-anuals/formClientAnual';
 import { taulaClientsAnuals } from './components/intranet/clients-anuals/taulaClientsAnuals';
+import { formReservaClientAnual } from './components/intranet/clients-anuals/formReservaClientAnual';
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 
@@ -115,6 +116,12 @@ function routeIntranet(p: string): void {
 
   if (p.startsWith('/control/clients-anuals/completades')) {
     reserves('salido', '3');
+    return;
+  }
+
+   if (p.startsWith('/control/clients-anuals/nova-reserva')) {
+     const uuid = getUuidFromPath('/control/clients-anuals/nova-reserva');
+    formReservaClientAnual(true, uuid);
     return;
   }
 
