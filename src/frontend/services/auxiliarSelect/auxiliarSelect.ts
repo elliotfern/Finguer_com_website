@@ -26,7 +26,7 @@ function pluckItems(json: any): Item[] {
  * @param fallbackValue valor a usar si selected es vacío
  * @param config   opciones extra para Choices
  */
-export async function auxiliarSelect(selected: number | string | Array<number | string> | null | undefined, api: string, elementId: string, valorText: string, fallbackValue?: number | string, config?: any): Promise<Choices | void> {
+export async function auxiliarSelect(selected: number | string | Array<number | string> | null | undefined, api: string, elementId: string, valorText: string, fallbackValue?: number | string, config?: any,  disabled = false): Promise<Choices | void> {
   const urlAjax = `${api}`;
 
   try {
@@ -75,6 +75,11 @@ export async function auxiliarSelect(selected: number | string | Array<number | 
       noResultsText: 'Sense resultats',
       ...config,
     });
+
+    if (disabled) {
+      choices.disable();
+      selectElement.setAttribute('disabled', 'true');
+    }
 
     // Construir opciones
     const options = data.map((item) => {

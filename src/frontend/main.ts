@@ -120,7 +120,12 @@ function routeIntranet(p: string): void {
   }
 
    if (p.startsWith('/control/clients-anuals/nova-reserva')) {
-     const uuid = getUuidFromPath('/control/clients-anuals/nova-reserva');
+    formReservaClientAnual(false);
+    return;
+  }
+
+  if (p.startsWith('/control/clients-anuals/modifica-reserva')) {
+     const uuid = getUuidFromPath('/control/clients-anuals/modifica-reserva');
     formReservaClientAnual(true, uuid);
     return;
   }

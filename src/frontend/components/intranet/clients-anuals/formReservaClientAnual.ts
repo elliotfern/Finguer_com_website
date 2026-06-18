@@ -61,6 +61,8 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
       return;
     }
 
+    await auxiliarSelect("", '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom');
+
     // Por esto:
     const handleSubmit = (event: Event) => {
       transmissioDadesDB(event, 'PUT', 'formReservaAnual', URLS.PUT.USUARIOS_UPDATE);
@@ -83,7 +85,7 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
     // 👉 relleno campos usuario
     renderFormInputs(data);
 
-      await auxiliarSelect(data.uuid_hex, '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom');
+      await auxiliarSelect(data.uuid_hex, '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom', undefined, undefined, true);
 
   }
 

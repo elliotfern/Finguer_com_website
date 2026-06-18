@@ -171,7 +171,7 @@ $routes = [
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
     ],
-    '/control/clients-anuals/nova-reserva/{idClient}' => [
+    '/control/clients-anuals/modifica-reserva/{idClient}' => [
         'view' => './intranet/clients-anuals/form-reserva-anual.php',
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
