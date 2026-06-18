@@ -1,3 +1,5 @@
+import { isAdmin } from "../auth/store";
+
 interface ClientAnual {
     nom: string;
     telefon: string;
@@ -60,18 +62,14 @@ function celdaFechaFin(fechaFin: string | null): { html: string; caducaPronto: b
     return { html: fechaFormateada, caducaPronto: false };
 }
 
-function celdaAccionesAdmin(client: ClientAnual): string {
-    if (!client.is_admin) {
+function celdaAccionesAdmin(id: string, baseUrl: string): string {
+    if (!isAdmin()) {
         return `
             <td class="text-muted text-center">–</td>
             <td class="text-muted text-center">–</td>
         `;
     }
-
-    const appWeb   = client.app_web;
-    const id       = client.uuid_hex;
-    const baseUrl  = `${appWeb}/control/clients-anuals`;
-
+ 
     return `
         <td>
             <a href="${baseUrl}/modifica-client/${id}" class="btn btn-warning btn-sm">
@@ -97,7 +95,7 @@ function construirFila(client: ClientAnual): HTMLTableRowElement {
         tr.classList.add('table-danger');
     }
 
-    const baseUrl = `${client.app_web}/control/clients-anuals`;
+    const baseUrl = `/control/clients-anuals`;
 
     tr.innerHTML = `
         <td>${escaparHtml(client.nom)}</td>
@@ -105,7 +103,7 @@ function construirFila(client: ClientAnual): HTMLTableRowElement {
         <td>${fechaHtml}</td>
         <td><strong>${client.reservas_completadas}</strong></td>
         <td><span class="badge bg-secondary">${escaparHtml(client.estado)}</span></td>
-        ${celdaAccionesAdmin(client)}
+        ${celdaAccionesAdmin(client.uuid_hex, baseUrl)}
         <td>
             <a href="${baseUrl}/crear-reserva/${client.uuid_hex}" class="btn btn-info btn-sm">
                 Crear reserva
