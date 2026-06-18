@@ -79,6 +79,18 @@ export async function auxiliarSelect(selected: number | string | Array<number | 
     if (disabled) {
       choices.disable();
       selectElement.setAttribute('disabled', 'true');
+
+      const container = choices.containerOuter.element;
+
+      // 🔥 mantener legible pero bloqueado
+      container.style.opacity = '1';
+      container.style.filter = 'none';
+      container.style.pointerEvents = 'none';
+
+      // 👇 mejora visual tipo Bootstrap form-control-plaintext
+      container.style.backgroundColor = '#fff';
+      container.style.border = '1px solid #dee2e6';
+      container.style.color = '#212529';
     }
 
     // Construir opciones

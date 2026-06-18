@@ -47,6 +47,8 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
     setTitle(`<h5>Client anual: alta Reserva</h5>`);
     btn.textContent = 'Inserir dades';
 
+    await auxiliarSelect("", '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom');
+
     const handleSubmit = (event: Event) => {
       transmissioDadesDB(event, 'POST', 'formReservaAnual', URLS.POST.USUARIOS_CREATE);
     };
@@ -60,8 +62,6 @@ export async function formReservaClientAnual(isUpdate: boolean, uuid?: string) {
       btn.disabled = true;
       return;
     }
-
-    await auxiliarSelect("", '/api/clients/get/clientsAnuals', 'usuario_uuid', 'nom');
 
     // Por esto:
     const handleSubmit = (event: Event) => {
