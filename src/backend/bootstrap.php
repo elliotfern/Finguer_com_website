@@ -10,7 +10,6 @@ if (file_exists($basePath . '/.env')) {
     Dotenv::createImmutable($basePath)->load();
 }
 
-
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/utils/uuidv7.php';
@@ -23,9 +22,9 @@ require_once __DIR__ . '/utils/1_5_creacionFacturaParaReserva.php';
 require_once __DIR__ . '/utils/1_6_generarFacturaPdf.php';
 require_once __DIR__ . '/utils/1_7_enviarFacturaEmail.php';
 
-require_once __DIR__ . '/utils/reserva/cambiarEstadoReserva.php';
-require_once __DIR__ . '/utils/reserva/cancelarReserva.php';
-require_once __DIR__ . '/utils/reserva/reservaEstadoExceptions.php';
+require_once __DIR__ . '/utils/Reserva/cambiarEstadoReserva.php';
+require_once __DIR__ . '/utils/Reserva/cancelarReserva.php';
+require_once __DIR__ . '/utils/Reserva/reservaEstadoExceptions.php';
 require_once __DIR__ . '/utils/verificacioSessio.php';
 
 require_once __DIR__ . '/utils/generarNumeroFactura.php';

@@ -1,7 +1,6 @@
 <?php
-global $conn;
 require_once APP_ROOT . '/intranet/inc/header.php';
-require_once(APP_ROOT . '/intranet/inc/header-reserves-anuals.php');
+require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
 ?>
 
 <div class='container'>

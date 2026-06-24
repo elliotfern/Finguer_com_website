@@ -1,116 +1,79 @@
-name: "Build + Deploy (git pull + composer + bundle.js) Finguer"
+name: 'Build + Deploy (git pull + composer + bundle.js) Finguer'
 
 on:
-  push:
-    branches: [main, develop]
-    
+    push:
+        branches: [main, develop]
+
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+    deploy:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '22'
+                  cache: 'npm'
 
-      - name: Install dependencies (npm)
-        run: npm ci
+            - name: Install dependencies (npm)
+              run: npm ci
 
-      - name: Build (npm)
-        run: npm run build
+            - name: Build (npm)
+              run: npm run build
 
-      - name: Decide target (PROD vs TEST)
-        id: target
-        run: |
-          set -euo pipefail
-          if [ "${GITHUB_REF_NAME}" = "main" ]; then
-            echo "env_name=PROD" >> "$GITHUB_OUTPUT"
-            echo "branch=main" >> "$GITHUB_OUTPUT"
-            echo "remote_dist_dir=/home/epgylzqu/finguer.com/public/dist" >> "$GITHUB_OUTPUT"
-            echo "remote_app_dir=/home/epgylzqu/finguer.com" >> "$GITHUB_OUTPUT"
-          else
-            echo "env_name=TEST" >> "$GITHUB_OUTPUT"
-            echo "branch=develop" >> "$GITHUB_OUTPUT"
-            echo "remote_dist_dir=/home/epgylzqu/finguer.com/dev/public/dist" >> "$GITHUB_OUTPUT"
-            echo "remote_app_dir=/home/epgylzqu/finguer.com/dev" >> "$GITHUB_OUTPUT"
-          fi
+            - name: Decide target (PROD vs TEST)
+              id: target
+              run: |
+                  set -euo pipefail
+                  if [ "${GITHUB_REF_NAME}" = "main" ]; then
+                    echo "env_name=PROD" >> "$GITHUB_OUTPUT"
+                    echo "branch=main" >> "$GITHUB_OUTPUT"
+                    echo "remote_dist_dir=/home/epgylzqu/finguer.com/public/dist" >> "$GITHUB_OUTPUT"
+                    echo "remote_app_dir=/home/epgylzqu/finguer.com" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "env_name=TEST" >> "$GITHUB_OUTPUT"
+                    echo "branch=develop" >> "$GITHUB_OUTPUT"
+                    echo "remote_dist_dir=/home/epgylzqu/finguer.com/dev/public/dist" >> "$GITHUB_OUTPUT"
+                    echo "remote_app_dir=/home/epgylzqu/finguer.com/dev" >> "$GITHUB_OUTPUT"
+                  fi
 
-      - name: Start SSH agent
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+            - name: Setup SSH
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
 
-      - name: Add server to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
+            - name: 'Deploy BACKEND (reset hard) + vendor (composer install)'
+              run: |
+                  set -euo pipefail
 
-      - name: "Deploy BACKEND (reset hard) + vendor (composer install)"
-        run: |
-          set -euo pipefail
+                  echo "Deploying BACKEND to: ${{ steps.target.outputs.env_name }}"
+                  echo "Remote app dir:       ${{ steps.target.outputs.remote_app_dir }}"
+                  echo "Git branch:           ${{ steps.target.outputs.branch }}"
 
-          echo "Deploying BACKEND to: ${{ steps.target.outputs.env_name }}"
-          echo "Remote app dir:       ${{ steps.target.outputs.remote_app_dir }}"
-          echo "Git branch:           ${{ steps.target.outputs.branch }}"
+                  ssh epgylzqu@87.98.230.129 "bash -lc '
+                    set -euo pipefail
 
-          ssh epgylzqu@87.98.230.129 "bash -lc '
-            set -euo pipefail
+                    APP_DIR="${{ steps.target.outputs.remote_app_dir }}"
+                    BRANCH="${{ steps.target.outputs.branch }}"
 
-            APP_DIR=\"${{ steps.target.outputs.remote_app_dir }}\"
-            BRANCH=\"${{ steps.target.outputs.branch }}\"
+                    cd "\$APP_DIR"
+                    test -d .git || { echo "ERROR: \$APP_DIR no es un repo git (no existe .git)"; exit 2; }
 
-            cd \"\$APP_DIR\"
-            test -d .git || { echo \"ERROR: \$APP_DIR no es un repo git (no existe .git)\"; exit 2; }
+                    git fetch origin "\$BRANCH"
+                    git checkout -f "\$BRANCH"
+                    git reset --hard "origin/\$BRANCH"
 
-            # Deja el repo EXACTO como origin/BRANCH (evita fallos por cambios locales)
-            git fetch origin \"\$BRANCH\"
-            git checkout -f \"\$BRANCH\"
-            git reset --hard \"origin/\$BRANCH\"
+                    git clean -fd -e .env -e dist/ -e dev/ -e dev/dist/
 
-            # Limpia no-trackeados SIN tocar .env, dist (bundle) ni dev
-            git clean -fd -e .env -e dist/ -e dev/ -e dev/dist/
-
-            if command -v composer >/dev/null 2>&1; then
-              composer install --no-dev --prefer-dist --optimize-autoloader
-            else
-              echo \"ERROR: composer no está instalado en el servidor\"
-              exit 3
-            fi
-          '"
-
-      - name: Upload bundle.js atomically
-        run: |
-          set -euo pipefail
-
-          echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
-          echo "Remote dist dir:       ${{ steps.target.outputs.remote_dist_dir }}"
-
-          test -f public/dist/bundle.js || { echo "public/dist/bundle.js no existe"; exit 1; }
-
-          REMOTE_DIR="${{ steps.target.outputs.remote_dist_dir }}"
-          REMOTE_BUNDLE="$REMOTE_DIR/bundle.js"
-
-          ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIR'"
-
-          scp public/dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_BUNDLE.tmp"
-
-          ssh epgylzqu@87.98.230.129 "\
-            mv -f '$REMOTE_BUNDLE.tmp' '$REMOTE_BUNDLE' && \
-            chmod 644 '$REMOTE_BUNDLE' \
-          "
-
-          if [ -f dist/bundle.js.map ]; then
-            scp dist/bundle.js.map epgylzqu@87.98.230.129:"$REMOTE_DIR/bundle.js.map.tmp"
-            ssh epgylzqu@87.98.230.129 "\
-              mv -f '$REMOTE_DIR/bundle.js.map.tmp' '$REMOTE_DIR/bundle.js.map' && \
-              chmod 644 '$REMOTE_DIR/bundle.js.map' \
-            "
-          fi
+                    if command -v composer >/dev/null 2>&1; then
+                      composer install --no-dev --prefer-dist --optimize-autoloader
+                    else
+                      echo "ERROR:

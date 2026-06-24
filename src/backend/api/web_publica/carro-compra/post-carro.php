@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use App\utils\Reserva\ReglasReserva;
+use App\utils\Reserva\HorariosReserva;
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -34,20 +36,24 @@ function readInput(): array
     return $_POST ?? [];
 }
 
-function calcularTotalDiasReserva(string $fechaInicioStr, string $fechaFinStr, string $tz = 'Europe/Rome'): int
-{
+function calcularTotalDiasReserva(
+    string $fechaInicioStr,
+    string $fechaFinStr,
+    string $tz = 'Europe/Rome',
+): int {
     $tzObj = new DateTimeZone($tz);
     $inicio = new DateTime($fechaInicioStr, $tzObj);
-    $fin    = new DateTime($fechaFinStr, $tzObj);
+    $fin = new DateTime($fechaFinStr, $tzObj);
 
     $diffSegundos = $fin->getTimestamp() - $inicio->getTimestamp();
-    if ($diffSegundos < 0) return 0;
+    if ($diffSegundos < 0) {
+        return 0;
+    }
 
-    $diffDias = (int)ceil($diffSegundos / 86400);
+    $diffDias = (int) ceil($diffSegundos / 86400);
     //return $diffDias + 1; // igual que tu TS
     return $diffDias; // igual que tu TS
 }
-
 
 /**
  * Ajusta las líneas para que el total final quede en euros "bonitos" (xx,00),
@@ -57,18 +63,25 @@ function calcularTotalDiasReserva(string $fechaInicioStr, string $fechaFinStr, s
  * - Todas las líneas deben tener iva_percent (mismo IVA para simplificar: 21% en tu caso).
  * - Cada línea tiene: codigo, base, iva, total, iva_percent
  */
-function beautifyTotalToWholeEuro(array &$lineas, float $ivaPercent, array $targetCodes = ['RESERVA_FINGUER', 'RESERVA_FINGUER_GOLD']): void
-{
+function beautifyTotalToWholeEuro(
+    array &$lineas,
+    float $ivaPercent,
+    array $targetCodes = ['RESERVA_FINGUER', 'RESERVA_FINGUER_GOLD'],
+): void {
     // calcular totales actuales
     $subtotal = 0.0;
-    foreach ($lineas as $l) $subtotal += (float)$l['base'];
+    foreach ($lineas as $l) {
+        $subtotal += (float) $l['base'];
+    }
 
     $ivaTotal = round($subtotal * ($ivaPercent / 100), 2);
-    $total    = round($subtotal + $ivaTotal, 2);
+    $total = round($subtotal + $ivaTotal, 2);
 
     // ya es bonito
     $cents = (int) round(($total - floor($total)) * 100);
-    if ($cents === 0) return;
+    if ($cents === 0) {
+        return;
+    }
 
     // objetivo: bajar al euro exacto (xx,00). (si prefieres subir, te lo cambio)
     $targetTotal = floor($total); // e.g. 140.01 -> 140.00
@@ -92,20 +105,28 @@ function beautifyTotalToWholeEuro(array &$lineas, float $ivaPercent, array $targ
         $delta = $d / 100; // euros
         $newSubtotal = round($subtotal + $delta, 2);
         $newIvaTotal = round($newSubtotal * ($ivaPercent / 100), 2);
-        $newTotal    = round($newSubtotal + $newIvaTotal, 2);
+        $newTotal = round($newSubtotal + $newIvaTotal, 2);
 
         if (abs($newTotal - $targetTotal) < 0.00001) {
             // aplicar ajuste a la línea elegida
-            $lineas[$idx]['base'] = round(((float)$lineas[$idx]['base']) + $delta, 2);
-            $lineas[$idx]['iva']  = round(((float)$lineas[$idx]['base']) * ($ivaPercent / 100), 2);
-            $lineas[$idx]['total'] = round(((float)$lineas[$idx]['base']) + (float)$lineas[$idx]['iva'], 2);
+            $lineas[$idx]['base'] = round(
+                ((float) $lineas[$idx]['base']) + $delta,
+                2,
+            );
+            $lineas[$idx]['iva'] = round(
+                ((float) $lineas[$idx]['base']) * ($ivaPercent / 100),
+                2,
+            );
+            $lineas[$idx]['total'] = round(
+                ((float) $lineas[$idx]['base']) + (float) $lineas[$idx]['iva'],
+                2,
+            );
             return;
         }
     }
 
     // si no encontramos ajuste exacto (raro), no tocamos nada
 }
-
 
 /**
  * Convierte un total "con IVA" a (base, iva, total) conservando el total bonito.
@@ -114,8 +135,8 @@ function beautifyTotalToWholeEuro(array &$lineas, float $ivaPercent, array $targ
 function splitConIva(float $totalConIva, float $ivaPercent): array
 {
     $base = round($totalConIva / (1 + $ivaPercent / 100), 2);
-    $iva  = round($totalConIva - $base, 2); // para cuadrar exacto con el "bonito"
-    $tot  = round($base + $iva, 2);
+    $iva = round($totalConIva - $base, 2); // para cuadrar exacto con el "bonito"
+    $tot = round($base + $iva, 2);
     return [$base, $iva, $tot];
 }
 
@@ -125,8 +146,8 @@ function splitConIva(float $totalConIva, float $ivaPercent): array
 function fromBase(float $baseSinIva, float $ivaPercent): array
 {
     $base = round($baseSinIva, 2);
-    $iva  = round($base * ($ivaPercent / 100), 2);
-    $tot  = round($base + $iva, 2);
+    $iva = round($base * ($ivaPercent / 100), 2);
+    $tot = round($base + $iva, 2);
     return [$base, $iva, $tot];
 }
 
@@ -137,21 +158,38 @@ function badRequest(string $msg): void
     exit();
 }
 
+function errorReglaNegocio(array $check, int $httpCode = 422): void
+{
+    http_response_code($httpCode);
+    echo json_encode([
+        'ok' => false,
+        'codigo' => $check['codigo'],
+        'mensaje' => $check['mensaje'],
+    ]);
+    exit();
+}
+
 // 3) Leer input
 $in = readInput();
 
-$session = trim((string)($in['session'] ?? ''));
-$tipoReserva = strtoupper(trim((string)($in['tipoReserva'] ?? '')));
-$limpiezaCodigo = trim((string)($in['limpieza'] ?? '0'));
-$seguroCancelacion = (int)($in['seguroCancelacion'] ?? 0);
+$session = trim((string) ($in['session'] ?? ''));
+$tipoReserva = strtoupper(trim((string) ($in['tipoReserva'] ?? '')));
+$limpiezaCodigo = trim((string) ($in['limpieza'] ?? '0'));
+$seguroCancelacion = (int) ($in['seguroCancelacion'] ?? 0);
 
 // Recomendado: enviar ya fechas completas desde frontend
-$fechaEntrada = trim((string)($in['fechaEntrada'] ?? ''));
-$fechaSalida  = trim((string)($in['fechaSalida'] ?? ''));
+$fechaEntrada = trim((string) ($in['fechaEntrada'] ?? ''));
+$fechaSalida = trim((string) ($in['fechaSalida'] ?? ''));
 
-if ($session === '') badRequest('Missing session');
-if ($tipoReserva === '') badRequest('Missing tipoReserva');
-if ($fechaEntrada === '' || $fechaSalida === '') badRequest('Missing fechas');
+if ($session === '') {
+    badRequest('Missing session');
+}
+if ($tipoReserva === '') {
+    badRequest('Missing tipoReserva');
+}
+if ($fechaEntrada === '' || $fechaSalida === '') {
+    badRequest('Missing fechas');
+}
 
 // Normaliza limpieza
 if ($limpiezaCodigo === '' || $limpiezaCodigo === '0') {
@@ -159,16 +197,51 @@ if ($limpiezaCodigo === '' || $limpiezaCodigo === '0') {
 }
 
 // Seguro: en tu HTML usas 1=Sí, 2=No (antes). Lo normalizamos:
-$seguroContratado = ($seguroCancelacion === 1);
+$seguroContratado = $seguroCancelacion === 1;
 
 // 4) Calcular días
+// 4) Parsear fechas y validar reglas de negocio
 try {
-    $diasReserva = calcularTotalDiasReserva($fechaEntrada, $fechaSalida, 'Europe/Rome');
+    $tz = new DateTimeZone(ReglasReserva::TIMEZONE);
+    $entradaDt = new DateTime($fechaEntrada, $tz);
+    $salidaDt = new DateTime($fechaSalida, $tz);
 } catch (Throwable $e) {
     badRequest('Invalid fechas format. Use "YYYY-MM-DD HH:MM:SS"');
 }
 
-if ($diasReserva <= 0) badRequest('Invalid date range');
+// Rango de fechas: días cerrados, orden entrada/salida, antelación mínima
+$rangoCheck = ReglasReserva::validarRango($entradaDt, $salidaDt);
+if (!$rangoCheck['valido']) {
+    errorReglaNegocio($rangoCheck);
+}
+
+// Horario disponible según tipo de reserva y día especial (24 dic.)
+$horaEntrada = $entradaDt->format('H:i');
+$horaSalida = $salidaDt->format('H:i');
+
+if (!HorariosReserva::horaValida($tipoReserva, $entradaDt, $horaEntrada)) {
+    errorReglaNegocio([
+        'codigo' => 'hora_no_disponible',
+        'mensaje' => "La hora de entrada {$horaEntrada} no está disponible para el tipo de reserva seleccionado.",
+    ]);
+}
+
+if (!HorariosReserva::horaValida($tipoReserva, $salidaDt, $horaSalida)) {
+    errorReglaNegocio([
+        'codigo' => 'hora_no_disponible',
+        'mensaje' => "La hora de salida {$horaSalida} no está disponible para el tipo de reserva seleccionado.",
+    ]);
+}
+
+// 5) Calcular días (se mantiene el cálculo original)
+$diasReserva = calcularTotalDiasReserva(
+    $fechaEntrada,
+    $fechaSalida,
+    ReglasReserva::TIMEZONE,
+);
+if ($diasReserva <= 0) {
+    badRequest('Invalid date range');
+}
 
 // 5) Cargar catálogo de servicios necesarios
 $stmtCat = $conn->prepare("
@@ -188,32 +261,40 @@ $load = function (string $codigo) use ($stmtCat): ?array {
 };
 
 $tarifa = $load($tipoReserva);
-if (!$tarifa) badRequest("Tipo de reserva no válido: {$tipoReserva}");
+if (!$tarifa) {
+    badRequest("Tipo de reserva no válido: {$tipoReserva}");
+}
 
 // Limpieza (si aplica)
 $limpieza = null;
 if ($limpiezaCodigo !== '0') {
     $limpieza = $load($limpiezaCodigo);
-    if (!$limpieza) badRequest("Limpieza no válida: {$limpiezaCodigo}");
+    if (!$limpieza) {
+        badRequest("Limpieza no válida: {$limpiezaCodigo}");
+    }
 }
 
 // Seguro (si aplica)
 $seguro = null;
 if ($seguroContratado) {
     $seguro = $load('SEGURO_CANCELACION');
-    if (!$seguro) badRequest("Servicio SEGURO_CANCELACION no encontrado o inactivo");
+    if (!$seguro) {
+        badRequest('Servicio SEGURO_CANCELACION no encontrado o inactivo');
+    }
 }
 
 // 6) Construir líneas
 $lineas = [];
 
-$ivaTarifa = (float)$tarifa['iva_percent'];
-$diasIncluidos = (int)($tarifa['dias_incluidos'] ?? 0);
-$minConIva = (float)($tarifa['min_con_iva'] ?? 0);
-$extraDiaConIva = (float)($tarifa['extra_dia_con_iva'] ?? 0);
+$ivaTarifa = (float) $tarifa['iva_percent'];
+$diasIncluidos = (int) ($tarifa['dias_incluidos'] ?? 0);
+$minConIva = (float) ($tarifa['min_con_iva'] ?? 0);
+$extraDiaConIva = (float) ($tarifa['extra_dia_con_iva'] ?? 0);
 
 if ($minConIva <= 0 || $diasIncluidos <= 0) {
-    badRequest("Tarifa {$tipoReserva} no configurada (min_con_iva / dias_incluidos)");
+    badRequest(
+        "Tarifa {$tipoReserva} no configurada (min_con_iva / dias_incluidos)",
+    );
 }
 
 $extraConIva = 0.0;
@@ -222,13 +303,16 @@ if ($diasReserva > $diasIncluidos && $extraDiaConIva > 0) {
 }
 
 $totalTarifaConIva = round($minConIva + $extraConIva, 2);
-[$baseTarifa, $ivaTarifaImporte, $totalTarifa] = splitConIva($totalTarifaConIva, $ivaTarifa);
+[$baseTarifa, $ivaTarifaImporte, $totalTarifa] = splitConIva(
+    $totalTarifaConIva,
+    $ivaTarifa,
+);
 
 $lineas[] = [
     'codigo' => $tarifa['codigo'],
     'descripcion' => $tarifa['nombre'],
-    'cantidad' => 1.00,
-    'iva_percent' => (float)$tarifa['iva_percent'],
+    'cantidad' => 1.0,
+    'iva_percent' => (float) $tarifa['iva_percent'],
     'base' => $baseTarifa,
     'iva' => $ivaTarifaImporte,
     'total' => $totalTarifa,
@@ -236,17 +320,19 @@ $lineas[] = [
 
 // Limpieza (precio_base sin IVA)
 if ($limpieza) {
-    $ivaL = (float)$limpieza['iva_percent'];
-    $precioBase = (float)($limpieza['precio_base'] ?? 0);
-    if ($precioBase <= 0) badRequest("Limpieza {$limpiezaCodigo} sin precio_base configurado");
+    $ivaL = (float) $limpieza['iva_percent'];
+    $precioBase = (float) ($limpieza['precio_base'] ?? 0);
+    if ($precioBase <= 0) {
+        badRequest("Limpieza {$limpiezaCodigo} sin precio_base configurado");
+    }
 
     [$baseL, $ivaLImp, $totalL] = fromBase($precioBase, $ivaL);
 
     $lineas[] = [
         'codigo' => $limpieza['codigo'],
         'descripcion' => $limpieza['nombre'],
-        'cantidad' => 1.00,
-        'iva_percent' => (float)$limpieza['iva_percent'],
+        'cantidad' => 1.0,
+        'iva_percent' => (float) $limpieza['iva_percent'],
         'base' => $baseL,
         'iva' => $ivaLImp,
         'total' => $totalL,
@@ -255,18 +341,20 @@ if ($limpieza) {
 
 // Seguro condicional (tu regla)
 if ($seguro) {
-    $ivaS = (float)$seguro['iva_percent'];
+    $ivaS = (float) $seguro['iva_percent'];
 
     // Base para calcular el seguro: total con IVA ANTES del seguro
     $totalConIvaSinSeguro = 0.0;
-    foreach ($lineas as $ln) $totalConIvaSinSeguro += (float)$ln['total'];
+    foreach ($lineas as $ln) {
+        $totalConIvaSinSeguro += (float) $ln['total'];
+    }
     $totalConIvaSinSeguro = round($totalConIvaSinSeguro, 2);
 
     // Regla EXACTA TS:
     // if (precioSubtotal <= 100) seguro=30 else seguro=precioSubtotal*0.1
-    $umbral = (float)($seguro['seg_umbral_con_iva'] ?? 100.00);
-    $minSeg = (float)($seguro['seg_min_con_iva'] ?? 30.00);
-    $factor = (float)($seguro['seg_factor'] ?? 0.10);
+    $umbral = (float) ($seguro['seg_umbral_con_iva'] ?? 100.0);
+    $minSeg = (float) ($seguro['seg_min_con_iva'] ?? 30.0);
+    $factor = (float) ($seguro['seg_factor'] ?? 0.1);
 
     $seguroConIva = 0.0;
     if ($totalConIvaSinSeguro <= $umbral) {
@@ -280,8 +368,8 @@ if ($seguro) {
     $lineas[] = [
         'codigo' => $seguro['codigo'],
         'descripcion' => $seguro['nombre'],
-        'cantidad' => 1.00,
-        'iva_percent' => (float)$seguro['iva_percent'],
+        'cantidad' => 1.0,
+        'iva_percent' => (float) $seguro['iva_percent'],
         'base' => $baseS,
         'iva' => $ivaSImp,
         'total' => $totalS,
@@ -294,17 +382,20 @@ $ivaTotal = 0.0;
 $total = 0.0;
 
 foreach ($lineas as $ln) {
-    $subtotal += (float)$ln['base'];
-    $ivaTotal += (float)$ln['iva'];
-    $total    += (float)$ln['total'];
+    $subtotal += (float) $ln['base'];
+    $ivaTotal += (float) $ln['iva'];
+    $total += (float) $ln['total'];
 }
 
 $subtotal = round($subtotal, 2);
 $ivaTotal = round($ivaTotal, 2);
-$total    = round($total, 2);
+$total = round($total, 2);
 
 // ✅ 7.1) Ajuste para que el total quede "bonito" (xx,00)
-beautifyTotalToWholeEuro($lineas, 21.00, ['RESERVA_FINGUER', 'RESERVA_FINGUER_GOLD']);
+beautifyTotalToWholeEuro($lineas, 21.0, [
+    'RESERVA_FINGUER',
+    'RESERVA_FINGUER_GOLD',
+]);
 
 // ✅ 7.2) Recalcular totales DESPUÉS del ajuste (muy importante)
 $subtotal = 0.0;
@@ -312,14 +403,14 @@ $ivaTotal = 0.0;
 $total = 0.0;
 
 foreach ($lineas as $ln) {
-    $subtotal += (float)$ln['base'];
-    $ivaTotal += (float)$ln['iva'];
-    $total    += (float)$ln['total'];
+    $subtotal += (float) $ln['base'];
+    $ivaTotal += (float) $ln['iva'];
+    $total += (float) $ln['total'];
 }
 
 $subtotal = round($subtotal, 2);
 $ivaTotal = round($ivaTotal, 2);
-$total    = round($total, 2);
+$total = round($total, 2);
 
 // 8) Snapshot JSON + hash
 $snapshot = [
@@ -341,7 +432,10 @@ $snapshot = [
     ],
 ];
 
-$lineasJson = json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+$lineasJson = json_encode(
+    $snapshot,
+    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+);
 if ($lineasJson === false) {
     http_response_code(500);
     echo json_encode(['error' => 'JSON encode failed']);
@@ -366,12 +460,12 @@ $stmtUpsert = $conn->prepare("
 ");
 
 $stmtUpsert->execute([
-    ':session'    => $session,
-    ':subtotal'   => $subtotal,
-    ':iva_total'  => $ivaTotal,
-    ':total'      => $total,
+    ':session' => $session,
+    ':subtotal' => $subtotal,
+    ':iva_total' => $ivaTotal,
+    ':total' => $total,
     ':lineas_json' => $lineasJson,
-    ':hash'       => $hash,
+    ':hash' => $hash,
 ]);
 
 // 10) Respuesta

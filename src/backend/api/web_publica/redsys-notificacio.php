@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('METHOD NOT ALLOWED');
 }
 
-$version   = $_POST['Ds_SignatureVersion'] ?? null;
-$params    = $_POST['Ds_MerchantParameters'] ?? null;
+$version = $_POST['Ds_SignatureVersion'] ?? null;
+$params = $_POST['Ds_MerchantParameters'] ?? null;
 $signature = $_POST['Ds_Signature'] ?? null;
 
 if (!$params || !$signature) {
@@ -24,18 +24,21 @@ if (!$params || !$signature) {
 $decoded = json_decode(base64_decode($params), true);
 
 // Justo después de $decoded = json_decode(...)
-error_log('REDSYS NOTIFICATION: ' . json_encode([
-    'order'    => $decoded['Ds_Order'] ?? 'NULL',
-    'response' => $decoded['Ds_Response'] ?? 'NULL',
-    'amount'   => $decoded['Ds_Amount'] ?? 'NULL',
-]));
+error_log(
+    'REDSYS NOTIFICATION: ' .
+        json_encode([
+            'order' => $decoded['Ds_Order'] ?? 'NULL',
+            'response' => $decoded['Ds_Response'] ?? 'NULL',
+            'amount' => $decoded['Ds_Amount'] ?? 'NULL',
+        ]),
+);
 
 if (!$decoded) {
     http_response_code(400);
     exit('INVALID PARAMETERS');
 }
 
-$order    = $decoded['Ds_Order'] ?? null;
+$order = $decoded['Ds_Order'] ?? null;
 $response = $decoded['Ds_Response'] ?? null;
 
 if (!$order) {
@@ -65,7 +68,13 @@ $stmt->execute(['order' => $order]);
 $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
 
 error_log('RESERVA FOUND: ' . ($reserva ? json_encode($reserva) : 'NOT FOUND'));
-error_log('=== REDSYS NOTIF === order=[' . ($decoded['Ds_Order'] ?? 'NULL') . '] response=[' . ($decoded['Ds_Response'] ?? 'NULL') . ']');
+error_log(
+    '=== REDSYS NOTIF === order=[' .
+        ($decoded['Ds_Order'] ?? 'NULL') .
+        '] response=[' .
+        ($decoded['Ds_Response'] ?? 'NULL') .
+        ']',
+);
 
 if (!$reserva) {
     http_response_code(404);
@@ -73,7 +82,7 @@ if (!$reserva) {
 }
 
 // pago OK en Redsys
-$isPaid = ($response === '0000');
+$isPaid = $response === '0000';
 
 // idempotencia
 if ($reserva['estado'] === 'pagada' && $isPaid) {
@@ -82,34 +91,39 @@ if ($reserva['estado'] === 'pagada' && $isPaid) {
 }
 
 if ($isPaid) {
-
-    $conn->prepare("
+    $conn
+        ->prepare(
+            "
         UPDATE parking_reservas
         SET estado = 'pagada',
             updated_at = NOW()
         WHERE id = :id
-    ")->execute([
-        'id' => $reserva['id']
-    ]);
+    ",
+        )
+        ->execute([
+            'id' => $reserva['id'],
+        ]);
 
     try {
         //registrarCobroConfirmado((int)$reserva['id']);
     } catch (\Throwable $e) {
         error_log('EMAIL/FACTURA ERROR: ' . $e->getMessage());
     }
-
 } else {
-
     // opcional: marcar fallo si quieres trazabilidad
-    $conn->prepare("
+    $conn
+        ->prepare(
+            "
         UPDATE parking_reservas
         SET estado = 'cancelada'
         WHERE id = :id
-    ")->execute([
-        'id' => $reserva['id']
-    ]);
+    ",
+        )
+        ->execute([
+            'id' => $reserva['id'],
+        ]);
 }
 
 http_response_code(200);
-echo "OK";
-exit;
+echo 'OK';
+exit();
