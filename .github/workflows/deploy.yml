@@ -84,3 +84,23 @@ jobs:
                       exit 3
                     fi
                   '"
+
+            - name: Upload bundle.js atomically
+              env:
+                  REMOTE_DIST_DIR: ${{ steps.target.outputs.remote_dist_dir }}
+              run: |
+                  set -euo pipefail
+
+                  echo "Deploying FRONTEND to: ${{ steps.target.outputs.env_name }}"
+                  echo "Remote dist dir: $REMOTE_DIST_DIR"
+
+                  test -f public/dist/bundle.js || { echo "public/dist/bundle.js no existe"; exit 1; }
+
+                  ssh epgylzqu@87.98.230.129 "mkdir -p '$REMOTE_DIST_DIR'"
+
+                  scp public/dist/bundle.js epgylzqu@87.98.230.129:"$REMOTE_DIST_DIR/bundle.js.tmp"
+
+                  ssh epgylzqu@87.98.230.129 "\
+                    mv -f '$REMOTE_DIST_DIR/bundle.js.tmp' '$REMOTE_DIST_DIR/bundle.js' && \
+                    chmod 644 '$REMOTE_DIST_DIR/bundle.js' \
+                  "
