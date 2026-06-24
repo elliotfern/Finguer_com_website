@@ -51,29 +51,36 @@ jobs:
                   ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
 
             - name: 'Deploy BACKEND (reset hard) + vendor (composer install)'
+              env:
+                  REMOTE_APP_DIR: ${{ steps.target.outputs.remote_app_dir }}
+                  REMOTE_BRANCH: ${{ steps.target.outputs.branch }}
+                  REMOTE_ENV: ${{ steps.target.outputs.env_name }}
               run: |
                   set -euo pipefail
 
-                  echo "Deploying BACKEND to: ${{ steps.target.outputs.env_name }}"
-                  echo "Remote app dir:       ${{ steps.target.outputs.remote_app_dir }}"
-                  echo "Git branch:           ${{ steps.target.outputs.branch }}"
+                  echo "Deploying BACKEND to: $REMOTE_ENV"
+                  echo "Remote app dir:       $REMOTE_APP_DIR"
+                  echo "Git branch:           $REMOTE_BRANCH"
 
                   ssh epgylzqu@87.98.230.129 "bash -lc '
                     set -euo pipefail
 
-                    APP_DIR="${{ steps.target.outputs.remote_app_dir }}"
-                    BRANCH="${{ steps.target.outputs.branch }}"
+                    APP_DIR=\"$REMOTE_APP_DIR\"
+                    BRANCH=\"$REMOTE_BRANCH\"
 
-                    cd "\$APP_DIR"
-                    test -d .git || { echo "ERROR: \$APP_DIR no es un repo git (no existe .git)"; exit 2; }
+                    cd \"\$APP_DIR\"
+                    test -d .git || { echo ERROR_NO_GIT; exit 2; }
 
-                    git fetch origin "\$BRANCH"
-                    git checkout -f "\$BRANCH"
-                    git reset --hard "origin/\$BRANCH"
+                    git fetch origin \"\$BRANCH\"
+                    git checkout -f \"\$BRANCH\"
+                    git reset --hard \"origin/\$BRANCH\"
 
                     git clean -fd -e .env -e dist/ -e dev/ -e dev/dist/
 
                     if command -v composer >/dev/null 2>&1; then
                       composer install --no-dev --prefer-dist --optimize-autoloader
                     else
-                      echo "ERROR:
+                      echo ERROR_NO_COMPOSER
+                      exit 3
+                    fi
+                  '"
