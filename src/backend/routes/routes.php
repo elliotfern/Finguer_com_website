@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '../../utils/utils.php';
+require __DIR__ . '../../Utils/utils.php';
 
 // Combinar todas las rutas en un solo arreglo
 $routes = array_merge(

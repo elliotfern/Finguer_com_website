@@ -12,27 +12,27 @@ if (file_exists($basePath . '/.env')) {
 
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/utils/uuidv7.php';
-require_once __DIR__ . '/utils/getIdUserCookie.php';
-require_once __DIR__ . '/utils/1_verificaPagamentRedsys.php';
-require_once __DIR__ . '/utils/1_1_lecturaReserva.php';
-require_once __DIR__ . '/utils/1_3_registrarCobroConfirmado.php';
-require_once __DIR__ . '/utils/1_4_enviarConfirmacionReserva.php';
-require_once __DIR__ . '/utils/1_5_creacionFacturaParaReserva.php';
-require_once __DIR__ . '/utils/1_6_generarFacturaPdf.php';
-require_once __DIR__ . '/utils/1_7_enviarFacturaEmail.php';
+require_once __DIR__ . '/Utils/uuidv7.php';
+require_once __DIR__ . '/Utils/getIdUserCookie.php';
+require_once __DIR__ . '/Utils/1_verificaPagamentRedsys.php';
+require_once __DIR__ . '/Utils/1_1_lecturaReserva.php';
+require_once __DIR__ . '/Utils/1_3_registrarCobroConfirmado.php';
+require_once __DIR__ . '/Utils/1_4_enviarConfirmacionReserva.php';
+require_once __DIR__ . '/Utils/1_5_creacionFacturaParaReserva.php';
+require_once __DIR__ . '/Utils/1_6_generarFacturaPdf.php';
+require_once __DIR__ . '/Utils/1_7_enviarFacturaEmail.php';
 
-require_once __DIR__ . '/utils/Reserva/cambiarEstadoReserva.php';
-require_once __DIR__ . '/utils/Reserva/cancelarReserva.php';
-require_once __DIR__ . '/utils/Reserva/reservaEstadoExceptions.php';
-require_once __DIR__ . '/utils/verificacioSessio.php';
+require_once __DIR__ . '/Utils/Reserva/cambiarEstadoReserva.php';
+require_once __DIR__ . '/Utils/Reserva/cancelarReserva.php';
+require_once __DIR__ . '/Utils/Reserva/reservaEstadoExceptions.php';
+require_once __DIR__ . '/Utils/verificacioSessio.php';
 
-require_once __DIR__ . '/utils/generarNumeroFactura.php';
-require_once __DIR__ . '/utils/registreLogsFactura.php';
-require_once __DIR__ . '/utils/calcularHashFactura.php';
-require_once __DIR__ . '/utils/generadorLocalizador.php';
-require_once __DIR__ . '/utils/helpers.php';
+require_once __DIR__ . '/Utils/generarNumeroFactura.php';
+require_once __DIR__ . '/Utils/registreLogsFactura.php';
+require_once __DIR__ . '/Utils/calcularHashFactura.php';
+require_once __DIR__ . '/Utils/generadorLocalizador.php';
+require_once __DIR__ . '/Utils/helpers.php';
 require_once __DIR__ . '/routes/routes.php';
-require_once __DIR__ . '/utils/auth.php';
-require_once __DIR__ . '/utils/logoutDeleteCookies.php';
-require_once __DIR__ . '/utils/email-formulario.php';
+require_once __DIR__ . '/Utils/auth.php';
+require_once __DIR__ . '/Utils/logoutDeleteCookies.php';
+require_once __DIR__ . '/Utils/email-formulario.php';

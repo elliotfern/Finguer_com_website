@@ -114,17 +114,6 @@ $routes = [
         'roles' => ['admin', 'trabajador'],
     ],
 
-    '/control/reserva/email/confirmacio/{id}' => [
-        'view' => './intranet/email/reserva-enviar-email.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/email/factura/{id}' => [
-        'view' => './intranet/email/reserva-enviar-factura-pdf.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-
     // RESERVES ANUALS
     '/control/clients-anuals' => [
         'view' => './intranet/clients-anuals/clients.php',

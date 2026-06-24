@@ -75,7 +75,10 @@ try {
         'from_email' => 'hello@finguer.com',
         'from_name' => 'Finguer',
         'reply_to' => null, // Opcional
-        'bcc' => ['hello@finguer.com', 'elliot@hispantic.com'],
+        'bcc' => [
+            'hello@finguer.com' => 'Finguer.com',
+            'elliot@hispantic.com' => 'Elliot',
+        ],
         'subject' => 'Factura servicios Finguer.com',
         'body_html' => null, // Si es null, usa texto simple
         'body_text' => 'Adjunto encontrarás el documento PDF con tu factura.',

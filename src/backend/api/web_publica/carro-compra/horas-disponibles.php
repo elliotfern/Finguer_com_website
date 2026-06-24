@@ -3,8 +3,8 @@
 
 declare(strict_types=1);
 
-use App\utils\Reserva\HorariosReserva;
-use App\utils\Reserva\ReglasReserva;
+use App\Utils\Reserva\HorariosReserva;
+use App\Utils\Reserva\ReglasReserva;
 
 header('Content-Type: application/json; charset=utf-8');
 
