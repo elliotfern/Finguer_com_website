@@ -1,24 +1,29 @@
 <?php
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 function generarFacturaPdf(int $idFactura, array $opts = []): array
 {
-  global $conn;
+    global $conn;
 
-  $idFactura = (int)$idFactura;
+    $idFactura = (int) $idFactura;
 
-  $BASE_DIR = $_ENV['APP_BASE_DIR'] ?? '/home/epgylzqu/finguer.com/public';
-  $WEB_DIR = $_ENV['DOMAIN_WEB'] ?? 'https://finguer.com';
+    $BASE_DIR = $_ENV['APP_BASE_DIR'] ?? '/home/epgylzqu/finguer.com/public';
 
-  // Defaults opts
-  $opts = array_merge([
-    'mode'     => 'F',      // 'I' navegador, 'F' fichero
-    'force'    => false,
-    'base_dir' => $BASE_DIR,
-    'subdir'   => '/pdf/facturas',
-  ], $opts);
+    // Defaults opts
+    $opts = array_merge(
+        [
+            'mode' => 'F',
+            'force' => false,
+            'base_dir' => $BASE_DIR,
+            'subdir' => '/pdf/facturas',
+        ],
+        $opts,
+    );
 
-  // 1) Datos factura (snapshot cliente + snapshot emisor) + reserva
-  $sql = "
+    // 1) Datos factura + reserva
+    $sql = "
         SELECT
             f.id,
             f.numero,
@@ -28,7 +33,6 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             f.total,
             f.impuesto_total,
 
-            -- snapshot cliente (FACTURAS)
             f.facturar_a_nombre,
             f.facturar_a_empresa,
             f.facturar_a_nif,
@@ -38,7 +42,6 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             f.facturar_a_pais,
             f.facturar_a_email,
 
-            -- snapshot emisor (FACTURAS)
             f.emisor_nombre_legal,
             f.emisor_nif,
             f.emisor_direccion,
@@ -46,7 +49,6 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             f.emisor_ciudad,
             f.emisor_pais,
 
-            -- reserva
             pr.id              AS reserva_id,
             pr.entrada_prevista,
             pr.salida_prevista,
@@ -56,28 +58,27 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
             pr.tipo
 
         FROM facturas f
-        JOIN parking_reservas pr
-          ON f.reserva_id = pr.id
+        JOIN parking_reservas pr ON f.reserva_id = pr.id
         WHERE f.id = :id
         LIMIT 1
     ";
 
-  /** @var PDO $conn */
-  $stmt = $conn->prepare($sql);
-  $stmt->execute([':id' => $idFactura]);
-  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    /** @var PDO $conn */
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([':id' => $idFactura]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-  if (!$row) {
-    return [
-      'status'  => 'error',
-      'message' => 'Factura no encontrada',
-      'code'    => 'NOT_FOUND',
-      'id'      => $idFactura,
-    ];
-  }
+    if (!$row) {
+        return [
+            'status' => 'error',
+            'message' => 'Factura no encontrada',
+            'code' => 'NOT_FOUND',
+            'id' => $idFactura,
+        ];
+    }
 
-  // 2) Líneas desde facturas_lineas (snapshot real facturado)
-  $sqlLines = "
+    // 2) Líneas
+    $sqlLines = "
         SELECT
             linea,
             descripcion,
@@ -91,332 +92,490 @@ function generarFacturaPdf(int $idFactura, array $opts = []): array
         WHERE factura_id = :fid
         ORDER BY linea ASC
     ";
-  $stL = $conn->prepare($sqlLines);
-  $stL->execute([':fid' => $idFactura]);
-  $lineas = $stL->fetchAll(PDO::FETCH_ASSOC);
+    $stL = $conn->prepare($sqlLines);
+    $stL->execute([':fid' => $idFactura]);
+    $lineas = $stL->fetchAll(PDO::FETCH_ASSOC);
 
-  // 3) Informacion sobre el pago
-  $sqlPago = "
-    SELECT fecha, metodo, pasarela, estado, codigo_autorizacion, id_transaccion
-    FROM pagos
-    WHERE factura_id = :fid
-    ORDER BY fecha DESC, id DESC
-    LIMIT 1
-  ";
-  $stP = $conn->prepare($sqlPago);
-  $stP->execute([':fid' => $idFactura]);
-  $pago = $stP->fetch(PDO::FETCH_ASSOC);
+    // 3) Pago
+    $sqlPago = "
+        SELECT fecha, metodo, pasarela, estado, codigo_autorizacion, id_transaccion
+        FROM pagos
+        WHERE factura_id = :fid
+        ORDER BY fecha DESC, id DESC
+        LIMIT 1
+    ";
+    $stP = $conn->prepare($sqlPago);
+    $stP->execute([':fid' => $idFactura]);
+    $pago = $stP->fetch(PDO::FETCH_ASSOC);
 
-  // --------
-  // Variables / formatos
-  // --------
+    // --------
+    // Variables / formatos
+    // --------
 
-  $numeroFactura = (string)$row['numero'];
-  $serieFactura  = (string)$row['serie'];
+    $numeroFactura = (string) $row['numero'];
+    $serieFactura = (string) $row['serie'];
 
-  $fechaEmisionRaw = (string)$row['fecha_emision'];
-  $fechaEmisionFmt = date('d-m-Y H:i:s', strtotime($fechaEmisionRaw));
+    $fechaEmisionFmt = date(
+        'd-m-Y H:i:s',
+        strtotime((string) $row['fecha_emision']),
+    );
 
-  // Reserva: entrada/salida
-  $entradaPrevista = (string)($row['entrada_prevista'] ?? '');
-  $salidaPrevista  = (string)($row['salida_prevista'] ?? '');
+    $entradaPrevista = (string) ($row['entrada_prevista'] ?? '');
+    $salidaPrevista = (string) ($row['salida_prevista'] ?? '');
 
-  $fechaEntrada = $entradaPrevista ? date('d-m-Y', strtotime($entradaPrevista)) : '-';
-  $horaEntrada  = $entradaPrevista ? date('H:i',   strtotime($entradaPrevista)) : '-';
-  $fechaSalida  = $salidaPrevista  ? date('d-m-Y', strtotime($salidaPrevista))  : '-';
-  $horaSalida   = $salidaPrevista  ? date('H:i',   strtotime($salidaPrevista))  : '-';
+    $fechaEntrada = $entradaPrevista
+        ? date('d-m-Y', strtotime($entradaPrevista))
+        : '-';
+    $horaEntrada = $entradaPrevista
+        ? date('H:i', strtotime($entradaPrevista))
+        : '-';
+    $fechaSalida = $salidaPrevista
+        ? date('d-m-Y', strtotime($salidaPrevista))
+        : '-';
+    $horaSalida = $salidaPrevista
+        ? date('H:i', strtotime($salidaPrevista))
+        : '-';
 
-  $vehiculo  = (string)($row['vehiculo'] ?? '');
-  $matricula = (string)($row['matricula'] ?? '');
-  $tipo      = (int)($row['tipo'] ?? 0);
+    $vehiculo = (string) ($row['vehiculo'] ?? '');
+    $matricula = (string) ($row['matricula'] ?? '');
+    $tipo = (int) ($row['tipo'] ?? 0);
 
-  $tipoReserva2 = ($tipo === 2) ? "Gold Finguer Class" : "Finguer Class";
+    $tipoReserva = $tipo === 2 ? 'Gold Finguer Class' : 'Finguer Class';
 
-  // Cliente (desde FACTURAS)
-  $cliNombre  = trim((string)($row['facturar_a_nombre'] ?? ''));
-  $cliEmail   = trim((string)($row['facturar_a_email'] ?? ''));
-  $cliEmpresa = (string)($row['facturar_a_empresa'] ?? '');
-  $cliNif     = (string)($row['facturar_a_nif'] ?? '');
-  $cliDir     = (string)($row['facturar_a_direccion'] ?? '');
-  $cliCiudad  = (string)($row['facturar_a_ciudad'] ?? '');
-  $cliCp      = (string)($row['facturar_a_cp'] ?? '');
-  $cliPais    = (string)($row['facturar_a_pais'] ?? '');
+    $cliNombre = trim((string) ($row['facturar_a_nombre'] ?? ''));
+    $cliEmail = trim((string) ($row['facturar_a_email'] ?? ''));
+    $cliEmpresa = (string) ($row['facturar_a_empresa'] ?? '');
+    $cliNif = (string) ($row['facturar_a_nif'] ?? '');
+    $cliDir = (string) ($row['facturar_a_direccion'] ?? '');
+    $cliCiudad = (string) ($row['facturar_a_ciudad'] ?? '');
+    $cliCp = (string) ($row['facturar_a_cp'] ?? '');
+    $cliPais = (string) ($row['facturar_a_pais'] ?? '');
 
-  // Emisor (desde FACTURAS)
-  $emiNombre = trim((string)($row['emisor_nombre_legal'] ?? ''));
-  $emiNif    = trim((string)($row['emisor_nif'] ?? ''));
-  $emiDir    = trim((string)($row['emisor_direccion'] ?? ''));
-  $emiCp     = trim((string)($row['emisor_cp'] ?? ''));
-  $emiCiudad = trim((string)($row['emisor_ciudad'] ?? ''));
-  $emiPais   = trim((string)($row['emisor_pais'] ?? ''));
+    $emiNombre = trim((string) ($row['emisor_nombre_legal'] ?? ''));
+    $emiNif = trim((string) ($row['emisor_nif'] ?? ''));
+    $emiDir = trim((string) ($row['emisor_direccion'] ?? ''));
+    $emiCp = trim((string) ($row['emisor_cp'] ?? ''));
+    $emiCiudad = trim((string) ($row['emisor_ciudad'] ?? ''));
+    $emiPais = trim((string) ($row['emisor_pais'] ?? ''));
 
-  // ✅ Totales oficiales (SIN recalcular)
-  $subtotalFactura = (float)($row['subtotal'] ?? 0);
-  $ivaFactura      = (float)($row['impuesto_total'] ?? 0);
-  $totalFactura    = (float)($row['total'] ?? 0);
+    $subtotalFactura = (float) ($row['subtotal'] ?? 0);
+    $ivaFactura = (float) ($row['impuesto_total'] ?? 0);
+    $totalFactura = (float) ($row['total'] ?? 0);
 
-  // (Opcional) Detectar descuadre de líneas vs totales y loguearlo
-  $sumBaseL = 0.0;
-  $sumIvaL = 0.0;
-  $sumTotL = 0.0;
-  foreach ($lineas as $ln) {
-    $sumBaseL += (float)($ln['total_base'] ?? 0);
-    $sumIvaL  += (float)($ln['total_impuesto'] ?? 0);
-    $sumTotL  += (float)($ln['total_linea'] ?? 0);
-  }
-  $diffTot = round($totalFactura - $sumTotL, 2);
-  if (abs($diffTot) >= 0.01) {
-    error_log('[FINGUER] generarFacturaPdf WARNING: descuadre lineas vs factura (factura_id=' . $idFactura
-      . ', total_factura=' . $totalFactura
-      . ', total_lineas=' . round($sumTotL, 2)
-      . ', diff=' . $diffTot . ')');
-  }
-
-  // ===== PDF =====
-  $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-  $pdf->SetAutoPageBreak(true, 12);
-  $pdf->SetMargins(12, 12, 12);
-  $pdf->AddPage();
-
-  $filename = sprintf('factura_%s_%s.pdf', $serieFactura, $numeroFactura);
-
-  // Cabecera: logo + datos factura
-  $htmlContent = '
-    <div style="margin:0;font-size:10px;line-height:12px;">
-        <div style="font-size:10px; line-height:12px;">
-            <img alt="Finguer" src="/img/logo-header.svg" width="150" height="70">
-        </div>
-
-        <div>
-            <strong>Número de factura: ' . htmlspecialchars($numeroFactura) . '/' . htmlspecialchars($serieFactura) . '</strong><br>
-            Fecha de la factura: ' . htmlspecialchars($fechaEmisionFmt) . '<br>
-        </div>
-    ';
-
-  $htmlContent .= '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding-left:2px; padding-right:2px;">';
-
-  // ==== CABECERA CLIENTE / EMISOR ====
-  $rowsCliente = [];
-  $rowsCliente[] = ['<strong>Facturado a:</strong>'];
-  $rowsCliente[] = [htmlspecialchars($cliNombre)];
-  $rowsCliente[] = [htmlspecialchars($cliEmail)];
-  if (!empty($cliEmpresa)) $rowsCliente[] = [htmlspecialchars($cliEmpresa)];
-  if (!empty($cliNif))     $rowsCliente[] = ['NIF/NIE/CIF: ' . htmlspecialchars($cliNif)];
-  if (!empty($cliDir))     $rowsCliente[] = [htmlspecialchars($cliDir)];
-  $ciudadCp = trim($cliCiudad . (($cliCiudad !== '' && $cliCp !== '') ? ', ' : '') . $cliCp);
-  if ($ciudadCp !== '')    $rowsCliente[] = [htmlspecialchars($ciudadCp)];
-  if (!empty($cliPais))    $rowsCliente[] = [htmlspecialchars($cliPais)];
-
-  $rowsEmisor = [];
-  $rowsEmisor[] = ['<strong>' . htmlspecialchars($emiNombre) . '</strong>'];
-  if (!empty($emiNif))  $rowsEmisor[] = ['CIF/NIF: ' . htmlspecialchars($emiNif)];
-  if (!empty($emiDir))  $rowsEmisor[] = [htmlspecialchars($emiDir)];
-  $emiCiudadCp = trim($emiCiudad . (($emiCiudad !== '' && $emiCp !== '') ? ', ' : '') . $emiCp);
-  if ($emiCiudadCp !== '') $rowsEmisor[] = [htmlspecialchars($emiCiudadCp)];
-  if (!empty($emiPais)) $rowsEmisor[] = [htmlspecialchars($emiPais)];
-
-  $renderRows = function (array $rows, string $align = 'left'): string {
-    $out = '<table cellpadding="0" cellspacing="0" border="0" width="100%">';
-    foreach ($rows as $r) {
-      // ✅ 1px de separación real entre filas (sin inflar)
-      $out .= '<tr><td align="' . $align . '" style="font-size:10px; line-height:11px; padding:0 0 1px 0;">'
-        . $r[0]
-        . '</td></tr>';
-    }
-    $out .= '</table>';
-    return $out;
-  };
-
-  $htmlContent .= '
-      <table cellpadding="2" cellspacing="0" border="0" width="100%" style="font-size:10px; line-height:11px;">
-        <tr>
-          <td width="55%" valign="top">' . $renderRows($rowsCliente, 'left') . '</td>
-          <td width="45%" valign="top" align="right">' . $renderRows($rowsEmisor, 'right') . '</td>
-        </tr>
-      </table>
-      <div style="height:6px;"></div>
-    ';
-
-  // Detalles reserva (no legal, pero útil)
-  $htmlContent .= '
-        <table cellpadding="4" cellspacing="0" border="0" width="100%">
-          <tr>
-            <td style="font-size:10px; line-height:12px;">
-              <strong>Resumen de la reserva</strong><br>
-              Tipo de servicio: ' . htmlspecialchars($tipoReserva2) . '<br>
-              Entrada: ' . htmlspecialchars($fechaEntrada) . ' ' . htmlspecialchars($horaEntrada) . '<br>
-              Salida: ' . htmlspecialchars($fechaSalida) . ' ' . htmlspecialchars($horaSalida) . '<br>
-              Vehículo: ' . htmlspecialchars($vehiculo) . ' - Matrícula: ' . htmlspecialchars($matricula) . '
-            </td>
-          </tr>
-        </table>
-    ';
-
-  // Título centrado
-  $htmlContent .= '
-        <div style="height:16px;"></div>
-        <table width="100%" cellpadding="4" cellspacing="0" border="0">
-          <tr>
-            <td align="center" style="font-size:11px; line-height:13px;">
-              <strong>DETALLES DE LA FACTURA</strong>
-            </td>
-          </tr>
-        </table>
-        <div style="height:16px;"></div>
-    ';
-
-  // Tabla líneas: ✅ SOLO valores BD (sin cálculos)
-  $htmlContent .= '
-        <table cellpadding="4" cellspacing="0" border="1" width="100%" style="font-size:10px; line-height:12px;">
-          <tr style="background-color:#000;color:#fff;">
-            <td width="46%"><strong>Concepto</strong></td>
-            <td width="10%" align="right"><strong>Cant.</strong></td>
-            <td width="14%" align="right"><strong>Base</strong></td>
-            <td width="10%" align="right"><strong>% IVA</strong></td>
-            <td width="10%" align="right"><strong>IVA</strong></td>
-            <td width="10%" align="right"><strong>Total</strong></td>
-          </tr>
-    ';
-
-  if (!$lineas) {
-    $htmlContent .= '<tr><td colspan="6">No hay líneas de factura.</td></tr>';
-  } else {
+    // Detección de descuadre (igual que antes)
+    $sumTotL = 0.0;
     foreach ($lineas as $ln) {
-      $desc = (string)($ln['descripcion'] ?? '');
-      $cantRaw = (float)($ln['cantidad'] ?? 0);
-      $cantTxt = (abs($cantRaw - round($cantRaw)) < 0.00001)
-        ? (string)(int)round($cantRaw)
-        : rtrim(rtrim(number_format($cantRaw, 2, ',', ''), '0'), ',');
-      $ivaP = (float)($ln['impuesto_percent'] ?? 21);
+        $sumTotL += (float) ($ln['total_linea'] ?? 0);
+    }
+    $diffTot = round($totalFactura - $sumTotL, 2);
+    if (abs($diffTot) >= 0.01) {
+        error_log(
+            '[FINGUER] generarFacturaPdf WARNING: descuadre lineas vs factura (factura_id=' .
+                $idFactura .
+                ', total_factura=' .
+                $totalFactura .
+                ', total_lineas=' .
+                round($sumTotL, 2) .
+                ', diff=' .
+                $diffTot .
+                ')',
+        );
+    }
 
-      $base = (float)($ln['total_base'] ?? 0);
-      $ivaE = (float)($ln['total_impuesto'] ?? 0);
-      $totL = (float)($ln['total_linea'] ?? 0);
+    // --------
+    // Construir filas cliente / emisor
+    // --------
 
-      $htmlContent .= '
-              <tr>
-                <td width="46%">' . htmlspecialchars($desc) . '</td>
-                <td width="10%" align="right">' . $cantTxt . '</td>
-                <td width="14%" align="right">' . number_format($base, 2, ',', '') . ' €</td>
-                <td width="10%" align="right">' . number_format($ivaP, 2, ',', '') . '%</td>
-                <td width="10%" align="right">' . number_format($ivaE, 2, ',', '') . ' €</td>
-                <td width="10%" align="right"><strong>' . number_format($totL, 2, ',', '') . ' €</strong></td>
-              </tr>
+    $cliRows = [];
+    $cliRows[] = '<strong>Facturado a:</strong>';
+    $cliRows[] = htmlspecialchars($cliNombre);
+    $cliRows[] = htmlspecialchars($cliEmail);
+    if (!empty($cliEmpresa)) {
+        $cliRows[] = htmlspecialchars($cliEmpresa);
+    }
+    if (!empty($cliNif)) {
+        $cliRows[] = 'NIF/NIE/CIF: ' . htmlspecialchars($cliNif);
+    }
+    if (!empty($cliDir)) {
+        $cliRows[] = htmlspecialchars($cliDir);
+    }
+    $ciudadCp = trim(
+        $cliCiudad . ($cliCiudad !== '' && $cliCp !== '' ? ', ' : '') . $cliCp,
+    );
+    if ($ciudadCp !== '') {
+        $cliRows[] = htmlspecialchars($ciudadCp);
+    }
+    if (!empty($cliPais)) {
+        $cliRows[] = htmlspecialchars($cliPais);
+    }
+
+    $emiRows = [];
+    $emiRows[] = '<strong>' . htmlspecialchars($emiNombre) . '</strong>';
+    if (!empty($emiNif)) {
+        $emiRows[] = 'CIF/NIF: ' . htmlspecialchars($emiNif);
+    }
+    if (!empty($emiDir)) {
+        $emiRows[] = htmlspecialchars($emiDir);
+    }
+    $emiCiudadCp = trim(
+        $emiCiudad . ($emiCiudad !== '' && $emiCp !== '' ? ', ' : '') . $emiCp,
+    );
+    if ($emiCiudadCp !== '') {
+        $emiRows[] = htmlspecialchars($emiCiudadCp);
+    }
+    if (!empty($emiPais)) {
+        $emiRows[] = htmlspecialchars($emiPais);
+    }
+
+    $renderRows = function (array $rows): string {
+        return implode('<br>', $rows);
+    };
+
+    // --------
+    // Filas de líneas
+    // --------
+
+    $lineasHtml = '';
+    if (!$lineas) {
+        $lineasHtml = '<tr><td colspan="6">No hay líneas de factura.</td></tr>';
+    } else {
+        foreach ($lineas as $ln) {
+            $desc = htmlspecialchars((string) ($ln['descripcion'] ?? ''));
+            $cantRaw = (float) ($ln['cantidad'] ?? 0);
+            $cantTxt =
+                abs($cantRaw - round($cantRaw)) < 0.00001
+                    ? (string) (int) round($cantRaw)
+                    : rtrim(
+                        rtrim(number_format($cantRaw, 2, ',', ''), '0'),
+                        ',',
+                    );
+            $ivaP = (float) ($ln['impuesto_percent'] ?? 21);
+            $base = (float) ($ln['total_base'] ?? 0);
+            $ivaE = (float) ($ln['total_impuesto'] ?? 0);
+            $totL = (float) ($ln['total_linea'] ?? 0);
+
+            $lineasHtml .=
+                '
+                <tr>
+                    <td class="col-desc">' .
+                $desc .
+                '</td>
+                    <td class="col-num">' .
+                $cantTxt .
+                '</td>
+                    <td class="col-num">' .
+                number_format($base, 2, ',', '') .
+                ' €</td>
+                    <td class="col-num">' .
+                number_format($ivaP, 2, ',', '') .
+                '%</td>
+                    <td class="col-num">' .
+                number_format($ivaE, 2, ',', '') .
+                ' €</td>
+                    <td class="col-num"><strong>' .
+                number_format($totL, 2, ',', '') .
+                ' €</strong></td>
+                </tr>
             ';
+        }
     }
-  }
 
-  $htmlContent .= '</table>';
+    // --------
+    // Bloque pago
+    // --------
 
-  // Totales: ✅ SOLO snapshot oficial FACTURAS
-  $htmlContent .= '
-        <div style="height:8px;"></div>
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td width="45%"></td>
-            <td width="55%" align="right">
-              <table cellpadding="4" cellspacing="0" border="1" width="100%" style="font-size:10px; line-height:12px;">
-                <tr>
-                  <td width="70%">Subtotal (Base imponible)</td>
-                  <td width="30%" align="right">' . number_format($subtotalFactura, 2, ',', '') . ' €</td>
-                </tr>
-                <tr>
-                  <td width="70%">IVA 21%</td>
-                  <td width="30%" align="right">' . number_format($ivaFactura, 2, ',', '') . ' €</td>
-                </tr>
-                <tr>
-                  <td width="70%"><strong>Total</strong></td>
-                  <td width="30%" align="right"><strong>' . number_format($totalFactura, 2, ',', '') . ' €</strong></td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-        <div style="height:6px;"></div>
-      ';
+    $pagoHtml = '';
+    if ($pago) {
+        $metodo = trim((string) ($pago['metodo'] ?? ''));
+        $pasarela = trim((string) ($pago['pasarela'] ?? ''));
+        $fechaPagoFmt = !empty($pago['fecha'])
+            ? date('d-m-Y H:i:s', strtotime((string) $pago['fecha']))
+            : '';
 
-  if ($pago) {
-    $metodo  = trim((string)($pago['metodo'] ?? ''));
-    $pasarela = trim((string)($pago['pasarela'] ?? ''));
-    $fechaPagoRaw = (string)($pago['fecha'] ?? '');
-    $fechaPagoFmt = $fechaPagoRaw ? date('d-m-Y H:i:s', strtotime($fechaPagoRaw)) : '';
-
-    $htmlContent .= '
-    <div style="height:15px;"></div>
-    <table width="100%" cellpadding="4" cellspacing="0" border="0">
-      <tr>
-        <td style="font-size:10px; line-height:12px;">
-          <strong>Información del pago:</strong><br>
-          ' . ($metodo ? 'Pago mediante: ' . htmlspecialchars($metodo) . '<br>' : '') . '
-          ' . ($pasarela ? 'Pasarela: ' . htmlspecialchars($pasarela) . '<br>' : '') . '
-          ' . ($fechaPagoFmt ? 'Fecha de pago: ' . htmlspecialchars($fechaPagoFmt) . '<br>' : '') . '
-        </td>
-      </tr>
-    </table>
-  ';
-  }
-
-  $htmlContent .= '</td></tr></table>';
-  $htmlContent .= '</div>';
-
-  $pdf->writeHTML($htmlContent, true, false, true, false, '');
-
-  // ===== MODO NAVEGADOR (intranet) =====
-  if (($opts['mode'] ?? 'F') === 'FD') {
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    $pdf->Output($filename, 'F');
-
-    return [
-      'status'  => 'success',
-      'mode'    => 'F',
-      'message' => 'PDF mostrado en navegador',
-    ];
-  }
-
-  // ===== MODO FICHERO (email / cron) ===== 
-  $dir = rtrim((string)$opts['base_dir'], '/') . '/' . trim((string)$opts['subdir'], '/');
-
-  if (!is_dir($dir)) {
-    if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
-      return [
-        'status'  => 'error',
-        'message' => 'No se pudo crear directorio de PDFs',
-        'dir'     => $dir,
-      ];
+        $pagoHtml =
+            '<div class="pago">
+            <strong>Información del pago:</strong><br>' .
+            ($metodo
+                ? 'Pago mediante: ' . htmlspecialchars($metodo) . '<br>'
+                : '') .
+            ($pasarela
+                ? 'Pasarela: ' . htmlspecialchars($pasarela) . '<br>'
+                : '') .
+            ($fechaPagoFmt
+                ? 'Fecha de pago: ' . htmlspecialchars($fechaPagoFmt) . '<br>'
+                : '') .
+            '</div>';
     }
-  }
 
-  $path = $dir . '/' . $filename;
+    // ===== HTML =====
 
-  // Idempotencia
-  if (empty($opts['force']) && file_exists($path) && filesize($path) > 0) {
+    $filename = sprintf('factura_%s_%s.pdf', $serieFactura, $numeroFactura);
+
+    $html =
+        '<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        margin: 15mm 12mm 15mm 12mm;
+    }
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 12px;
+        line-height: 1.3;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+    .header {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    .header img {
+        height: 50px;
+        width: auto;
+    }
+    .header-meta {
+        margin-top: 6px;
+        font-size: 12px;
+    }
+    table.partes {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    table.partes td {
+        vertical-align: top;
+        font-size: 12px;
+        line-height: 1.4;
+        padding: 0;
+    }
+    .reserva {
+        font-size: 12px;
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+    .titulo-seccion {
+        text-align: center;
+        font-size: 13px;
+        font-weight: bold;
+        margin: 14px 0;
+    }
+    table.lineas {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    table.lineas th,
+    table.lineas td {
+        border: 1px solid #000;
+        padding: 4px 5px;
+        line-height: 1.3;
+    }
+    table.lineas thead tr {
+        background-color: #000;
+        color: #fff;
+    }
+    table.lineas thead th {
+        border-color: #000;
+    }
+    .col-desc { width: 46%; }
+    .col-num  { width: 10.8%; text-align: right; }
+    table.totales {
+        width: 55%;
+        margin-left: 45%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    table.totales td {
+        border: 1px solid #000;
+        padding: 4px 5px;
+    }
+    table.totales td:last-child {
+        text-align: right;
+    }
+    .pago {
+        font-size: 12px;
+        margin-top: 14px;
+        line-height: 1.5;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://finguer.com/img/logo-finguer.png" alt="Finguer">
+    <div class="header-meta">
+        <strong>Número de factura: ' .
+        htmlspecialchars($numeroFactura) .
+        '/' .
+        htmlspecialchars($serieFactura) .
+        '</strong><br>
+        Fecha de la factura: ' .
+        htmlspecialchars($fechaEmisionFmt) .
+        '
+    </div>
+</div>
+
+<table class="partes">
+    <tr>
+        <td style="width:55%;">' .
+        $renderRows($cliRows) .
+        '</td>
+        <td style="width:45%; text-align:right;">' .
+        $renderRows($emiRows) .
+        '</td>
+    </tr>
+</table>
+
+<div class="reserva">
+    <strong>Resumen de la reserva</strong><br>
+    Tipo de servicio: ' .
+        htmlspecialchars($tipoReserva) .
+        '<br>
+    Entrada: ' .
+        htmlspecialchars($fechaEntrada) .
+        ' ' .
+        htmlspecialchars($horaEntrada) .
+        '<br>
+    Salida: ' .
+        htmlspecialchars($fechaSalida) .
+        ' ' .
+        htmlspecialchars($horaSalida) .
+        '<br>
+    Vehículo: ' .
+        htmlspecialchars($vehiculo) .
+        ' - Matrícula: ' .
+        htmlspecialchars($matricula) .
+        '
+</div>
+
+<div class="titulo-seccion">DETALLES DE LA FACTURA</div>
+
+<table class="lineas">
+    <thead>
+        <tr>
+            <th class="col-desc">Concepto</th>
+            <th class="col-num">Cant.</th>
+            <th class="col-num">Base</th>
+            <th class="col-num">% IVA</th>
+            <th class="col-num">IVA</th>
+            <th class="col-num">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        ' .
+        $lineasHtml .
+        '
+    </tbody>
+</table>
+
+<table class="totales">
+    <tr>
+        <td>Subtotal (Base imponible)</td>
+        <td>' .
+        number_format($subtotalFactura, 2, ',', '') .
+        ' €</td>
+    </tr>
+    <tr>
+        <td>IVA 21%</td>
+        <td>' .
+        number_format($ivaFactura, 2, ',', '') .
+        ' €</td>
+    </tr>
+    <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>' .
+        number_format($totalFactura, 2, ',', '') .
+        ' €</strong></td>
+    </tr>
+</table>
+
+' .
+        $pagoHtml .
+        '
+
+</body>
+</html>';
+
+    // ===== Dompdf =====
+
+    $options = new Options();
+    $options->set('defaultFont', 'DejaVu Sans');
+    $options->set('isRemoteEnabled', true); // necesario para cargar el logo por URL
+    $options->set('isHtml5ParserEnabled', true);
+
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($html, 'UTF-8');
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    $pdfString = $dompdf->output();
+
+    // ===== MODO NAVEGADOR =====
+    if (($opts['mode'] ?? 'F') === 'FD') {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+        echo $pdfString;
+
+        return [
+            'status' => 'success',
+            'mode' => 'FD',
+            'message' => 'PDF mostrado en navegador',
+        ];
+    }
+
+    // ===== MODO FICHERO =====
+    $dir =
+        rtrim((string) $opts['base_dir'], '/') .
+        '/' .
+        trim((string) $opts['subdir'], '/');
+
+    if (!is_dir($dir)) {
+        if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return [
+                'status' => 'error',
+                'message' => 'No se pudo crear directorio de PDFs',
+                'dir' => $dir,
+            ];
+        }
+    }
+
+    $path = $dir . '/' . $filename;
+
+    // Idempotencia
+    if (empty($opts['force']) && file_exists($path) && filesize($path) > 0) {
+        return [
+            'status' => 'success',
+            'mode' => 'F',
+            'message' => 'PDF ya existía',
+            'path' => $path,
+            'subdir' => '/' . trim((string) $opts['subdir'], '/') . '/',
+            'filename' => $filename,
+        ];
+    }
+
+    file_put_contents($path, $pdfString);
+
+    if (!file_exists($path) || filesize($path) === 0) {
+        return [
+            'status' => 'error',
+            'message' => 'PDF no generado o vacío',
+            'path' => $path,
+        ];
+    }
+
     return [
-      'status'  => 'success',
-      'mode'    => 'F',
-      'message' => 'PDF ya existía',
-      'path'    => $path,
-      'subdir'  => '/' . trim((string)$opts['subdir'], '/') . '/',
-      'filename' => $filename,
+        'status' => 'success',
+        'mode' => 'F',
+        'message' => 'PDF generado correctamente',
+        'path' => $path,
+        'subdir' => '/' . trim((string) $opts['subdir'], '/') . '/',
+        'filename' => $filename,
     ];
-  }
-
-  $pdf->Output($path, 'F');
-
-  if (!file_exists($path) || filesize($path) === 0) {
-    return [
-      'status'  => 'error',
-      'message' => 'PDF no generado o vacío',
-      'path'    => $path,
-    ];
-  }
-
-  return [
-    'status'  => 'success',
-    'mode'    => 'F',
-    'message' => 'PDF generado correctamente',
-    'path'    => $path,
-    'subdir'  => '/' . trim((string)$opts['subdir'], '/') . '/',
-    'filename' => $filename,
-  ];
 }
