@@ -21,7 +21,5 @@ public/pdf/facturas
 .env.staging
 error_log
 .ftpquota
-.gitignore
 dist/
 .vscode/
-.husky/
