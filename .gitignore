@@ -1,25 +1,29 @@
-# Ignorar archivos y directorios generados por el sistema operativo
-.DS_Store
-Thumbs.db
-/.vscode/sftp.json
-finguer-web.code-workspace
+# Archivos PDF generados
+/public/pdf/
 
-# Ignorar logs y archivos temporales
-/logs/
-/temp/
-
-# Ignorar directorio de dependencias (ejemplo para PHP y Composer)
+# Composer
 /vendor/
+
+# Node
 /node_modules/
-dev/
-vendor/
-public/pdf
-public/pdf/facturas
+/dist/
+
+# Entorno
 .env
 .env.local
 .env.prod
 .env.staging
-error_log
+
+# Editor
+/.vscode/
+*.code-workspace
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
 .ftpquota
-dist/
-.vscode/
+
+# Logs y temporales
+/logs/
+/temp/
+error_log
