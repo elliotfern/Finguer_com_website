@@ -51,22 +51,14 @@ if ($requestUri === '') {
     $requestUri = '/';
 }
 
-// Verificar si la ruta es solo el idioma, sin "/reserva"
-if (preg_match('#^/(fr|en|ca)$#', $requestUri, $matches)) {
-    $language = $matches[1];
-    // Redirigir a la página correspondiente /fr/reserva, /en/reserva, /ca/reserva
-    header("Location: /$language/reserva", true, 301);
-    exit();
-}
-
 // Detectar el idioma desde la URL (si existe en la ruta)
-preg_match('#^/(fr|en|ca)/#', $requestUri, $matches);
+preg_match('#^/(fr|en|ca)(/|$)#', $requestUri, $matches);
 $language = $matches[1] ?? null; // Si hay un idioma en la URL, lo usamos
 
 // Si no hay idioma en la URL y es la raíz (o idioma por defecto), usamos 'es'
 if (empty($language)) {
     // Comprobamos si la ruta es la raíz (ejemplo: /reserva) y no incluye idioma
-    if (preg_match('#^/reserva$#', $requestUri)) {
+    if (preg_match('#^/$#', $requestUri)) {
         $language = 'es'; // Asumimos que si está en la raíz, el idioma es 'es'
     } else {
         // Si la cookie 'language' ya existe, usamos ese valor; sino, asignamos 'es' por defecto

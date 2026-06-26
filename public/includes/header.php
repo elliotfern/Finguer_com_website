@@ -13,16 +13,16 @@ $languages = [
 // Obtener la URL actual sin el idioma (comenzando desde el primer segmento después de la raíz)
 $currentUri = $_SERVER['REQUEST_URI'];
 
-// Eliminar el idioma actual de la URL (por ejemplo, de '/es', '/fr', '/en', '/ca')
-$baseUri = preg_replace('#^/(fr|en|ca)/#', '/', $currentUri);
+// Eliminar prefijo de idioma de la URL actual (con o sin barra final después)
+$baseUri = preg_replace('#^/(fr|en|ca)(/|$)#', '/', $currentUri);
+$baseUri = '/' . ltrim($baseUri, '/');
 
-$base_url = $currentLanguage === 'es' ? '/' : "/$currentLanguage/";
+// Eliminar también /es/ si existiera
+$baseUri = preg_replace('#^/es(/|$)#', '/', $baseUri);
+$baseUri = '/' . ltrim($baseUri, '/');
 
-// Si el idioma actual es español, no agregar el prefijo '/es'
-if ($currentLanguage === 'es') {
-    // Si el idioma es español, la URL debe ser simplemente '/reserva' o cualquier página sin el prefijo '/es'
-    $baseUri = preg_replace('#^/es/#', '/', $currentUri);
-}
+// Base URL con prefijo de idioma (para los enlaces del menú)
+$base_url = $currentLanguage === 'es' ? '/' : "/{$currentLanguage}";
 
 // Obtener traducciones generales
 $generalTranslations = $translations['header'] ?? [];
@@ -51,8 +51,7 @@ $generalTranslations = $translations['header'] ?? [];
   <div class="container d-flex flex-column" style="flex: 1;">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a href="<?php echo APP_WEB .
-            $base_url; ?>"><img alt="Finguer" class="img-responsive" src="/img/logo-header.svg"></a>
+        <a href="<?php echo $base_url; ?>"><img alt="Finguer" class="img-responsive" src="/img/logo-header.svg"></a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -61,36 +60,31 @@ $generalTranslations = $translations['header'] ?? [];
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="<?php echo APP_WEB .
-                  $base_url; ?>reserva"><?php echo $generalTranslations[
+              <a class="nav-link" aria-current="page" href="<?php echo $base_url; ?>"><?php echo $generalTranslations[
     'home'
 ] ?? 'Inicio'; ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB .
-                  $base_url; ?>#servicios"><?php echo $generalTranslations[
+              <a class="nav-link" href="<?php echo $base_url; ?>#servicios"><?php echo $generalTranslations[
     'servicios'
 ] ?? 'Servicios'; ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB .
-                  $base_url; ?>#formulario"><?php echo $generalTranslations[
+              <a class="nav-link" href="<?php echo $base_url; ?>#formulario"><?php echo $generalTranslations[
     'donde'
 ] ?? 'Dónde estamos'; ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB .
-                  $base_url; ?>#formulario"><?php echo $generalTranslations[
+              <a class="nav-link" href="<?php echo $base_url; ?>#formulario"><?php echo $generalTranslations[
     'contacto'
 ] ?? 'Contacto'; ?></a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo APP_WEB .
-                  $base_url; ?>area-cliente/"><?php echo $generalTranslations[
+              <a class="nav-link" href="<?php echo $base_url; ?>area-cliente/"><?php echo $generalTranslations[
     'micuenta'
 ] ?? 'Mi cuenta'; ?></a>
             </li>

@@ -2,29 +2,24 @@
     RewriteEngine On
     RewriteBase /
 
-    # 1. EXCEPCIÓN CRÍTICA (ESTÁTICOS)
+    # 1. Archivos y directorios reales — no tocar
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # www → non-www (solo HTTP local seguro)
-    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
-    RewriteRule ^(.*)$ http://%1/$1 [L,R=301]
+    # 2. www → non-www (HTTP y HTTPS)
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
 
-    # Root → reserva
-    RewriteRule ^$ /reserva [R=301,L]
+    # 3. Eliminar barra final (excepto raíz)
+    RewriteCond %{REQUEST_URI} ^/(.+)/$
+    RewriteRule ^(.+)/$ /$1 [R=301,L]
 
-    # Control panel redirect
+    # 4. Control panel shortcut
     RewriteRule ^control/?$ /control/reserves-pendents [R=301,L]
 
-    # Idiomas primero (más prioritario)
-    RewriteCond %{REQUEST_URI} ^/(es|fr|en|ca)(.*)$
-    RewriteRule ^(es|fr|en|ca)(.*)$ index.php?lang=$1&uri=$2 [QSA,L]
-
-    # Front controller fallback
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.+)$ index.php?uri=$1 [QSA,L]
+    # 5. Front controller
+    RewriteRule ^ index.php [L]
 </IfModule>
 
 <IfModule mod_headers.c>

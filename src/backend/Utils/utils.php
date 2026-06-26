@@ -1,9 +1,10 @@
 <?php
 
 // Función para generar rutas específicas por idioma
-function generateLanguageRoutes(array $base_routes, bool $use_languages = true): array
-{
-
+function generateLanguageRoutes(
+    array $base_routes,
+    bool $use_languages = true,
+): array {
     $languages = ['es', 'fr', 'en', 'ca']; // Idiomas soportados
     $default_language = 'es'; // Idioma por defecto
     $routes = [];
@@ -25,7 +26,8 @@ function generateLanguageRoutes(array $base_routes, bool $use_languages = true):
                 ];
             } else {
                 // Las rutas para otros idiomas tendrán el prefijo de idioma (ej. /fr/, /en/)
-                $routes["/{$lang}{$path}"] = [
+                $lang_path = $path === '/' ? "/{$lang}" : "/{$lang}{$path}";
+                $routes[$lang_path] = [
                     'view' => $view,
                     'needs_session' => false,
                 ];
