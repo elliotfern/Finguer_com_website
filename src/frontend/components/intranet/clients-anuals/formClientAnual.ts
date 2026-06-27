@@ -7,13 +7,13 @@ import { transmissioDadesDB } from '../../../utils/transmissioDadesBD';
 export const URLS = {
     GET: {
         USUARIOS_GET: (uuid: string) =>
-            `${API_BASE}/usuaris/get/?type=clienteAnual&uuid=${encodeURIComponent(uuid)}`,
+            `${API_BASE}/usuaris/get?type=clienteAnual&uuid=${encodeURIComponent(uuid)}`,
     },
     POST: {
-        USUARIOS_CREATE: `${API_BASE}/usuaris/post/?type=clienteAnual-create`,
+        USUARIOS_CREATE: `${API_BASE}/usuaris/post?type=clienteAnual-create`,
     },
     PUT: {
-        USUARIOS_UPDATE: `${API_BASE}/usuaris/put/?type=clienteAnual-update`,
+        USUARIOS_UPDATE: `${API_BASE}/usuaris/put?type=clienteAnual-update`,
     },
 };
 

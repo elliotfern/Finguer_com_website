@@ -1,4 +1,4 @@
-import { API_BASE } from '../../../config/globals';
+import { ENDPOINTS } from '../../../config/endpoints';
 
 export const login = () => {
     document.addEventListener('DOMContentLoaded', () => {
@@ -24,17 +24,14 @@ export const login = () => {
                 const password = passwordInput.value;
 
                 try {
-                    const response = await fetch(
-                        `${API_BASE}/intranet/auth/login`,
-                        {
-                            method: 'POST',
-                            credentials: 'include',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ email, password }),
-                        }
-                    );
+                    const response = await fetch(ENDPOINTS.POST.auth.login, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password }),
+                    });
 
                     const data = await response.json();
 

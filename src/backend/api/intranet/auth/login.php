@@ -16,10 +16,6 @@ set_exception_handler(function (\Throwable $e) {
     exit();
 });
 
-$raw = file_get_contents('php://input');
-var_dump('RAW INPUT: ' . $raw);
-var_dump('CONTENT-TYPE: ' . ($_SERVER['CONTENT_TYPE'] ?? 'none'));
-
 // --- CORS (solo los orígenes permitidos) ---
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
