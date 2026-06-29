@@ -28,3 +28,4 @@ Thumbs.db
 /logs/
 /temp/
 error_log
+sql_migracion.sql
