@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once APP_ROOT . '/intranet/inc/header.php'; 
+require_once APP_ROOT . '/intranet/inc/header.php';
 
 /**
  * Este archivo SOLO dibuja el formulario.
@@ -147,14 +147,6 @@ require_once APP_ROOT . '/intranet/inc/header.php';
                         <div class="col-md-3">
                             <label for="codigo_postal" class="form-label negreta">Codi postal</label>
                             <input type="text" class="form-control" name="codigo_postal" id="codigo_postal" maxlength="20" value="">
-                        </div>
-
-                        <hr>
-                        <h5>Informació per a Clients anuals: </h5>
-
-                        <div class="col-md-4">
-                            <label for="anualitat" class="form-label negreta">Anualitat (dia/mes/any):</label>
-                            <input type="text" class="form-control" name="anualitat" id="anualitat" maxlength="50" value="">
                         </div>
                     </div>
 

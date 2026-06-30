@@ -8,29 +8,35 @@ requireAuthTokenCookie();
 global $conn;
 /** @var PDO $conn */
 if (!isset($conn) || !($conn instanceof PDO)) {
-    jsonResponse(vp2_err('DB connection not available', 'DB_NOT_AVAILABLE'), 500);
+    jsonResponse(
+        vp2_err('DB connection not available', 'DB_NOT_AVAILABLE'),
+        500,
+    );
 }
 
-$type = (string)($_GET['type'] ?? '');
+$type = (string) ($_GET['type'] ?? '');
 
 try {
-
     // =========================================================
     // type=reserves  (listado por estado_vehiculo)
     // =========================================================
     if ($type === 'reserves') {
-
         $allowedEstados = ['pendiente_entrada', 'dentro', 'salido'];
-        $estadoVehiculo = getEnumParam('estado_vehiculo', $allowedEstados, 'pendiente_entrada');
+        $estadoVehiculo = getEnumParam(
+            'estado_vehiculo',
+            $allowedEstados,
+            'pendiente_entrada',
+        );
 
         $allowedTipos = ['1', '2', '3']; // de momento
-        $tipo = isset($_GET['tipo']) ? trim((string)$_GET['tipo']) : '';
-        $tipo = ($tipo !== '' && in_array($tipo, $allowedTipos, true)) ? $tipo : null;
+        $tipo = isset($_GET['tipo']) ? trim((string) $_GET['tipo']) : '';
+        $tipo =
+            $tipo !== '' && in_array($tipo, $allowedTipos, true) ? $tipo : null;
 
-        $tipoWhere = $tipo ? " AND pr.tipo = :tipo " : "";
+        $tipoWhere = $tipo ? ' AND pr.tipo = :tipo ' : '';
 
         // Si es "salido", limitamos resultados a 20
-        $limitClause = ($estadoVehiculo === 'salido') ? ' LIMIT 20' : '';
+        $limitClause = $estadoVehiculo === 'salido' ? ' LIMIT 20' : '';
 
         // ORDER BY dinámico
         $orderByField = 'pr.entrada_prevista';
@@ -50,8 +56,8 @@ try {
             pr.fecha_reserva,
             pr.canal,
 
-            u.nombre,
-            u.telefono,
+            p.nombre,
+            p.telefono,
 
             DATE(pr.salida_prevista)  AS dataSortida,
             TIME(pr.entrada_prevista) AS HoraEntrada,
@@ -83,13 +89,15 @@ try {
             f.numero AS factura_numero,
             f.serie  AS factura_serie,
 
-            u.telefono AS tel,
+            p.telefono AS tel,
             pr.personas AS numeroPersonas
 
         FROM parking_reservas pr
 
         LEFT JOIN usuarios u
             ON pr.usuario_uuid = u.uuid
+
+        LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
 
         LEFT JOIN (
             SELECT reserva_id, MAX(id) AS pago_id
@@ -140,16 +148,19 @@ try {
         // Contadores por estado_vehiculo
         $counts = [
             'pendiente_entrada' => 0,
-            'dentro'            => 0,
-            'salido'            => 0,
+            'dentro' => 0,
+            'salido' => 0,
         ];
 
-        $sqlCounts = "
+        $sqlCounts =
+            "
             SELECT pr.estado_vehiculo, COUNT(*) AS total
             FROM parking_reservas pr
             WHERE 1=1
              AND pr.estado <> 'cancelada'
-            " . ($tipo !== null ? " AND pr.tipo = :tipo " : "") . "
+            " .
+            ($tipo !== null ? ' AND pr.tipo = :tipo ' : '') .
+            "
             GROUP BY pr.estado_vehiculo
         ";
 
@@ -163,22 +174,23 @@ try {
         foreach ($rowsCounts as $row) {
             $estado = $row['estado_vehiculo'] ?? '';
             if (isset($counts[$estado])) {
-                $counts[$estado] = (int)($row['total'] ?? 0);
+                $counts[$estado] = (int) ($row['total'] ?? 0);
             }
         }
 
-        jsonResponse(vp2_ok('OK', [
-            'counts' => $counts,
-            'rows'   => $rows,
-            'hasRows' => (bool)$rows,
-        ]));
+        jsonResponse(
+            vp2_ok('OK', [
+                'counts' => $counts,
+                'rows' => $rows,
+                'hasRows' => (bool) $rows,
+            ]),
+        );
     }
 
     // =========================================================
     // type=reservaId (detalle de una reserva por id)
     // =========================================================
     if ($type === 'reservaId') {
-
         $id = getIntParam('id', true);
 
         $query = "SELECT
@@ -283,30 +295,31 @@ try {
             jsonResponse(vp2_err('Reserva no encontrada', 'NOT_FOUND'), 404);
         }
 
-        jsonResponse(vp2_ok('OK', [
-            'rows' => $rows
-        ]));
+        jsonResponse(
+            vp2_ok('OK', [
+                'rows' => $rows,
+            ]),
+        );
     }
 
     // =========================================================
     // type=verificaPagament (info sin efectos secundarios)
     // =========================================================
     if ($type === 'verificaPagament') {
-
         $id = $_GET['id'] ?? null;
         if ($id === null || $id === '') {
             jsonResponse(vp2_err('Falta parámetro id', 'MISSING_ID'), 400);
         }
 
         $result = verificarPagament($id, [
-            'solo_info'           => true,
-            'actualizar_bd'       => false,
+            'solo_info' => true,
+            'actualizar_bd' => false,
             'enviar_confirmacion' => false,
-            'crear_factura'       => false,
-            'enviar_factura'      => false,
+            'crear_factura' => false,
+            'enviar_factura' => false,
         ]);
 
-        $http = (($result['status'] ?? '') === 'success') ? 200 : 400;
+        $http = ($result['status'] ?? '') === 'success' ? 200 : 400;
 
         // Si verificarPagament ya devuelve vp2_ok/vp2_err perfecto,
         // lo devolvemos tal cual:
@@ -318,18 +331,23 @@ try {
     // GET ?type=list-by-email&email=...&limit=50&offset=0
     // =========================================================
     if ($type === 'list-by-email') {
-
-        $email = isset($_GET['email']) ? trim((string)$_GET['email']) : '';
+        $email = isset($_GET['email']) ? trim((string) $_GET['email']) : '';
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             jsonResponse(vp2_err('Email inválido', 'BAD_EMAIL'), 400);
         }
 
-        $limit  = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
-        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
+        $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
 
-        if ($limit < 1) $limit = 50;
-        if ($limit > 200) $limit = 200;
-        if ($offset < 0) $offset = 0;
+        if ($limit < 1) {
+            $limit = 50;
+        }
+        if ($limit > 200) {
+            $limit = 200;
+        }
+        if ($offset < 0) {
+            $offset = 0;
+        }
 
         // LIST
         $sql = "
@@ -371,23 +389,33 @@ try {
         $stmtC = $conn->prepare($sqlCount);
         $stmtC->bindValue(':email', $email, PDO::PARAM_STR);
         $stmtC->execute();
-        $total = (int)($stmtC->fetchColumn() ?: 0);
+        $total = (int) ($stmtC->fetchColumn() ?: 0);
 
-        jsonResponse(vp2_ok('OK', [
-            'email'  => $email,
-            'limit'  => $limit,
-            'offset' => $offset,
-            'total'  => $total,
-            'rows'   => $rows,
-            'hasRows' => (bool)$rows,
-        ]), 200);
+        jsonResponse(
+            vp2_ok('OK', [
+                'email' => $email,
+                'limit' => $limit,
+                'offset' => $offset,
+                'total' => $total,
+                'rows' => $rows,
+                'hasRows' => (bool) $rows,
+            ]),
+            200,
+        );
     }
 
-
     // Si llega aquí, type no válido
-    jsonResponse(vp2_err('type inválido', 'BAD_TYPE', ['allowed' => ['reserves', 'reservaId', 'verificaPagament']]), 400);
+    jsonResponse(
+        vp2_err('type inválido', 'BAD_TYPE', [
+            'allowed' => ['reserves', 'reservaId', 'verificaPagament'],
+        ]),
+        400,
+    );
 } catch (Throwable $e) {
-    jsonResponse(vp2_err('Error interno', 'SERVER_ERROR', [
-        'details' => $e->getMessage(),
-    ]), 500);
+    jsonResponse(
+        vp2_err('Error interno', 'SERVER_ERROR', [
+            'details' => $e->getMessage(),
+        ]),
+        500,
+    );
 }

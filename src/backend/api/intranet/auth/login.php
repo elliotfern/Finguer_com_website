@@ -65,8 +65,9 @@ if ($email === false) {
 }
 
 $query = "
-    SELECT u.uuid, u.nombre, u.email, u.password, u.tipo_rol
+    SELECT u.uuid, u.email, u.password, u.tipo_rol, p.nombre
     FROM usuarios AS u
+    LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
     WHERE u.email = :email
     LIMIT 1
 ";
@@ -87,7 +88,7 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $hash = (string) $row['password'];
 $tipoUsuario = (string) $row['tipo_rol'];
-
+$nombre = (string) $row['nombre'];
 $rolesPermitidos = ['admin', 'trabajador'];
 
 if (!in_array($tipoUsuario, $rolesPermitidos, true)) {
@@ -127,11 +128,9 @@ $payload = [
     'iat' => $now,
     'exp' => $expiration,
     'jti' => $jti,
-
+    'name' => $nombre,
     'sub' => $usuarioUuidStr, // ✅ identidad canónica
     'role' => $tipoUsuario,
-    'name' => (string) ($row['nombre'] ?? ''),
-    // "email" => (string)$row['email'], // opcional
 ];
 
 // 🧹 Limpieza defensiva de tokens antiguos
@@ -142,7 +141,6 @@ $jwt = JWT::encode($payload, $jwtSecret, 'HS256');
 $isProd = str_contains($_SERVER['HTTP_HOST'] ?? '', 'finguer.com');
 
 // ✅ SOLO UNA COOKIE: token
-// Mejor usando setcookie con array (PHP 7.3+)
 $cookieOptions = [
     'expires' => $expiration,
     'path' => '/',

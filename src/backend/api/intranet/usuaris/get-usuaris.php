@@ -57,14 +57,15 @@ try {
         $sql = "
             SELECT
                 u.uuid,
-                u.nombre,
+                p.nombre,
                 u.email,
-                u.telefono,
+                p.telefono,
                 u.tipo_rol,
                 u.created_at
             FROM usuarios u
+            LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
             WHERE 1=1
-              AND (:q = '' OR u.nombre LIKE :qLike OR u.email LIKE :qLike OR u.telefono LIKE :qLike)
+              AND (:q = '' OR p.nombre LIKE :qLike OR u.email LIKE :qLike OR p.telefono LIKE :qLike)
               {$roleWhere}
             ORDER BY u.created_at DESC
             LIMIT :limit OFFSET :offset
@@ -86,8 +87,9 @@ try {
         $sqlCount = "
                 SELECT COUNT(*) AS total
                 FROM usuarios u
+                LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
                 WHERE 1=1
-                AND (:q = '' OR u.nombre LIKE :qLike OR u.email LIKE :qLike OR u.telefono LIKE :qLike)
+                AND (:q = '' OR p.nombre LIKE :qLike OR u.email LIKE :qLike OR p.telefono LIKE :qLike)
                 {$roleWhere}
             ";
 
@@ -152,26 +154,22 @@ try {
         $sql = "
             SELECT
                 u.uuid,
-                u.nombre,
+                p.nombre,
                 u.email,
                 u.estado,
-                u.empresa,
-                u.nif,
-                u.direccion,
-                u.ciudad,
-                u.codigo_postal,
-                u.pais,
-                u.telefono,
-                u.anualitat,
+                p.empresa,
+                p.nif,
+                p.direccion,
+                p.ciudad,
+                p.codigo_postal,
+                p.pais,
+                p.telefono,
                 u.tipo_rol,
                 u.locale,
-                u.dispositiu,
-                u.navegador,
-                u.sistema_operatiu,
-                u.ip,
                 u.created_at,
                 u.updated_at
             FROM usuarios u
+            LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
             WHERE u.uuid = :uuid
             LIMIT 1
         ";
@@ -205,13 +203,8 @@ try {
             'codigo_postal' => $r['codigo_postal'] ?? null,
             'pais' => $r['pais'] ?? null,
             'telefono' => $r['telefono'] ?? null,
-            'anualitat' => $r['anualitat'] ?? null,
             'tipo_rol' => (string) ($r['tipo_rol'] ?? ''),
             'locale' => (string) ($r['locale'] ?? ''),
-            'dispositiu' => $r['dispositiu'] ?? null,
-            'navegador' => $r['navegador'] ?? null,
-            'sistema_operatiu' => $r['sistema_operatiu'] ?? null,
-            'ip' => $r['ip'] ?? null,
             'createdAt' => $r['created_at'] ?? null,
             'updatedAt' => $r['updated_at'] ?? null,
         ];
@@ -256,6 +249,22 @@ try {
         }
 
         // =========================
+        // ABONO PERFIL
+        // =========================
+        $sqlPerfil = "
+        SELECT *
+        FROM usuarios_perfil
+        WHERE usuario_uuid = :uuid
+        LIMIT 1
+    ";
+
+        $stmt4 = $conn->prepare($sqlPerfil);
+        $stmt4->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
+        $stmt4->execute();
+
+        $perfil = $stmt4->fetch(PDO::FETCH_ASSOC);
+
+        // =========================
         // ABONO ANUAL
         // =========================
         $sqlAbono = "
@@ -292,15 +301,15 @@ try {
         jsonResponse(
             vp2_ok('OK', [
                 'uuid' => uuid_string_from_bin($user['uuid']),
-                'nombre' => (string) $user['nombre'],
+                'nombre' => (string) $perfil['nombre'],
                 'email' => (string) $user['email'],
-                'empresa' => $user['empresa'] ?? null,
-                'nif' => $user['nif'] ?? null,
-                'direccion' => $user['direccion'] ?? null,
-                'ciudad' => $user['ciudad'] ?? null,
-                'codigo_postal' => $user['codigo_postal'] ?? null,
-                'pais' => $user['pais'] ?? null,
-                'telefono' => $user['telefono'] ?? null,
+                'empresa' => $perfil['empresa'] ?? null,
+                'nif' => $perfil['nif'] ?? null,
+                'direccion' => $perfil['direccion'] ?? null,
+                'ciudad' => $perfil['ciudad'] ?? null,
+                'codigo_postal' => $perfil['codigo_postal'] ?? null,
+                'pais' => $perfil['pais'] ?? null,
+                'telefono' => $perfil['telefono'] ?? null,
                 'tipo_rol' => (string) $user['tipo_rol'],
                 'locale' => (string) $user['locale'],
                 'createdAt' => $user['created_at'] ?? null,

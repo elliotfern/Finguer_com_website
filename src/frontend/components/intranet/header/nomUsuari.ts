@@ -1,4 +1,4 @@
-import { apiUrl } from '../../../config/globals';
+import { ENDPOINTS } from '../../../config/endpoints';
 import { Role } from '../../../types/Role';
 
 type MeSuccess = Readonly<{
@@ -70,10 +70,8 @@ function parseMeResponse(json: unknown): MeResponse {
 }
 
 export async function nomUsuari(): Promise<Me | null> {
-    const urlAjax = `${apiUrl}/intranet/users/get?type=user`;
-
     try {
-        const response = await fetch(urlAjax, {
+        const response = await fetch(ENDPOINTS.GET.clients.nomUsuari, {
             method: 'GET',
             credentials: 'include',
             headers: { Accept: 'application/json' },

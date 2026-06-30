@@ -23,8 +23,8 @@ try {
     // =========================================================
     if ($slug === 'clientsAnuals') {
         $query = "SELECT
-                        c.nombre AS nom,
-                        c.telefono AS telefon,
+                        p.nombre AS nom,
+                        p.telefono AS telefon,
                         HEX(c.uuid) AS uuid_hex,
                         HEX(c.uuid) AS id,
                         a.estado,
@@ -33,8 +33,8 @@ try {
                         COALESCE(r.reservas_completadas, 0) AS reservas_completadas,
                         a.limite_reservas
                     FROM usuarios AS c
-                    LEFT JOIN usuarios_abonos AS a
-                        ON c.uuid = a.usuario_uuid
+                    LEFT JOIN usuarios_abonos AS a ON c.uuid = a.usuario_uuid
+                    LEFT JOIN usuarios_perfil AS p ON c.uuid = p.usuario_uuid
 
                     LEFT JOIN (
                         SELECT

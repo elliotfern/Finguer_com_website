@@ -8,7 +8,62 @@ permissions:
     contents: read
 
 jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_DATABASE: finguer_test
+                ports:
+                    - 3306:3306
+                options: >-
+                    --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.5'
+                  extensions: pdo_mysql, mbstring, intl
+
+            - name: Install Composer dependencies
+              run: composer install --prefer-dist --no-progress
+
+            - name: Wait for MySQL
+              run: |
+                  for i in {1..30}; do
+                    mysqladmin ping -h127.0.0.1 -uroot -proot --silent && break
+                    sleep 1
+                  done
+
+            - name: Load schema into test DB
+              run: |
+                  mysql -h127.0.0.1 -uroot -proot finguer_test < tests/schema/finguer_test_schema.sql
+
+            - name: Create .env.test
+              run: |
+                  cat > .env.test << EOF
+                  DB_HOST=127.0.0.1
+                  DB_USER=root
+                  DB_PASS=root
+                  DB_DBNAME=finguer_test
+                  EOF
+
+            - name: Run Unit tests
+              run: ./vendor/bin/phpunit --testsuite Unit
+
+            - name: Run Integration tests
+              run: ./vendor/bin/phpunit --testsuite Integration
+
     deploy:
+        needs: test
         runs-on: ubuntu-latest
 
         steps:
