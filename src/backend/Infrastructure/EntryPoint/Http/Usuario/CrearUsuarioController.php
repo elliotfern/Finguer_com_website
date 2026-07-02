@@ -10,6 +10,7 @@ use App\Application\Usuario\Factory\UsuarioFactory;
 use App\Application\Usuario\UseCase\BuscarOCrearUsuario;
 use App\Infrastructure\Persistence\MySql\MysqlConnection;
 use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
+use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository as UsuarioMySqlUsuarioRepository;
 use PDO;
 
 final class CrearUsuarioController
@@ -47,7 +48,7 @@ final class CrearUsuarioController
         }
 
         try {
-            $repo = new MySqlUsuarioRepository(MysqlConnection::get());
+            $repo = new UsuarioMySqlUsuarioRepository(MysqlConnection::get());
             $useCase = new BuscarOCrearUsuario($repo);
             $usuario = $useCase->execute($data);
 

@@ -232,12 +232,7 @@ try {
 
             u.nombre,
             u.telefono AS tel,
-            pr.personas AS numeroPersonas,
-
-            u.dispositiu,
-            u.navegador,
-            u.sistema_operatiu,
-            u.ip
+            pr.personas AS numeroPersonas
 
         FROM parking_reservas pr
 

@@ -146,8 +146,8 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
             <label class="form-label">Estat abonament</label>
             <select class="form-select" name="estado" id="estado">
                 <option value="activo">Actiu</option>
-                <option value="pendiente">Pendent</option>
                 <option value="caducado">Caducat</option>
+                <option value="cancelado">Cancel·lat</option>
                 <option value="suspendido">Suspès</option>
             </select>
         </div>

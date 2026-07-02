@@ -1,15 +1,22 @@
 <?php
 
-function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'manual'): ?int
-{
+function crearFacturaParaReserva(
+    PDO $conn,
+    int $reservaId,
+    string $origen = 'manual',
+): ?int {
     $fase = 'inicio';
     $usaTransaccionPropia = !$conn->inTransaction();
 
     error_log(
-        '[FINGUER] crearFacturaParaReserva INICIO '
-            . '(reserva_id=' . $reservaId
-            . ', origen=' . $origen
-            . ', usaTransaccionPropia=' . ($usaTransaccionPropia ? '1' : '0') . ')'
+        '[FINGUER] crearFacturaParaReserva INICIO ' .
+            '(reserva_id=' .
+            $reservaId .
+            ', origen=' .
+            $origen .
+            ', usaTransaccionPropia=' .
+            ($usaTransaccionPropia ? '1' : '0') .
+            ')',
     );
 
     try {
@@ -27,8 +34,14 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $facturaExistente = $stmtExist->fetch(PDO::FETCH_ASSOC);
 
         if ($facturaExistente) {
-            $idExist = (int)$facturaExistente['id'];
-            error_log('[FINGUER] crearFacturaParaReserva EXISTE (reserva_id=' . $reservaId . ', factura_id=' . $idExist . ')');
+            $idExist = (int) $facturaExistente['id'];
+            error_log(
+                '[FINGUER] crearFacturaParaReserva EXISTE (reserva_id=' .
+                    $reservaId .
+                    ', factura_id=' .
+                    $idExist .
+                    ')',
+            );
             return $idExist;
         }
 
@@ -36,32 +49,54 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         // DEBUG HARD: huella de conexión y checks sin JOIN
         try {
-            $who = $conn->query("
+            $who = $conn
+                ->query(
+                    "
         SELECT DATABASE() db, @@hostname host, @@port port, CONNECTION_ID() cid
-    ")->fetch(PDO::FETCH_ASSOC);
-            error_log('[FINGUER][DEBUG] crearFacturaParaReserva CONN=' . json_encode($who, JSON_UNESCAPED_UNICODE));
+    ",
+                )
+                ->fetch(PDO::FETCH_ASSOC);
+            error_log(
+                '[FINGUER][DEBUG] crearFacturaParaReserva CONN=' .
+                    json_encode($who, JSON_UNESCAPED_UNICODE),
+            );
         } catch (Throwable $e) {
-            error_log('[FINGUER][DEBUG] crearFacturaParaReserva CONN=ERROR ' . $e->getMessage());
+            error_log(
+                '[FINGUER][DEBUG] crearFacturaParaReserva CONN=ERROR ' .
+                    $e->getMessage(),
+            );
         }
 
         // ¿Existe reserva sin join?
-        $stR = $conn->prepare("SELECT id, usuario_uuid FROM parking_reservas WHERE id = :id LIMIT 1");
+        $stR = $conn->prepare(
+            'SELECT id, usuario_uuid FROM parking_reservas WHERE id = :id LIMIT 1',
+        );
         $stR->execute([':id' => $reservaId]);
         $r0 = $stR->fetch(PDO::FETCH_ASSOC);
 
-        if ($r0 && isset($r0['usuario_uuid']) && is_string($r0['usuario_uuid'])) {
+        if (
+            $r0 &&
+            isset($r0['usuario_uuid']) &&
+            is_string($r0['usuario_uuid'])
+        ) {
             $r0['usuario_uuid_hex'] = bin2hex($r0['usuario_uuid']);
             unset($r0['usuario_uuid']);
         }
-        error_log('[FINGUER][DEBUG] pr=' . json_encode($r0, JSON_UNESCAPED_UNICODE));
+        error_log(
+            '[FINGUER][DEBUG] pr=' . json_encode($r0, JSON_UNESCAPED_UNICODE),
+        );
 
         // ¿Existe el usuario por id?
         $uid = $r0['usuario_uuid'] ?? null;
-        $stU = $conn->prepare("SELECT HEX(uuid) uuid_hex, nombre, email FROM usuarios WHERE uuid = :uid LIMIT 1");
+        $stU = $conn->prepare(
+            'SELECT HEX(uuid) uuid_hex, email FROM usuarios WHERE uuid = :uid LIMIT 1',
+        );
         $stU->bindValue(':uid', $uid, PDO::PARAM_LOB);
         $stU->execute();
         $u0 = $stU->fetch(PDO::FETCH_ASSOC);
-        error_log('[FINGUER][DEBUG] u=' . json_encode($u0, JSON_UNESCAPED_UNICODE));
+        error_log(
+            '[FINGUER][DEBUG] u=' . json_encode($u0, JSON_UNESCAPED_UNICODE),
+        );
 
         // ¿Y el join exacto?
         $stJ = $conn->prepare("
@@ -74,8 +109,9 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         $stJ->execute([':id' => $reservaId]);
         $j0 = $stJ->fetch(PDO::FETCH_ASSOC);
-        error_log('[FINGUER][DEBUG] join=' . json_encode($j0, JSON_UNESCAPED_UNICODE));
-
+        error_log(
+            '[FINGUER][DEBUG] join=' . json_encode($j0, JSON_UNESCAPED_UNICODE),
+        );
 
         $fase = 'cargar_reserva_usuario';
         $sql = "
@@ -87,17 +123,19 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                 pr.iva_calculado,
                 pr.total_calculado,
 
-                u.nombre         AS u_nombre,
                 u.email          AS u_email,
-                u.empresa        AS u_empresa,
-                u.nif            AS u_nif,
-                u.direccion      AS u_direccion,
-                u.ciudad         AS u_ciudad,
-                u.codigo_postal  AS u_cp,
-                u.pais           AS u_pais
+                up.nombre        AS u_nombre,
+                up.empresa       AS u_empresa,
+                up.nif           AS u_nif,
+                up.direccion     AS u_direccion,
+                up.ciudad        AS u_ciudad,
+                up.codigo_postal AS u_cp,
+                up.pais          AS u_pais
             FROM parking_reservas pr
             LEFT JOIN usuarios u
                 ON u.uuid = pr.usuario_uuid
+            LEFT JOIN usuarios_perfil up
+                ON up.usuario_uuid = pr.usuario_uuid
             WHERE pr.id = :id
             LIMIT 1
         ";
@@ -106,7 +144,9 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$reserva) {
-            error_log("[FINGUER] crearFacturaParaReserva: NO SE ENCONTRÓ la reserva id={$reservaId}");
+            error_log(
+                "[FINGUER] crearFacturaParaReserva: NO SE ENCONTRÓ la reserva id={$reservaId}",
+            );
             return null;
         }
 
@@ -115,51 +155,69 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fechaEmisionDt = new DateTimeImmutable('now', $tz);
         $fechaEmision = $fechaEmisionDt->format('Y-m-d H:i:s');
 
-        $subtotal  = (float)($reserva['subtotal_calculado'] ?? 0);
-        $iva       = (float)($reserva['iva_calculado'] ?? 0);
-        $total     = (float)($reserva['total_calculado'] ?? 0);
+        $subtotal = (float) ($reserva['subtotal_calculado'] ?? 0);
+        $iva = (float) ($reserva['iva_calculado'] ?? 0);
+        $total = (float) ($reserva['total_calculado'] ?? 0);
         $usuarioUuidBytes = $reserva['usuario_uuid'] ?? null;
         if (!is_string($usuarioUuidBytes) || strlen($usuarioUuidBytes) !== 16) {
-            error_log("[FINGUER] crearFacturaParaReserva: usuario_uuid inválido (reserva_id={$reservaId})");
+            error_log(
+                "[FINGUER] crearFacturaParaReserva: usuario_uuid inválido (reserva_id={$reservaId})",
+            );
             return null;
         }
 
         // Snapshot cliente (nombre/email siempre, resto opcional)
-        $facturarNombre = trim((string)($reserva['u_nombre'] ?? ''));
-        $facturarEmail  = trim((string)($reserva['u_email'] ?? ''));
+        $facturarNombre = trim((string) ($reserva['u_nombre'] ?? ''));
+        $facturarEmail = trim((string) ($reserva['u_email'] ?? ''));
 
         if ($facturarNombre === '' || $facturarEmail === '') {
             $usuarioUuidHex = bin2hex($usuarioUuidBytes);
-            error_log('[FINGUER] crearFacturaParaReserva RESERVA (faltan datos obligatorios usuario (nombre/email) usuario_uuid_hex=' . $usuarioUuidHex . ')');
+            error_log(
+                '[FINGUER] crearFacturaParaReserva RESERVA (faltan datos obligatorios usuario (nombre/email) usuario_uuid_hex=' .
+                    $usuarioUuidHex .
+                    ')',
+            );
             return null;
         }
 
         // En tu tabla facturas: casi todo NOT NULL => fallback '' (empresa sí puede ser NULL)
-        $facturarEmpresa   = (isset($reserva['u_empresa']) && $reserva['u_empresa'] !== '') ? (string)$reserva['u_empresa'] : null;
-        $facturarNif       = trim((string)($reserva['u_nif'] ?? ''));
-        $facturarDireccion = trim((string)($reserva['u_direccion'] ?? ''));
-        $facturarCiudad    = trim((string)($reserva['u_ciudad'] ?? ''));
-        $facturarCp        = trim((string)($reserva['u_cp'] ?? ''));
-        $facturarPais      = trim((string)($reserva['u_pais'] ?? ''));
-        if ($facturarPais === '') $facturarPais = 'ES';
+        $facturarEmpresa =
+            isset($reserva['u_empresa']) && $reserva['u_empresa'] !== ''
+                ? (string) $reserva['u_empresa']
+                : null;
+        $facturarNif = trim((string) ($reserva['u_nif'] ?? ''));
+        $facturarDireccion = trim((string) ($reserva['u_direccion'] ?? ''));
+        $facturarCiudad = trim((string) ($reserva['u_ciudad'] ?? ''));
+        $facturarCp = trim((string) ($reserva['u_cp'] ?? ''));
+        $facturarPais = trim((string) ($reserva['u_pais'] ?? ''));
+        if ($facturarPais === '') {
+            $facturarPais = 'ES';
+        }
 
         $usuarioUuidHex = bin2hex($usuarioUuidBytes);
 
         error_log(
-            '[FINGUER] crearFacturaParaReserva RESERVA '
-                . '(reserva_id=' . $reservaId
-                . ', fecha_emision=' . $fechaEmision
-                . ', subtotal=' . $subtotal
-                . ', iva=' . $iva
-                . ', total=' . $total
-                . ', usuario_uuid=' . $usuarioUuidHex . ')'
+            '[FINGUER] crearFacturaParaReserva RESERVA ' .
+                '(reserva_id=' .
+                $reservaId .
+                ', fecha_emision=' .
+                $fechaEmision .
+                ', subtotal=' .
+                $subtotal .
+                ', iva=' .
+                $iva .
+                ', total=' .
+                $total .
+                ', usuario_uuid=' .
+                $usuarioUuidHex .
+                ')',
         );
 
         // 2) Seleccionar emisor (cutover fijo 2026-01-01) y snapshot
         $fase = 'seleccionar_emisor';
 
         $cutover = new DateTimeImmutable('2026-01-01 00:00:00', $tz);
-        $emisorId = ($fechaEmisionDt >= $cutover) ? 2 : 1;
+        $emisorId = $fechaEmisionDt >= $cutover ? 2 : 1;
 
         $sqlEmisor = "
             SELECT id, nombre_legal, nif, direccion, cp, ciudad, pais
@@ -172,36 +230,51 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $emisor = $stmtE->fetch(PDO::FETCH_ASSOC);
 
         if (!$emisor) {
-            error_log('[FINGUER] crearFacturaParaReserva: NO existe emisor id=' . $emisorId);
+            error_log(
+                '[FINGUER] crearFacturaParaReserva: NO existe emisor id=' .
+                    $emisorId,
+            );
             return null;
         }
 
-        $emisorNombre = (string)$emisor['nombre_legal'];
-        $emisorNif    = (string)$emisor['nif'];
-        $emisorDir    = (string)$emisor['direccion'];
-        $emisorCp     = (string)$emisor['cp'];
-        $emisorCiudad = (string)$emisor['ciudad'];
-        $emisorPais   = (string)$emisor['pais'];
+        $emisorNombre = (string) $emisor['nombre_legal'];
+        $emisorNif = (string) $emisor['nif'];
+        $emisorDir = (string) $emisor['direccion'];
+        $emisorCp = (string) $emisor['cp'];
+        $emisorCiudad = (string) $emisor['ciudad'];
+        $emisorPais = (string) $emisor['pais'];
 
         // 3) Numeración
         $fase = 'generar_numero';
-        $serieCodigo = (int)date('Y', strtotime($fechaEmision));
-        $numeracion  = generarNumeroFactura($conn, (string)$serieCodigo);
+        $serieCodigo = (int) date('Y', strtotime($fechaEmision));
+        $numeracion = generarNumeroFactura($conn, (string) $serieCodigo);
 
         error_log(
-            '[FINGUER] crearFacturaParaReserva NUMERACION '
-                . '(reserva_id=' . $reservaId
-                . ', serie=' . $numeracion['serie']
-                . ', numero=' . $numeracion['numero'] . ')'
+            '[FINGUER] crearFacturaParaReserva NUMERACION ' .
+                '(reserva_id=' .
+                $reservaId .
+                ', serie=' .
+                $numeracion['serie'] .
+                ', numero=' .
+                $numeracion['numero'] .
+                ')',
         );
 
         // 4) Transacción
         $fase = 'iniciar_transaccion';
         if ($usaTransaccionPropia) {
             $conn->beginTransaction();
-            error_log('[FINGUER] crearFacturaParaReserva BEGIN TRANSACTION (reserva_id=' . $reservaId . ')');
+            error_log(
+                '[FINGUER] crearFacturaParaReserva BEGIN TRANSACTION (reserva_id=' .
+                    $reservaId .
+                    ')',
+            );
         } else {
-            error_log('[FINGUER] crearFacturaParaReserva USA TRANSACCION EXTERNA (reserva_id=' . $reservaId . ')');
+            error_log(
+                '[FINGUER] crearFacturaParaReserva USA TRANSACCION EXTERNA (reserva_id=' .
+                    $reservaId .
+                    ')',
+            );
         }
 
         // 5) Insert factura
@@ -221,8 +294,8 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $stmtF = $conn->prepare($sqlInsF);
 
         $okF = $stmtF->execute([
-            ':numero' => (string)$numeracion['numero'],
-            ':serie'  => (string)$numeracion['serie'],
+            ':numero' => (string) $numeracion['numero'],
+            ':serie' => (string) $numeracion['serie'],
             ':reserva_id' => $reservaId,
             ':usuario_uuid' => $usuarioUuidBytes,
 
@@ -251,11 +324,19 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         if (!$okF) {
             $info = $stmtF->errorInfo();
-            throw new \RuntimeException('Error insertando factura: ' . implode(' | ', $info));
+            throw new \RuntimeException(
+                'Error insertando factura: ' . implode(' | ', $info),
+            );
         }
 
-        $facturaId = (int)$conn->lastInsertId();
-        error_log('[FINGUER] crearFacturaParaReserva FACTURA_INSERTADA (reserva_id=' . $reservaId . ', factura_id=' . $facturaId . ')');
+        $facturaId = (int) $conn->lastInsertId();
+        error_log(
+            '[FINGUER] crearFacturaParaReserva FACTURA_INSERTADA (reserva_id=' .
+                $reservaId .
+                ', factura_id=' .
+                $facturaId .
+                ')',
+        );
 
         // 6) Insertar líneas (COPIA EXACTA desde parking_reservas_servicios)
         $fase = 'cargar_servicios';
@@ -277,11 +358,15 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $stmtServ->execute([':reserva_id' => $reservaId]);
 
         // DEBUG servicios (antes de fetchAll)
-        $stCnt = $conn->prepare("SELECT COUNT(*) FROM parking_reservas_servicios WHERE reserva_id = :rid");
+        $stCnt = $conn->prepare(
+            'SELECT COUNT(*) FROM parking_reservas_servicios WHERE reserva_id = :rid',
+        );
         $stCnt->execute([':rid' => $reservaId]);
-        $cnt = (int)$stCnt->fetchColumn();
+        $cnt = (int) $stCnt->fetchColumn();
 
-        error_log("[FINGUER][DEBUG] servicios_count(reserva_id={$reservaId})={$cnt}");
+        error_log(
+            "[FINGUER][DEBUG] servicios_count(reserva_id={$reservaId})={$cnt}",
+        );
 
         if ($cnt > 0) {
             $stOne = $conn->prepare("
@@ -293,15 +378,18 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
     ");
             $stOne->execute([':rid' => $reservaId]);
             $rows = $stOne->fetchAll(PDO::FETCH_ASSOC);
-            error_log('[FINGUER][DEBUG] servicios_sample=' . json_encode($rows, JSON_UNESCAPED_UNICODE));
+            error_log(
+                '[FINGUER][DEBUG] servicios_sample=' .
+                    json_encode($rows, JSON_UNESCAPED_UNICODE),
+            );
         }
-
-
 
         $servicios = $stmtServ->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$servicios) {
-            throw new RuntimeException("No hay servicios en parking_reservas_servicios para reserva_id={$reservaId}");
+            throw new RuntimeException(
+                "No hay servicios en parking_reservas_servicios para reserva_id={$reservaId}",
+            );
         }
 
         $fase = 'insertar_lineas';
@@ -336,35 +424,38 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         $nLinea = 1;
         $sumBase = 0.0;
-        $sumIva  = 0.0;
-        $sumTot  = 0.0;
+        $sumIva = 0.0;
+        $sumTot = 0.0;
 
         foreach ($servicios as $srv) {
-            $base = (float)($srv['total_base'] ?? 0);
-            $ivaL = (float)($srv['total_impuesto'] ?? 0);
-            $totL = (float)($srv['total_linea'] ?? 0);
+            $base = (float) ($srv['total_base'] ?? 0);
+            $ivaL = (float) ($srv['total_impuesto'] ?? 0);
+            $totL = (float) ($srv['total_linea'] ?? 0);
 
             // Guardamos sumas para verificación final
             $sumBase += $base;
-            $sumIva  += $ivaL;
-            $sumTot  += $totL;
+            $sumIva += $ivaL;
+            $sumTot += $totL;
 
             $ok = $stmtLinea->execute([
-                ':factura_id'       => $facturaId,
-                ':linea'            => $nLinea++,
-                ':descripcion'      => (string)($srv['descripcion'] ?? ''),
-                ':cantidad'         => (float)($srv['cantidad'] ?? 0),
-                ':precio_unitario'  => (float)($srv['precio_unitario'] ?? 0),
-                ':impuesto_percent' => (float)($srv['impuesto_percent'] ?? 0),
-                ':total_base'       => $base,
-                ':total_impuesto'   => $ivaL,
-                ':total_linea'      => $totL,
-                ':reserva_id'       => $reservaId,
+                ':factura_id' => $facturaId,
+                ':linea' => $nLinea++,
+                ':descripcion' => (string) ($srv['descripcion'] ?? ''),
+                ':cantidad' => (float) ($srv['cantidad'] ?? 0),
+                ':precio_unitario' => (float) ($srv['precio_unitario'] ?? 0),
+                ':impuesto_percent' => (float) ($srv['impuesto_percent'] ?? 0),
+                ':total_base' => $base,
+                ':total_impuesto' => $ivaL,
+                ':total_linea' => $totL,
+                ':reserva_id' => $reservaId,
             ]);
 
             if (!$ok) {
                 $info = $stmtLinea->errorInfo();
-                throw new RuntimeException('Error insertando línea de factura: ' . implode(' | ', $info));
+                throw new RuntimeException(
+                    'Error insertando línea de factura: ' .
+                        implode(' | ', $info),
+                );
             }
         }
 
@@ -372,14 +463,23 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'verificar_totales_lineas';
         if (
             round($sumBase, 2) !== round($subtotal, 2) ||
-            round($sumIva, 2)  !== round($iva, 2) ||
-            round($sumTot, 2)  !== round($total, 2)
+            round($sumIva, 2) !== round($iva, 2) ||
+            round($sumTot, 2) !== round($total, 2)
         ) {
             throw new RuntimeException(
-                'Descuadre totales: '
-                    . 'sumBase=' . round($sumBase, 2) . ' vs subtotal=' . round($subtotal, 2)
-                    . ' | sumIva=' . round($sumIva, 2) . ' vs iva=' . round($iva, 2)
-                    . ' | sumTot=' . round($sumTot, 2) . ' vs total=' . round($total, 2)
+                'Descuadre totales: ' .
+                    'sumBase=' .
+                    round($sumBase, 2) .
+                    ' vs subtotal=' .
+                    round($subtotal, 2) .
+                    ' | sumIva=' .
+                    round($sumIva, 2) .
+                    ' vs iva=' .
+                    round($iva, 2) .
+                    ' | sumTot=' .
+                    round($sumTot, 2) .
+                    ' vs total=' .
+                    round($total, 2),
             );
         }
 
@@ -392,7 +492,10 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
               AND estado = 'confirmado'
         ";
         $stmtPago = $conn->prepare($sqlPago);
-        $stmtPago->execute([':factura_id' => $facturaId, ':reserva_id' => $reservaId]);
+        $stmtPago->execute([
+            ':factura_id' => $facturaId,
+            ':reserva_id' => $reservaId,
+        ]);
 
         // 8) Hash interno
         $fase = 'hash_interno_select_prev';
@@ -406,7 +509,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $stmtLast = $conn->prepare($sqlLast);
         $stmtLast->execute([':id' => $facturaId]);
         $lastRow = $stmtLast->fetch(PDO::FETCH_ASSOC);
-        $hashAnterior = $lastRow ? (string)$lastRow['hash_interno'] : '';
+        $hashAnterior = $lastRow ? (string) $lastRow['hash_interno'] : '';
 
         $fase = 'hash_interno_select_factura';
         $sqlFactura = "
@@ -421,7 +524,10 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         if ($rowFactura) {
             $fase = 'hash_interno_calcular';
-            $hashActual = calcularHashInternoFacturaFromRow($rowFactura, $hashAnterior);
+            $hashActual = calcularHashInternoFacturaFromRow(
+                $rowFactura,
+                $hashAnterior,
+            );
 
             $fase = 'hash_interno_update';
             $sqlUpdHash = "
@@ -433,13 +539,16 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
             $stmtUpdHash = $conn->prepare($sqlUpdHash);
             $okUpd = $stmtUpdHash->execute([
                 ':hash_interno' => $hashActual,
-                ':hash_interno_anterior' => ($hashAnterior !== '' ? $hashAnterior : null),
+                ':hash_interno_anterior' =>
+                    $hashAnterior !== '' ? $hashAnterior : null,
                 ':id' => $facturaId,
             ]);
 
             if (!$okUpd) {
                 $info = $stmtUpdHash->errorInfo();
-                throw new \RuntimeException('Error actualizando hash interno: ' . implode(' | ', $info));
+                throw new \RuntimeException(
+                    'Error actualizando hash interno: ' . implode(' | ', $info),
+                );
             }
         }
 
@@ -447,44 +556,75 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
         $fase = 'commit';
         if ($usaTransaccionPropia && $conn->inTransaction()) {
             $conn->commit();
-            error_log('[FINGUER] crearFacturaParaReserva COMMIT (reserva_id=' . $reservaId . ', factura_id=' . $facturaId . ')');
+            error_log(
+                '[FINGUER] crearFacturaParaReserva COMMIT (reserva_id=' .
+                    $reservaId .
+                    ', factura_id=' .
+                    $facturaId .
+                    ')',
+            );
         }
 
         // 10) Log
         $fase = 'log_factura';
-        $usuarioBackofficeId = ($origen === 'manual') ? getUsuarioBackofficeIdFromCookie() : null;
-        $accionLog = ($origen === 'manual') ? 'creacion' : 'creacion_automatica_redsys';
+        $usuarioBackofficeId =
+            $origen === 'manual' ? getUsuarioBackofficeIdFromCookie() : null;
+        $accionLog =
+            $origen === 'manual' ? 'creacion' : 'creacion_automatica_redsys';
 
-        registrarLogFactura($conn, $facturaId, $usuarioBackofficeId, $accionLog, [
-            'reserva_id' => $reservaId,
-            'subtotal' => $subtotal,
-            'iva' => $iva,
-            'total' => $total,
-            'origen' => $origen,
-            'emisor_id' => $emisorId,
-        ]);
+        registrarLogFactura(
+            $conn,
+            $facturaId,
+            $usuarioBackofficeId,
+            $accionLog,
+            [
+                'reserva_id' => $reservaId,
+                'subtotal' => $subtotal,
+                'iva' => $iva,
+                'total' => $total,
+                'origen' => $origen,
+                'emisor_id' => $emisorId,
+            ],
+        );
 
         error_log(
-            '[FINGUER] crearFacturaParaReserva OK '
-                . '(reserva_id=' . $reservaId
-                . ', factura_id=' . $facturaId
-                . ', serie=' . $numeracion['serie']
-                . ', numero=' . $numeracion['numero'] . ')'
+            '[FINGUER] crearFacturaParaReserva OK ' .
+                '(reserva_id=' .
+                $reservaId .
+                ', factura_id=' .
+                $facturaId .
+                ', serie=' .
+                $numeracion['serie'] .
+                ', numero=' .
+                $numeracion['numero'] .
+                ')',
         );
 
         return $facturaId;
     } catch (\Throwable $e) {
         if ($usaTransaccionPropia && $conn->inTransaction()) {
             $conn->rollBack();
-            error_log('[FINGUER] crearFacturaParaReserva ROLLBACK (reserva_id=' . $reservaId . ', fase=' . $fase . ')');
+            error_log(
+                '[FINGUER] crearFacturaParaReserva ROLLBACK (reserva_id=' .
+                    $reservaId .
+                    ', fase=' .
+                    $fase .
+                    ')',
+            );
         }
 
         error_log(
-            '[FINGUER] Error en crearFacturaParaReserva '
-                . '(reserva_id=' . $reservaId
-                . ', fase=' . $fase
-                . '): ' . $e->getMessage()
-                . ' en ' . $e->getFile() . ':' . $e->getLine()
+            '[FINGUER] Error en crearFacturaParaReserva ' .
+                '(reserva_id=' .
+                $reservaId .
+                ', fase=' .
+                $fase .
+                '): ' .
+                $e->getMessage() .
+                ' en ' .
+                $e->getFile() .
+                ':' .
+                $e->getLine(),
         );
 
         // Si ya existe por UNIQUE(reserva_id), devolvemos la existente
@@ -492,7 +632,7 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         if ($e instanceof \PDOException) {
             $errInfo = $e->errorInfo ?? null;
-            $sqlState = is_array($errInfo) ? ($errInfo[0] ?? '') : '';
+            $sqlState = is_array($errInfo) ? $errInfo[0] ?? '' : '';
             if ($sqlState === '23000') {
                 $isDuplicate = true;
             }
@@ -500,7 +640,10 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
 
         if (!$isDuplicate) {
             $msg = $e->getMessage();
-            if (stripos($msg, 'Duplicate') !== false || stripos($msg, 'uq_facturas_reserva') !== false) {
+            if (
+                stripos($msg, 'Duplicate') !== false ||
+                stripos($msg, 'uq_facturas_reserva') !== false
+            ) {
                 $isDuplicate = true;
             }
         }
@@ -515,9 +658,15 @@ function crearFacturaParaReserva(PDO $conn, int $reservaId, string $origen = 'ma
                     LIMIT 1
                 ");
                 $st->execute([':rid' => $reservaId]);
-                $idExist = (int)($st->fetchColumn() ?: 0);
+                $idExist = (int) ($st->fetchColumn() ?: 0);
                 if ($idExist > 0) {
-                    error_log('[FINGUER] crearFacturaParaReserva DUPLICATE->RETURN_EXISTING (reserva_id=' . $reservaId . ', factura_id=' . $idExist . ')');
+                    error_log(
+                        '[FINGUER] crearFacturaParaReserva DUPLICATE->RETURN_EXISTING (reserva_id=' .
+                            $reservaId .
+                            ', factura_id=' .
+                            $idExist .
+                            ')',
+                    );
                     return $idExist;
                 }
             } catch (\Throwable $e2) {
