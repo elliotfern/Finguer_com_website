@@ -1,3 +1,4 @@
+import { actualizarBotonPagar } from '../formulari/ActualizarBotonPagar';
 import { avisEspecialTancamentParking } from './avisEspecialTancamentParking';
 
 interface HorasDisponiblesResponse {
@@ -62,6 +63,7 @@ export const seleccionaHoraTipoReserva = () => {
             option.textContent = hora;
             select.appendChild(option);
         });
+        actualizarBotonPagar(); // 👈 reevalúa el botón cada vez que se repuebla
     };
 
     const actualizarHorasEntrada = async (fecha: string) => {

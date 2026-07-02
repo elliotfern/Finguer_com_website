@@ -11,6 +11,10 @@ const tipoReservaSelect = document.getElementById(
     'tipo_reserva'
 ) as HTMLSelectElement | null;
 
+const fechaReservaElement = document.getElementById(
+    'fecha_reserva'
+) as HTMLInputElement | null;
+
 let backendOk = false; // 👈 se activa cuando /cotizar responde ok
 
 const verificarSelecciones = (): boolean => {
@@ -48,6 +52,11 @@ horaSalidaSelect?.addEventListener('change', () => {
     actualizarBotonPagar();
 });
 tipoReservaSelect?.addEventListener('change', () => {
+    backendOk = false;
+    actualizarBotonPagar();
+});
+
+fechaReservaElement?.addEventListener('change', () => {
     backendOk = false;
     actualizarBotonPagar();
 });
