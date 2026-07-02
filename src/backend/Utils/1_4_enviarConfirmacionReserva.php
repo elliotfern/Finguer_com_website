@@ -26,9 +26,10 @@ function enviarConfirmacionReserva(
             pr.id, pr.localizador, pr.estado, pr.fecha_reserva,
             pr.entrada_prevista, pr.salida_prevista, pr.tipo,
             pr.vehiculo, pr.matricula, pr.vuelo, pr.total_calculado,
-            u.email, u.nombre, u.telefono
+            u.email, p.nombre, p.telefono
         FROM parking_reservas pr
         LEFT JOIN usuarios u ON pr.usuario_uuid = u.uuid
+        LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
         WHERE pr.id = :id
         LIMIT 1
     ";
