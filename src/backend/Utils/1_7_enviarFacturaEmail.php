@@ -38,9 +38,10 @@ function enviarFacturaPorEmail(
 
     // 1) Cargar destinatario
     $stmt = $conn->prepare("
-        SELECT f.id, f.numero, f.serie, u.email, u.nombre
+        SELECT f.id, f.numero, f.serie, u.email, p.nombre
         FROM facturas f
         JOIN usuarios u ON u.uuid = f.usuario_uuid
+        LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
         WHERE f.id = :id
         LIMIT 1
     ");
