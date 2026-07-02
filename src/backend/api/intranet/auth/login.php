@@ -6,7 +6,7 @@ use App\Application\Usuario\UseCase\LoginUserUseCase;
 use App\Application\Shared\Exception\AuthException;
 use App\Application\Usuario\Security\BcryptPasswordVerifier;
 use App\Infrastructure\Http\AuthCookieService;
-use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
+use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository;
 use App\Infrastructure\Security\JwtTokenService;
 
 header('Content-Type: application/json; charset=utf-8');
