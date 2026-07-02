@@ -1,53 +1,53 @@
 {
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.61.1",
-    "@prettier/plugin-php": "^0.25.0",
-    "@types/eslint__js": "^9.14.0",
-    "@types/flatpickr": "^3.1.4",
-    "@types/node": "^26.1.0",
-    "css-loader": "^7.1.4",
-    "eslint": "^10.6.0",
-    "globals": "^17.7.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.0.8",
-    "prettier": "^3.9.4",
-    "style-loader": "^4.0.0",
-    "ts-loader": "^9.6.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.0",
-    "webpack": "^5.108.3",
-    "webpack-cli": "^7.0.3"
-  },
-  "name": "elliotfern.com",
-  "version": "1.0.0",
-  "description": "",
-  "main": "/src/frontend/main.ts",
-  "type": "commonjs",
-  "scripts": {
-    "dev": "NODE_ENV=development webpack --mode development",
-    "build": "NODE_ENV=production webpack --mode production",
-    "test": "vendor/bin/phpunit --testdox --colors=always"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@popperjs/core": "^2.11.8",
-    "@types/daterangepicker": "^3.1.8",
-    "bootstrap": "^5.3.8",
-    "bootstrap-daterangepicker": "^3.1.0",
-    "choices.js": "^11.2.3",
-    "daterangepicker": "^3.1.0",
-    "dotenv": "^17.4.2",
-    "flatpickr": "^4.6.13",
-    "html-webpack-plugin": "^5.6.7",
-    "set-script": "^1.0.1"
-  },
-  "lint-staged": {
-    "*.js": "eslint --fix",
-    "*.ts": "eslint --fix",
-    "*.css": "prettier --write"
-  }
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@playwright/test": "^1.61.1",
+        "@prettier/plugin-php": "^0.25.0",
+        "@types/eslint__js": "^9.14.0",
+        "@types/flatpickr": "^3.1.4",
+        "@types/node": "^26.1.0",
+        "css-loader": "^7.1.4",
+        "eslint": "^10.6.0",
+        "globals": "^17.7.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.0.8",
+        "prettier": "^3.9.4",
+        "style-loader": "^4.0.0",
+        "ts-loader": "^9.6.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.62.1",
+        "webpack": "^5.108.3",
+        "webpack-cli": "^7.1.0"
+    },
+    "name": "elliotfern.com",
+    "version": "1.0.0",
+    "description": "",
+    "main": "/src/frontend/main.ts",
+    "type": "commonjs",
+    "scripts": {
+        "dev": "NODE_ENV=development webpack --mode development",
+        "build": "NODE_ENV=production webpack --mode production",
+        "test": "vendor/bin/phpunit --testdox --colors=always"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "@types/daterangepicker": "^3.1.8",
+        "bootstrap": "^5.3.8",
+        "bootstrap-daterangepicker": "^3.1.0",
+        "choices.js": "^11.2.3",
+        "daterangepicker": "^3.1.0",
+        "dotenv": "^17.4.2",
+        "flatpickr": "^4.6.13",
+        "html-webpack-plugin": "^5.6.7",
+        "set-script": "^1.0.1"
+    },
+    "lint-staged": {
+        "*.js": "eslint --fix",
+        "*.ts": "eslint --fix",
+        "*.css": "prettier --write"
+    }
 }
