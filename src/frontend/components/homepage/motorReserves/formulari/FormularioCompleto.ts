@@ -27,6 +27,10 @@ export const FormularioCompleto = (): boolean => {
         'horaEntrada'
     ) as HTMLSelectElement | null;
 
+    const horaSalidaEl = document.getElementById(
+        'horaSalida'
+    ) as HTMLSelectElement | null;
+
     const mensajeErrorElement = document.getElementById('mensaje_error');
 
     if (!fechaReservaElement || !fechaReservaElement.value) {
@@ -43,10 +47,12 @@ export const FormularioCompleto = (): boolean => {
     }
 
     const horaEntrada = horaEntradaEl?.value ?? '';
+    const horaSalida = horaSalidaEl?.value ?? '';
+
     if (!horaEntrada) return false;
 
     const fechaInicio = buildDateTime(rango.start, horaEntrada);
-    const fechaFin = buildDateTime(rango.end, horaEntrada);
+    const fechaFin = buildDateTime(rango.end, horaSalida);
 
     if (!fechaInicio || !fechaFin) {
         if (mensajeErrorElement)

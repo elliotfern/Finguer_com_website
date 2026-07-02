@@ -3,12 +3,15 @@
 require_once __DIR__ . '../../../vendor/autoload.php';
 
 use Dotenv\Dotenv;
+use App\Infrastructure\Persistence\MySql\MysqlConnection;
 
 $basePath = __DIR__ . '/../..';
 
 if (file_exists($basePath . '/.env')) {
     Dotenv::createImmutable($basePath)->load();
 }
+
+$conn = MysqlConnection::get();
 
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/config/connection.php';

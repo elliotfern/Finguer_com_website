@@ -24,8 +24,7 @@ class UsuarioTest extends TestCase
     public function test_crear_usuario_nuevo(): void
     {
         $usuario = Usuario::create($this->uuid, $this->email);
-
-        $this->assertSame(UsuarioEstado::Pendiente, $usuario->estado());
+        $this->assertSame(UsuarioEstado::Activo, $usuario->estado()); // ← Pendiente → Activo
         $this->assertSame(Rol::Cliente, $usuario->rol());
         $this->assertSame(Locale::Es, $usuario->locale());
         $this->assertFalse($usuario->hasPassword());

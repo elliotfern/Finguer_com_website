@@ -1,34 +1,28 @@
 <?php
-global $conn;
 
-use Firebase\JWT\JWT;
+declare(strict_types=1);
 
-$jwtSecret = $_ENV['TOKEN'];
+use App\Application\Usuario\UseCase\LoginUserUseCase;
+use App\Application\Shared\Exception\AuthException;
+use App\Application\Usuario\Security\BcryptPasswordVerifier;
+use App\Infrastructure\Http\AuthCookieService;
+use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
+use App\Infrastructure\Security\JwtTokenService;
 
 header('Content-Type: application/json; charset=utf-8');
 
-set_exception_handler(function (\Throwable $e) {
-    http_response_code(500);
-    echo json_encode([
-        'status' => 'error',
-        'message' => $e->getMessage(),
-    ]);
-    exit();
-});
-
-// --- CORS (solo los orígenes permitidos) ---
+// --------------------
+// CORS
+// --------------------
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
 $allowedOrigins = ['https://finguer.com', 'http://finguer.local'];
 
-// Si viene un Origin válido, lo devolvemos (nunca '*')
 if ($origin && in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
     header('Access-Control-Allow-Credentials: true');
     header('Vary: Origin');
 }
 
-// Preflight
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     header('Access-Control-Allow-Methods: POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type');
@@ -36,17 +30,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit();
 }
 
-header('Access-Control-Allow-Methods: POST');
-
+// --------------------
+// Body
+// --------------------
 $data = json_decode(file_get_contents('php://input'), true);
-
-if (!$data) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'No se enviaron datos válidos.',
-    ]);
-    exit();
-}
 
 if (empty($data['email']) || empty($data['password'])) {
     echo json_encode([
@@ -56,106 +43,43 @@ if (empty($data['email']) || empty($data['password'])) {
     exit();
 }
 
-$email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
+$email = (string) $data['email'];
 $password = (string) $data['password'];
 
-if ($email === false) {
-    echo json_encode(['status' => 'error', 'message' => 'Email no vàlid.']);
+// --------------------
+// Dependency wiring (SIMPLE Y DIRECTO)
+// --------------------
+
+// $conn viene del bootstrap legacy
+$useCase = new LoginUserUseCase(
+    new MySqlUsuarioRepository($conn),
+    new BcryptPasswordVerifier(),
+    new JwtTokenService($_ENV['TOKEN']),
+    new AuthCookieService(),
+);
+
+// --------------------
+// Execution
+// --------------------
+try {
+    $result = $useCase->execute($email, $password);
+
+    echo json_encode($result);
     exit();
-}
+} catch (AuthException $e) {
+    http_response_code(401);
 
-$query = "
-    SELECT u.uuid, u.email, u.password, u.tipo_rol, p.nombre
-    FROM usuarios AS u
-    LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
-    WHERE u.email = :email
-    LIMIT 1
-";
-
-/** @var PDO $conn */
-$stmt = $conn->prepare($query);
-$stmt->execute(['email' => $email]);
-
-if ($stmt->rowCount() === 0) {
     echo json_encode([
         'status' => 'error',
-        'message' => "Compte d'usuari no habilitat.",
+        'message' => $e->getMessage(),
+    ]);
+    exit();
+} catch (Throwable $e) {
+    http_response_code(500);
+
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Internal server error',
     ]);
     exit();
 }
-
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$hash = (string) $row['password'];
-$tipoUsuario = (string) $row['tipo_rol'];
-$nombre = (string) $row['nombre'];
-$rolesPermitidos = ['admin', 'trabajador'];
-
-if (!in_array($tipoUsuario, $rolesPermitidos, true)) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Accés no autoritzat.',
-    ]);
-    exit();
-}
-
-if (!password_verify($password, $hash)) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Contrasenya incorrecta.',
-    ]);
-    exit();
-}
-
-// uuid viene como BINARY(16) desde PDO
-$usuarioUuidBin = $row['uuid'];
-if (!is_string($usuarioUuidBin) || strlen($usuarioUuidBin) !== 16) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => "UUID d'usuari invàlid a la BD.",
-    ]);
-    exit();
-}
-$usuarioUuidStr = uuid_string_from_bin($usuarioUuidBin);
-
-$now = time();
-$expiration = $now + 10 * 24 * 60 * 60; // 10 días (luego lo ajustamos si quieres)
-
-$jti = bin2hex(random_bytes(16)); // id único del token
-
-$payload = [
-    'iss' => 'finguer-intranet',
-    'iat' => $now,
-    'exp' => $expiration,
-    'jti' => $jti,
-    'name' => $nombre,
-    'sub' => $usuarioUuidStr, // ✅ identidad canónica
-    'role' => $tipoUsuario,
-];
-
-// 🧹 Limpieza defensiva de tokens antiguos
-clearAuthCookies();
-
-$jwt = JWT::encode($payload, $jwtSecret, 'HS256');
-
-$isProd = str_contains($_SERVER['HTTP_HOST'] ?? '', 'finguer.com');
-
-// ✅ SOLO UNA COOKIE: token
-$cookieOptions = [
-    'expires' => $expiration,
-    'path' => '/',
-    'httponly' => true,
-    'samesite' => 'Lax',
-    'secure' => $isProd,
-];
-
-if ($isProd) {
-    $cookieOptions['domain'] = '.finguer.com';
-}
-
-setcookie('token', $jwt, $cookieOptions);
-
-echo json_encode([
-    'status' => 'success',
-    'message' => 'Accés autoritzat, accedint a la intranet...',
-]);

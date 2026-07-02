@@ -31,7 +31,7 @@ final class Usuario
         return new self(
             uuid: $uuid,
             email: $email,
-            estado: UsuarioEstado::Pendiente,
+            estado: UsuarioEstado::Activo,
             rol: $rol,
             locale: $locale,
             password: $password,
@@ -72,6 +72,16 @@ final class Usuario
     public function hasPassword(): bool
     {
         return $this->password !== null;
+    }
+
+    public function passwordHash(): ?string
+    {
+        return $this->password;
+    }
+
+    public function password(): ?string
+    {
+        return $this->password;
     }
 
     public function esAdmin(): bool

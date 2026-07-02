@@ -1,8 +1,8 @@
 <?php
 
 declare(strict_types=1);
-use App\Utils\Reserva\ReglasReserva;
-use App\Utils\Reserva\HorariosReserva;
+use App\Domain\Catalogo\Rules\ReglasReserva;
+use App\Domain\Catalogo\Rules\HorariosReserva;
 
 header('Content-Type: application/json; charset=utf-8');
 

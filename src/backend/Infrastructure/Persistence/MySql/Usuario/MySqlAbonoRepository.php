@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Persistence\MySql;
+namespace App\Infrastructure\Persistence\MySql\Usuario;
 
 use App\Domain\Shared\UsuarioUuid;
 use App\Domain\Usuario\Entity\Abono;

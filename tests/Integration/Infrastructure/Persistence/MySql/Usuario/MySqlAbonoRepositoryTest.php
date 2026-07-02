@@ -9,8 +9,8 @@ use App\Domain\Usuario\Entity\Usuario;
 use App\Domain\Usuario\Enums\Locale;
 use App\Domain\Usuario\Enums\Rol;
 use App\Domain\Usuario\ValueObjects\Matricula;
-use App\Infrastructure\Persistence\MySql\MySqlAbonoRepository;
-use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
+use App\Infrastructure\Persistence\MySql\Usuario\MySqlAbonoRepository;
+use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository;
 use PHPUnit\Framework\TestCase;
 
 class MySqlAbonoRepositoryTest extends TestCase

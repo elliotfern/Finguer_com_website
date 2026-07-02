@@ -10,7 +10,7 @@ use App\Domain\Usuario\Enums\Locale;
 use App\Domain\Usuario\Enums\Rol;
 use App\Domain\Usuario\ValueObjects\DireccionPostal;
 use App\Domain\Usuario\ValueObjects\NombreCompleto;
-use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
+use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository;
 use PHPUnit\Framework\TestCase;
 
 class MySqlUsuarioRepositoryTest extends TestCase

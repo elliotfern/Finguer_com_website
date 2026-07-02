@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Utils\Reserva;
+namespace App\Domain\Catalogo\Rules;
 
 use DateTime;
 use DateTimeInterface;
