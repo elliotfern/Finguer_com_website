@@ -2,14 +2,14 @@
     RewriteEngine On
     RewriteBase /
 
-    # 1. Archivos y directorios reales — no tocar
+    # 1. Forzar dominio sin www
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [R=308,L]
+
+    # 2. Archivos y directorios reales
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
-
-    # 2. www → non-www (HTTP y HTTPS)
-    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-    RewriteRule ^ https://%1%{REQUEST_URI} [R=308,L]
 
     # 3. Eliminar barra final (excepto raíz)
     RewriteCond %{REQUEST_URI} ^/(.+)/$
