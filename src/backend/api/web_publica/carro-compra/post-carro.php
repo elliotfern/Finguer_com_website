@@ -7,6 +7,13 @@ use App\Domain\Catalogo\Rules\HorariosReserva;
 header('Content-Type: application/json; charset=utf-8');
 
 // 1) Método
+// 0) Preflight CORS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit();
+}
+
+// 1) Método
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);

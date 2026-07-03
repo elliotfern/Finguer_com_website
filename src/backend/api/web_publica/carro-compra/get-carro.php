@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit();
 }
 
-$session = trim((string)($_GET['session'] ?? ''));
+$session = trim((string) ($_GET['session'] ?? ''));
 if ($session === '') {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Missing session']);
@@ -51,22 +51,25 @@ try {
 
     $snapshot = null;
     if (!empty($row['lineas_json'])) {
-        $decoded = json_decode((string)$row['lineas_json'], true);
+        $decoded = json_decode((string) $row['lineas_json'], true);
         if (json_last_error() === JSON_ERROR_NONE) {
             $snapshot = $decoded;
         }
     }
 
-    echo json_encode([
-        'ok' => true,
-        'session' => (string)$row['session'],
-        'subtotal' => (float)$row['subtotal_sin_iva'],
-        'iva_total' => (float)$row['iva_total'],
-        'total' => (float)$row['total_con_iva'],
-        'snapshot' => $snapshot,   // <- aquí va seleccion + lineas + totales (si lo guardaste así)
-        'hash' => $row['hash'],
-        'updated_at' => $row['updated_at'],
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    echo json_encode(
+        [
+            'ok' => true,
+            'session' => (string) $row['session'],
+            'subtotal' => (float) $row['subtotal_sin_iva'],
+            'iva_total' => (float) $row['iva_total'],
+            'total' => (float) $row['total_con_iva'],
+            'snapshot' => $snapshot, // <- aquí va seleccion + lineas + totales (si lo guardaste así)
+            'hash' => $row['hash'],
+            'updated_at' => $row['updated_at'],
+        ],
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+    );
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Server error']);
