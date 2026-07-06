@@ -194,107 +194,43 @@ try {
         $id = getIntParam('id', true);
 
         $query = "SELECT
-            pr.localizador AS idReserva,
-            pr.fecha_reserva AS fechaReserva,
-
-            u.nombre AS clientNom,
-            NULL AS clientCognom,
-
-            u.telefono AS telefono,
-
-            DATE(pr.salida_prevista)  AS dataSortida,
-            TIME(pr.entrada_prevista) AS HoraEntrada,
-            TIME(pr.salida_prevista)  AS HoraSortida,
-            DATE(pr.entrada_prevista) AS dataEntrada,
-
+            pr.id,
+            HEX(pr.usuario_uuid) AS usuario_uuid,
+            pr.localizador,
+            pr.salida_prevista,
+            pr.entrada_prevista,
             pr.matricula,
-            pr.vehiculo AS modelo,
+            pr.vehiculo,
             pr.vuelo,
             pr.tipo,
-
-            CASE WHEN pr.estado_vehiculo IN ('dentro','salido') THEN 1 ELSE 0 END AS checkIn,
-            CASE WHEN pr.estado_vehiculo = 'salido' THEN 1 ELSE 0 END AS checkOut,
-
-            pr.notas AS notes,
-            pr.canal AS buscadores,
-
-            COALESCE(lx.limpieza, 0) AS limpieza,
-
-            COALESCE(p.importe, 0) AS importe,
-
-            pr.id,
-
-            CASE WHEN px.pago_id IS NULL THEN 0 ELSE 1 END AS processed,
-
-            f.id     AS factura_id,
-            f.numero AS factura_numero,
-            f.serie  AS factura_serie,
-
-            u.nombre,
-            u.telefono AS tel,
-            pr.personas AS numeroPersonas
-
+            pr.notas,
+            pr.canal,
+            pr.personas,
+            pr.fecha_reserva,
+            pr.estado,
+            pr.estado_vehiculo,
+            pr.subtotal_calculado,
+            pr.iva_calculado,
+            pr.total_calculado,
+            up.nombre,
+            up.telefono
         FROM parking_reservas pr
-
-        LEFT JOIN usuarios u
-            ON pr.usuario_uuid = u.uuid
-
-        LEFT JOIN (
-            SELECT reserva_id, MAX(id) AS pago_id
-            FROM pagos
-            WHERE estado='confirmado'
-            GROUP BY reserva_id
-        ) px ON px.reserva_id = pr.id
-
-        LEFT JOIN pagos p
-            ON p.id = px.pago_id
-
-        LEFT JOIN (
-            SELECT reserva_id, MAX(id) AS factura_id
-            FROM facturas
-            GROUP BY reserva_id
-        ) fx ON fx.reserva_id = pr.id
-
-        LEFT JOIN facturas f
-            ON f.id = fx.factura_id
-
-        LEFT JOIN (
-            SELECT
-                prs_l.reserva_id,
-                MAX(
-                    CASE
-                        WHEN s_l.codigo = 'LIMPIEZA_EXT'     THEN 1
-                        WHEN s_l.codigo = 'LIMPIEZA_EXT_INT' THEN 2
-                        WHEN s_l.codigo = 'LIMPIEZA_PRO'     THEN 3
-                        ELSE 0
-                    END
-                ) AS limpieza
-            FROM parking_reservas_servicios prs_l
-            INNER JOIN parking_servicios_catalogo s_l
-                ON s_l.id = prs_l.servicio_id
-            AND s_l.codigo IN ('LIMPIEZA_EXT', 'LIMPIEZA_EXT_INT', 'LIMPIEZA_PRO')
-            GROUP BY prs_l.reserva_id
-        ) lx ON lx.reserva_id = pr.id
-
+        LEFT JOIN usuarios u ON pr.usuario_uuid = u.uuid
+        LEFT JOIN usuarios_perfil up ON up.usuario_uuid = pr.usuario_uuid
         WHERE pr.id = :id
-        LIMIT 1;";
+        LIMIT 1";
 
         $stmt = $conn->prepare($query);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
 
-        // Mantengo compat con tu frontend: array con 1 elemento
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$rows) {
+        if (!$row) {
             jsonResponse(vp2_err('Reserva no encontrada', 'NOT_FOUND'), 404);
         }
 
-        jsonResponse(
-            vp2_ok('OK', [
-                'rows' => $rows,
-            ]),
-        );
+        jsonResponse(vp2_ok('OK', $row));
     }
 
     // =========================================================
@@ -399,13 +335,61 @@ try {
         );
     }
 
-    // Si llega aquí, type no válido
-    jsonResponse(
-        vp2_err('type inválido', 'BAD_TYPE', [
-            'allowed' => ['reserves', 'reservaId', 'verificaPagament'],
-        ]),
-        400,
-    );
+    // =========================================================
+    // type=tipoReserva
+    // GET ?type=tipoReserva
+    // =========================================================
+    if ($type === 'tipoReserva') {
+        $tipos = [
+            ['id' => 1, 'tipo' => 'Finguer Class'],
+            ['id' => 2, 'tipo' => 'Gold Finguer'],
+            ['id' => 3, 'tipo' => 'Reserva Client Anual'],
+        ];
+
+        jsonResponse(vp2_ok('OK', $tipos));
+    }
+
+    // =========================================================
+    // type=canalReserva
+    // GET ?type=canalReserva
+    // =========================================================
+    if ($type === 'canalReserva') {
+        $canal = [
+            ['id' => 1, 'canal' => 'Web'],
+            ['id' => 5, 'canal' => 'Manual'],
+        ];
+
+        jsonResponse(vp2_ok('OK', $canal));
+    }
+
+    // type=estado
+    // GET ?type=estado
+    // =========================================================
+    if ($type === 'estado') {
+        $estados = [
+            ['id' => 'pendiente', 'label' => 'Pendent de pagament'],
+            ['id' => 'procesando_pago', 'label' => 'Processant pagament'],
+            ['id' => 'pago_oficina', 'label' => 'Pagament a oficina'],
+            ['id' => 'pagada', 'label' => 'Pagada'],
+            ['id' => 'cancelada', 'label' => 'Cancel·lada'],
+            ['id' => 'anual', 'label' => 'Client anual'],
+        ];
+
+        jsonResponse(vp2_ok('OK', $estados));
+    }
+
+    // type=estado_vehiculo
+    // GET ?type=estado_vehiculo
+    // =========================================================
+    if ($type === 'estado_vehiculo') {
+        $estados = [
+            ['id' => 'pendiente_entrada', 'label' => 'Pendent entrar'],
+            ['id' => 'dentro', 'label' => 'Dins parking'],
+            ['id' => 'salido', 'label' => 'Sortit del parking'],
+        ];
+
+        jsonResponse(vp2_ok('OK', $estados));
+    }
 } catch (Throwable $e) {
     jsonResponse(
         vp2_err('Error interno', 'SERVER_ERROR', [

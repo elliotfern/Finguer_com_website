@@ -1,4 +1,4 @@
-import { apiUrl } from '../../../../config/globals';
+import { API_URL, WEB_BASE } from '../../../../config/environment';
 import { isAdmin } from '../../auth/store';
 import { enviarConfirmacioReserva } from './enviarConfirmacioReserva';
 
@@ -357,7 +357,7 @@ function bindPopupHandlers(container: HTMLElement, reservaId: string): void {
 
             try {
                 const response = await fetch(
-                    `${apiUrl}/factures/send?type=emitir-factura-y-enviar`,
+                    `${API_URL}/factures/send?type=emitir-factura-y-enviar`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -405,11 +405,9 @@ function bindPopupHandlers(container: HTMLElement, reservaId: string): void {
 }
 
 function updateLinks(container: HTMLElement, reservaId: string): void {
-    const urlWeb = window.location.origin + '/control';
-
     const aMod = container.querySelector('#enlace3');
     if (aMod instanceof HTMLAnchorElement) {
-        aMod.href = `${urlWeb}/reserva/modificar/reserva/${encodeURIComponent(reservaId)}`;
+        aMod.href = `${WEB_BASE}/control/modifica-reserva/${encodeURIComponent(reservaId)}`;
     }
 }
 
@@ -478,9 +476,7 @@ export function initPopupReservaUX(): void {
 type ApiSimple = { status?: string; message?: string; code?: string };
 
 function buildCancelarUrl(): string {
-    const u = new URL(
-        `${window.location.origin}${apiUrl}/intranet/cancelar-reserva/post`
-    );
+    const u = new URL(`${API_URL}/intranet/cancelar-reserva/post`);
     u.searchParams.set('type', 'cancelar-reserva');
     return u.toString();
 }

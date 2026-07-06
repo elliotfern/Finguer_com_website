@@ -1,4 +1,4 @@
-import { apiUrl } from '../../config/globals';
+import { API_URL } from '../../config/environment';
 import { fetchData } from '../../services/api/api';
 
 interface ContactResponse {
@@ -58,7 +58,7 @@ const initForm = () => {
             submitBtn.innerText = 'Enviando...';
 
             const response = await fetchData<ContactResponse, ContactPayload>(
-                `${apiUrl}/formulario/post`,
+                `${API_URL}/formulario/post`,
                 'POST',
                 {
                     nombre,

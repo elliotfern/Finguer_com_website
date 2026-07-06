@@ -1,6 +1,5 @@
 // reservesClient.ts
-
-import { API_BASE } from '../../../config/globals';
+import { API_URL } from '../../../config/environment';
 import { formatDateTime } from '../../../utils/dates';
 
 type Vp2Ok<T> = {
@@ -44,7 +43,7 @@ interface ListReservesData {
 // ------------------------------
 // Config
 // ------------------------------
-const API_LIST_BY_EMAIL_URL = `${API_BASE}/intranet/reserves/get?type=list-by-email`;
+const API_LIST_BY_EMAIL_URL = `${API_URL}/intranet/reserves/get?type=list-by-email`;
 const CONTAINER_ID = 'contenidorReservesClient'; // tu div contenedor tabla
 const TITLE_ID = 'titolReservesClient'; // tu div título
 

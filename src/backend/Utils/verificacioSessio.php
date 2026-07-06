@@ -71,14 +71,12 @@ function verificarSesionIntranet(): void
 {
     $user = auth_user();
     if ($user === null) {
-        header('Location: /control/login');
-        exit();
+        deny(401, 'Has d\'iniciar sessió');
     }
 
     $rolesPermitidos = ['admin', 'trabajador'];
     if (!in_array($user['role'], $rolesPermitidos, true)) {
-        header('Location: /control/login');
-        exit();
+        deny(403, 'No tens permisos per accedir a aquesta secció.');
     }
 }
 
@@ -90,16 +88,12 @@ function verificarAccesoCliente(): void
 {
     $user = auth_user();
     if ($user === null) {
-        header('Location: /area-cliente/login');
-        exit();
+        deny(401, 'Has d\'iniciar sessió');
     }
 
-    // ✅ AJUSTA este array a tu realidad (p.ej. 'cliente', 'usuario', 'client', etc.)
     $rolesPermitidos = ['cliente'];
-
     if (!in_array($user['role'], $rolesPermitidos, true)) {
-        header('Location: /area-cliente/login');
-        exit();
+        deny(403, 'No tens permisos per accedir a aquesta secció.');
     }
 }
 

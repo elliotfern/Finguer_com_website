@@ -19,6 +19,7 @@ import { taulaClientsAnuals } from './components/intranet/clients-anuals/taulaCl
 import { header } from './components/intranet/header/header';
 import { nomUsuari } from './components/intranet/header/nomUsuari';
 import { login } from './components/intranet/login/login';
+import { formReservaClient } from './components/intranet/reserves/formModificaReserva';
 import { pagament } from './components/pagament/pagament';
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
@@ -191,6 +192,14 @@ function routeIntranet(p: string): void {
 
     if (p === '/control' || p === '/control/reserves-pendents') {
         reserves('pendiente_entrada');
+        return;
+    }
+
+    if (p.startsWith('/control/modifica-reserva/')) {
+        const id = getUuidFromPath('/control/modifica-reserva');
+        if (id) {
+            formReservaClient(true, Number(id));
+        }
         return;
     }
 }

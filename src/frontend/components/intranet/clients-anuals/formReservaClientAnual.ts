@@ -1,4 +1,4 @@
-import { API_BASE } from '../../../config/globals';
+import { API_URL } from '../../../config/environment';
 import { auxiliarSelect } from '../../../services/auxiliarSelect/auxiliarSelect';
 import { ApiOk, ApiResponse } from '../../../types/api';
 import { fetchDataGet } from '../../../utils/fetchDataGet';
@@ -8,13 +8,13 @@ import { transmissioDadesDB } from '../../../utils/transmissioDadesBD';
 export const URLS = {
     GET: {
         USUARIOS_GET: (uuid: string) =>
-            `${API_BASE}/clients/get/clientAnualReserva?uuid=${encodeURIComponent(uuid)}`,
+            `${API_URL}/clients/get/clientAnualReserva?uuid=${encodeURIComponent(uuid)}`,
     },
     POST: {
-        USUARIOS_CREATE: `${API_BASE}/reserves/post/createReservaAnual`,
+        USUARIOS_CREATE: `${API_URL}/reserves/post/createReservaAnual`,
     },
     PUT: {
-        USUARIOS_UPDATE: `${API_BASE}/reserves/put/updateReservaAnual`,
+        USUARIOS_UPDATE: `${API_URL}/reserves/put/updateReservaAnual`,
     },
 };
 

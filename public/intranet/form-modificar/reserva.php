@@ -1,298 +1,150 @@
-<?php
-global $conn;
+<?php require_once APP_ROOT . '/intranet/inc/header.php'; ?>
 
-require_once APP_ROOT . '/intranet/inc/header.php';
 
-$id = $routeParams[0];
+<div class="container" style="margin-bottom:50px">
+     <div id="titolForm"></div>
 
-if (is_numeric($id)) {
-    $id_old = intval($id);
+    <form id="reservaForm" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">
 
-    if (filter_var($id_old, FILTER_VALIDATE_INT)) {
-        $codi_resposta = 2;
+    <div id="okMessage" class="alert alert-success d-none" role="alert">
+    <div id="okText"></div>
+        </div>
 
-        // =========================
-        // 1) SELECT con nueva tabla
-        // =========================
+        <div id="errMessage" class="alert alert-danger d-none" role="alert">
+            <div id="errText"></div>
+        </div>
 
-        $sql = "
-            SELECT 
-                r.id                AS idReserva,
-                r.usuario_uuid      AS usuarioUuidBin,
-                r.total_calculado   AS importe,
-                r.estado            AS estado,
-                r.fecha_reserva     AS fechaReserva,
-                r.tipo              AS tipo,
-                u.nombre            AS nombre,
-                r.entrada_prevista  AS entrada_prevista,
-                r.salida_prevista   AS salida_prevista,
-                r.vehiculo          AS vehiculo,
-                r.matricula         AS matricula,
-                r.vuelo             AS vuelo,
-                r.notas             AS notas,
-                r.canal             AS canal
-            FROM parking_reservas AS r
-            LEFT JOIN usuarios AS u ON r.usuario_uuid = u.uuid
-            WHERE r.id = :id
-            LIMIT 1
-        ";
+        <input type="hidden" id="id" name="id">
+        <input type="hidden" id="usuario_uuid" name="usuario_uuid">
 
-        $pdo_statement = $conn->prepare($sql);
-        $pdo_statement->bindParam(':id', $id_old, PDO::PARAM_INT);
-        $pdo_statement->execute();
-        $row = $pdo_statement->fetch(PDO::FETCH_ASSOC);
+        <h4>Dades de la reserva:</h4>
 
-        if ($row) {
-            $idReserva_old    = $row['idReserva'];
-            $usuarioUuidBin = $row['usuarioUuidBin'];             // 16 bytes
-            $usuarioUuidStr = uuid_string_from_bin($usuarioUuidBin); // "....-...."
-            $importe_old      = $row['importe'];
-            $estado_old       = $row['estado'];
-            $fechaReserva_old = $row['fechaReserva'];
-            $tipo_old         = $row['tipo'];
-            $nombre_old       = $row['nombre'];
+        <!-- Localizador -->
+        <div class="col-md-4">
+            <label for="localizador" class="form-label">Localitzador:</label>
+            <input type="text" class="form-control" id="localizador" name="localizador" readonly>
+            <small class="form-text text-danger">* No es pot modificar</small>
+        </div>
 
-            $entrada_prevista_old = $row['entrada_prevista'];
-            $salida_prevista_old  = $row['salida_prevista'];
+        <!-- Estado -->
+        <div class="col-md-4">
+            <label for="estado" class="form-label">Estat de la reserva:</label>
+            <select class="form-select" id="estado" name="estado">
+                <!-- Opciones rellenadas dinámicamente vía TypeScript -->
+            </select>
+        </div>
 
-            // Spliteamos las datetimes en fecha / hora para el formulario
-            $diaEntrada_old  = $entrada_prevista_old ? date('Y-m-d', strtotime($entrada_prevista_old)) : '';
-            $horaEntrada_old = $entrada_prevista_old ? date('H:i', strtotime($entrada_prevista_old)) : '';
+        <!-- Estado vehículo -->
+        <div class="col-md-4">
+            <label for="estado_vehiculo" class="form-label">Estat del vehicle:</label>
+            <select class="form-select" id="estado_vehiculo" name="estado_vehiculo">
+                <!-- Opciones rellenadas dinámicamente vía TypeScript -->
+            </select>
+        </div>
 
-            $diaSalida_old   = $salida_prevista_old ? date('Y-m-d', strtotime($salida_prevista_old)) : '';
-            $horaSalida_old  = $salida_prevista_old ? date('H:i', strtotime($salida_prevista_old)) : '';
+        <!-- Tipo -->
+        <div class="col-md-4">
+            <label for="tipo" class="form-label">Tipus de reserva:</label>
+            <select class="form-select" id="tipo" name="tipo">
+                <!-- Opciones rellenadas dinámicamente vía TypeScript -->
+            </select>
+        </div>
 
-            $vehiculo_old    = $row['vehiculo'];
-            $matricula_old   = $row['matricula'];
-            $vuelo_old       = $row['vuelo'];
-            $notes_old       = $row['notas'];
-            $canal_old       = $row['canal'];
-        } else {
-            echo "<div class='container'><div class='alert alert-danger'>No s'ha trobat aquesta reserva a la base de dades nova.</div></div>";
-            exit;
-        }
+        <!-- Fecha reserva -->
+        <div class="col-md-4">
+            <label for="fecha_reserva" class="form-label">Data de la reserva:</label>
+            <input type="text" class="form-control" id="fecha_reserva" name="fecha_reserva" readonly>
+            <small class="form-text text-danger">* No es pot modificar</small>
+        </div>
 
-        if ($fechaReserva_old !== null) {
-            $fecha_formateada = "<h4>Reserva efectuada el dia: " . date('d-m-Y H:i:s', strtotime($fechaReserva_old)) . "</h4>";
-        } else {
-            $fecha_formateada = "";
-        }
+        <!-- Canal -->
+        <div class="col-md-4">
+            <label for="canal" class="form-label">Canal:</label>
+            <select class="form-select" id="canal" name="canal">
+                <!-- Opciones rellenadas dinámicamente vía TypeScript -->
+            </select>
+        </div>
 
-        echo "<div class='container' style='margin-bottom:50px'>
-        <h2>Modificació ID Reserva: " . htmlspecialchars((string)$idReserva_old) . " </h2>";
-        echo $fecha_formateada;
+        <hr>
+        <h4>Entrada i sortida:</h4>
 
-        // ==================================
-        // 2) Procesar POST (UPDATE nueva BD)
-        // ==================================
-        if (isset($_POST["update"])) {
+        <!-- Entrada prevista -->
+        <div class="col-md-6">
+            <label for="entrada_prevista" class="form-label">Entrada prevista:</label>
+            <input type="datetime-local" class="form-control" id="entrada_prevista" name="entrada_prevista">
+        </div>
 
-            // Sanitizar / recoger datos
-            $importe     = data_input($_POST["importe"] ?? '');
-            $tipo        = data_input($_POST["tipo"] ?? '');
-            $estado      = data_input($_POST["estado"] ?? '');
-            $horaEntrada = data_input($_POST["horaEntrada"] ?? '');
-            $diaEntrada  = data_input($_POST["diaEntrada"] ?? '');
-            $horaSalida  = data_input($_POST["horaSalida"] ?? '');
-            $diaSalida   = data_input($_POST["diaSalida"] ?? '');
-            $vehiculo    = data_input($_POST["vehiculo"] ?? '');
-            $matricula   = data_input($_POST["matricula"] ?? '');
-            $vuelo       = data_input($_POST["vuelo"] ?? '');
-            $notes       = data_input($_POST["notes"] ?? '');
+        <!-- Salida prevista -->
+        <div class="col-md-6">
+            <label for="salida_prevista" class="form-label">Sortida prevista:</label>
+            <input type="datetime-local" class="form-control" id="salida_prevista" name="salida_prevista">
+        </div>
 
-            // Construir datetimes entrada/salida
-            $entrada_prevista = null;
-            if (!empty($diaEntrada)) {
-                $entrada_prevista = $diaEntrada . (empty($horaEntrada) ? ' 00:00:00' : ' ' . $horaEntrada . ':00');
-            }
+        <hr>
+        <h4>Vehicle i ocupants:</h4>
 
-            $salida_prevista = null;
-            if (!empty($diaSalida)) {
-                $salida_prevista = $diaSalida . (empty($horaSalida) ? ' 00:00:00' : ' ' . $horaSalida . ':00');
-            }
+        <!-- Vehículo -->
+        <div class="col-md-4">
+            <label for="vehiculo" class="form-label">Model vehicle:</label>
+            <input type="text" class="form-control" id="vehiculo" name="vehiculo">
+        </div>
 
-            // Aquí podrías validar y setear $hasError si algo está mal
+        <!-- Matrícula -->
+        <div class="col-md-4">
+            <label for="matricula" class="form-label">Número de matrícula:</label>
+            <input type="text" class="form-control" id="matricula" name="matricula">
+        </div>
 
-            if (!isset($hasError)) {
+        <!-- Personas -->
+        <div class="col-md-4">
+            <label for="personas" class="form-label">Nombre de persones:</label>
+            <input type="number" class="form-control" id="personas" name="personas" min="1">
+        </div>
 
-                $sqlUpdate = "
-                    UPDATE parking_reservas
-                    SET 
-                        total_calculado  = :importe,
-                        tipo             = :tipo,
-                        estado           = :estado,
-                        entrada_prevista = :entrada_prevista,
-                        salida_prevista  = :salida_prevista,
-                        vehiculo         = :vehiculo,
-                        matricula        = :matricula,
-                        vuelo            = :vuelo,
-                        notas            = :notes
-                    WHERE id = :id
-                ";
+        <!-- Vuelo -->
+        <div class="col-md-4">
+            <label for="vuelo" class="form-label">Vol client:</label>
+            <input type="text" class="form-control" id="vuelo" name="vuelo">
+        </div>
 
-                $stmt = $conn->prepare($sqlUpdate);
+        <hr>
+        <h4>Import (calculat pel sistema):</h4>
 
-                // total_calculado es DECIMAL → PARAM_STR va bien
-                $stmt->bindParam(":importe", $importe, PDO::PARAM_STR);
-                $stmt->bindParam(":tipo", $tipo, PDO::PARAM_STR);
-                $stmt->bindParam(":estado", $estado, PDO::PARAM_STR);
-                $stmt->bindParam(":entrada_prevista", $entrada_prevista, PDO::PARAM_STR);
-                $stmt->bindParam(":salida_prevista", $salida_prevista, PDO::PARAM_STR);
-                $stmt->bindParam(":vehiculo", $vehiculo, PDO::PARAM_STR);
-                $stmt->bindParam(":matricula", $matricula, PDO::PARAM_STR);
-                $stmt->bindParam(":vuelo", $vuelo, PDO::PARAM_STR);
-                $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
-                $stmt->bindParam(":id", $id_old, PDO::PARAM_INT);
+        <!-- Subtotal -->
+        <div class="col-md-4">
+            <label for="subtotal_calculado" class="form-label">Subtotal:</label>
+            <input type="text" class="form-control" id="subtotal_calculado" name="subtotal_calculado" readonly>
+            <small class="form-text text-danger">* No es pot modificar</small>
+        </div>
 
-                if ($stmt->execute()) {
-                    $codi_resposta = 1;
-                } else {
-                    $codi_resposta = 2;
-                }
+        <!-- IVA -->
+        <div class="col-md-4">
+            <label for="iva_calculado" class="form-label">IVA:</label>
+            <input type="text" class="form-control" id="iva_calculado" name="iva_calculado" readonly>
+            <small class="form-text text-danger">* No es pot modificar</small>
+        </div>
 
-                if ($codi_resposta == 1) {
-                    echo '<div class="alert alert-success" role="alert"><h4 class="alert-heading"><strong>Reserva actualitzada correctament.</strong></h4>';
-                    echo "Reserva actualitzada.</div>";
-                } else {
-                    echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error en la transmissió de les dades</strong></h4>';
-                    echo "Les dades no s\'han transmès correctament.</div>";
-                }
-            } else {
-                echo '<div class="alert alert-danger" role="alert"><h4 class="alert-heading"><strong>Error!</h4></strong>';
-                echo 'Controla que totes les dades siguin correctes.</div>';
-            }
-        }
+        <!-- Total -->
+        <div class="col-md-4">
+            <label for="total_calculado" class="form-label">Total:</label>
+            <input type="text" class="form-control" id="total_calculado" name="total_calculado" readonly>
+            <small class="form-text text-danger">* No es pot modificar</small>
+        </div>
 
-        // =======================
-        // 3) Formulario de edición
-        // =======================
-        if ($codi_resposta == 2) {
-            echo '<form action="" method="post" id="update" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">';
+        <hr>
 
-            echo '<h4>Dades de la reserva:</h4>';
+        <!-- Notas -->
+        <div class="col-12">
+            <label for="notas" class="form-label">Nota reserva:</label>
+            <textarea class="form-control" id="notas" name="notas" rows="3"></textarea>
+        </div>
 
-            // Nombre cliente
-            echo '<div class="col-md-4">';
-            echo '<label>Nom client:</label>';
-            echo '<input type="text" class="form-control" id="nombre" readonly value="' . htmlspecialchars((string)$nombre_old) . '">';
-            echo '<small class="form-text text-danger">* No es pot modificar</small>';
-            echo '</div>';
+        <div class="col-12 d-flex justify-content-between mt-3">
+            <a href="/inici" class="btn btn-outline-secondary">Tornar</a>
+            <button id="btnReserva" type="submit" class="btn btn-primary">
+                Modificar reserva
+            </button>
+        </div>
 
-            // Importe
-            echo '<div class="col-md-4">';
-            echo '<label>Import reserva:</label>';
-            echo '<input type="text" class="form-control" id="importe" readonly name="importe" value="' . htmlspecialchars((string)$importe_old) . '">';
-            echo '<small class="form-text text-danger">* No es pot modificar</small>';
-            echo '</div>';
-
-            // Tipus reserva (campo tipo varchar(50))
-            echo '<div class="col-md-4">';
-            echo '<label>Tipus de reserva:</label>';
-            echo '<select class="form-select" name="tipo" id="tipo">';
-            echo '<option disabled>Selecciona una opció:</option>';
-
-            $tipos = [
-                '1' => 'Finguer Class',
-                '2'  => 'Gold Finguer',
-                '3'  => 'Finguer Class Anual',
-            ];
-
-            foreach ($tipos as $valor => $etiqueta) {
-                $selected = ($tipo_old === $valor) ? " selected" : "";
-                echo "<option value='" . htmlspecialchars($valor) . "'" . $selected . ">" . htmlspecialchars($etiqueta) . "</option>";
-            }
-
-            echo '</select>';
-            echo '</div>';
-
-            // Estado (enum: 'pendiente', 'pagada', 'cancelada', 'anual')
-            echo '<div class="col-md-4">';
-            echo '<label>Estat de la reserva:</label>';
-            echo '<select class="form-select" name="estado" id="estado">';
-            echo '<option disabled>Selecciona una opció:</option>';
-
-            $estados = [
-                'pendiente' => 'Pendent',
-                'pagada'    => 'Pagada',
-                'pago_oficina'  => 'Pago en oficina',
-                'cancelada' => 'Cancel·lada',
-                'anual'     => 'Anual',
-            ];
-
-            foreach ($estados as $valor => $etiqueta) {
-                $selected = ($estado_old === $valor) ? " selected" : "";
-                echo "<option value='" . htmlspecialchars($valor) . "'" . $selected . ">" . htmlspecialchars($etiqueta) . "</option>";
-            }
-
-            echo '</select>';
-            echo '</div>';
-
-            echo "<hr>";
-            echo "<h4>Entrada i sortida:</h4>";
-
-            // Día entrada
-            echo '<div class="col-md-6">';
-            echo '<label>Dia entrada:</label>';
-            echo '<input type="date" class="form-control" id="diaEntrada" name="diaEntrada" value="' . htmlspecialchars((string)$diaEntrada_old) . '">';
-            echo '</div>';
-
-            // Hora entrada
-            echo '<div class="col-md-6">';
-            echo '<label>Hora entrada:</label>';
-            echo '<input type="time" class="form-control" id="horaEntrada" name="horaEntrada" value="' . htmlspecialchars((string)$horaEntrada_old) . '">';
-            echo '</div>';
-
-            // Día salida
-            echo '<div class="col-md-6">';
-            echo '<label>Dia sortida:</label>';
-            echo '<input type="date" class="form-control" id="diaSalida" name="diaSalida" value="' . htmlspecialchars((string)$diaSalida_old) . '">';
-            echo '</div>';
-
-            // Hora salida
-            echo '<div class="col-md-6">';
-            echo '<label>Hora sortida:</label>';
-            echo '<input type="time" class="form-control" id="horaSalida" name="horaSalida" value="' . htmlspecialchars((string)$horaSalida_old) . '">';
-            echo '</div>';
-
-            echo "<hr>";
-
-            // Vehículo
-            echo '<div class="col-md-4">';
-            echo '<label>Model vehicle:</label>';
-            echo '<input type="text" class="form-control" id="vehiculo" name="vehiculo" value="' . htmlspecialchars((string)$vehiculo_old) . '">';
-            echo '</div>';
-
-            // Matrícula
-            echo '<div class="col-md-4">';
-            echo '<label>Número de matrícula:</label>';
-            echo '<input type="text" class="form-control" id="matricula" name="matricula" value="' . htmlspecialchars((string)$matricula_old) . '">';
-            echo '</div>';
-
-            // Vuelo
-            echo '<div class="col-md-4">';
-            echo '<label>Vol client:</label>';
-            echo '<input type="text" class="form-control" id="vuelo" name="vuelo" value="' . htmlspecialchars((string)$vuelo_old) . '">';
-            echo '</div>';
-
-            // Notas
-            echo '<div class="col-md-12">';
-            echo '<label>Nota reserva:</label>';
-            echo '<input type="text" class="form-control" id="notes" name="notes" value="' . htmlspecialchars((string)$notes_old) . '">';
-            echo '</div>';
-
-            echo "<div class='md-12' style='margin-top:15px;'>";
-            echo "<button id='update' name='update' type='submit' class='btn btn-primary'>Modificar reserva</button>";
-            echo "</div>";
-
-            echo "</form>";
-        } else {
-            echo '<a href="' . APP_WEB . '/inici" class="btn btn-dark menuBtn" role="button" aria-disabled="false">Tornar</a>';
-        }
-    } else {
-        echo "Error: aquest ID no és vàlid";
-    }
-} else {
-    echo "Error. No has seleccionat cap vehicle.";
-}
-
-echo "</div>";
+    </form>
+</div>

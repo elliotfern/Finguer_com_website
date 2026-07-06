@@ -1,38 +1,38 @@
 // config/endpoints.ts
 
-import { apiUrl } from './globals';
+import { API_URL } from './environment';
 
 export const ENDPOINTS = {
     GET: {
         reserves: {
-            list: `${apiUrl}/intranet/reserves/get?type=list`,
+            list: `${API_URL}/intranet/reserves/get?type=list`,
             // ...
         },
         areaClient: {
             reservaClient: (email: string) =>
-                `${apiUrl}/area-client/reservas?type=reservas&cliente=${encodeURIComponent(email)}`,
+                `${API_URL}/area-client/reservas?type=reservas&cliente=${encodeURIComponent(email)}`,
         },
         clients: {
             dadesClient: (uuid: string) =>
-                `${apiUrl}/usuaris/get?type=get&uuid=${encodeURIComponent(uuid)}`,
-            nomUsuari: `${apiUrl}/intranet/users/get?type=user`,
+                `${API_URL}/usuaris/get?type=get&uuid=${encodeURIComponent(uuid)}`,
+            nomUsuari: `${API_URL}/intranet/users/get?type=user`,
         },
     },
     POST: {
         auth: {
-            login: `${apiUrl}/intranet/auth/login`,
+            login: `${API_URL}/intranet/auth/login`,
         },
         reserves: {
-            updateEstado: `${apiUrl}/intranet/reserves/post?type=update-estado`,
+            updateEstado: `${API_URL}/intranet/reserves/post?type=update-estado`,
             // ...
         },
         clients: {
-            creacioClient: `${apiUrl}/usuaris/post?type=usuarios-create`,
+            creacioClient: `${API_URL}/usuaris/post?type=usuarios-create`,
         },
     },
     PUT: {
         clients: {
-            updateClient: `${apiUrl}/usuaris/put?type=usuarios-update`,
+            updateClient: `${API_URL}/usuaris/put?type=usuarios-update`,
         },
     },
     DELETE: {

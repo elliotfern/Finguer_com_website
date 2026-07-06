@@ -1,4 +1,4 @@
-import { apiUrl } from '../../../config/globals';
+import { API_URL } from '../../../config/environment';
 import { ApiOk } from '../../../types/api';
 import { obrirFinestra, tancarFinestra } from './finestraEmergent/popUpReserva';
 import { carregarDadesTaulaReserves } from './taulaReserves/taulaReserves';
@@ -50,7 +50,7 @@ function extractRowsFromVp2(json: unknown): DeviceInfo[] | null {
 }
 
 const DEVICE_INFO_ENDPOINT = (id: string) =>
-    `${apiUrl}/intranet/reserves/get?type=reservaId&id=${encodeURIComponent(id)}`;
+    `${API_URL}/intranet/reserves/get?type=reservaId&id=${encodeURIComponent(id)}`;
 
 async function obtenirDeviceInfo(id: string): Promise<DeviceInfoInput> {
     try {

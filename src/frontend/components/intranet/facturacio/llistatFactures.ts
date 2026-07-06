@@ -1,6 +1,5 @@
 // src/intranet/facturacio/llistat.ts
-
-import { apiUrl, webUrl } from '../../../config/globals';
+import { API_URL, WEB_BASE } from '../../../config/environment';
 
 declare global {
     interface Window {
@@ -34,8 +33,6 @@ type IntegrityApiResponse = {
     data?: IntegrityData;
     error?: string;
 };
-
-const API_URL = `${apiUrl}/factures/get/`;
 
 // ✅ IMPORTANTE: para poder emitir por POST necesitas reserva_id en el listado.
 // Si tu endpoint facturacioLlistat ya lo devuelve, perfecto.
@@ -96,7 +93,7 @@ function isEmitirFacturaSuccess(x: unknown): x is EmitirFacturaSuccess {
 
 async function emitirFacturaYObtenerPdfUrl(reservaId: string): Promise<string> {
     const response = await fetch(
-        `${apiUrl}/factures/post?type=emitir-factura`,
+        `${API_URL}/factures/post?type=emitir-factura`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,12 +132,15 @@ export function initTaulaFacturacio(): void {
             const params = new URLSearchParams();
             params.set('type', 'facturacioVerificarIntegridad');
 
-            const response = await fetch(`${API_URL}?${params.toString()}`, {
-                headers: {
-                    Accept: 'application/json',
-                },
-                credentials: 'include',
-            });
+            const response = await fetch(
+                `${API_URL}/factures/get/?${params.toString()}`,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            );
 
             if (!response.ok) {
                 throw new Error('Error HTTP ' + response.status);
@@ -295,7 +295,7 @@ export function initTaulaFacturacio(): void {
         if (currentSearch.trim() !== '') {
             params.set('q', currentSearch.trim());
         }
-        window.location.href = `${API_URL}?${params.toString()}`;
+        window.location.href = `${API_URL}/factures/get/?${params.toString()}`;
     });
 
     // ----- Fetch + render -----
@@ -315,10 +315,13 @@ export function initTaulaFacturacio(): void {
     `;
 
         try {
-            const response = await fetch(`${API_URL}?${params.toString()}`, {
-                headers: { Accept: 'application/json' },
-                credentials: 'include',
-            });
+            const response = await fetch(
+                `${API_URL}/factures/get/?${params.toString()}`,
+                {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'include',
+                }
+            );
 
             if (!response.ok) throw new Error('Error HTTP ' + response.status);
 
@@ -373,8 +376,8 @@ export function initTaulaFacturacio(): void {
                 opcionesFormato
             );
 
-            const urlHistorialLogs = `${webUrl}/control/facturacio/historial/${f.id}`;
-            const urlEnviarEmail = `${webUrl}/intranet/factura/enviar/${f.id}`;
+            const urlHistorialLogs = `${WEB_BASE}/control/facturacio/historial/${f.id}`;
+            const urlEnviarEmail = `${WEB_BASE}/intranet/factura/enviar/${f.id}`;
 
             const reservaId = f.reserva_id;
 

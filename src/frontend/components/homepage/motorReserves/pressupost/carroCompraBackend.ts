@@ -1,8 +1,7 @@
 // src/pages/home/motorReserves/carroCompraBackend.ts
-import { apiUrl } from '../../../../config/globals';
-import { CotizarResponse } from './mostrarPreu';
 
-const API_URL = `${apiUrl}/carro-compra/post`;
+import { API_URL } from '../../../../config/environment';
+import { CotizarResponse } from './mostrarPreu';
 
 function getOrCreateSessionKey(): string {
     const key = 'carro_session';
@@ -140,7 +139,7 @@ export async function pressupostCarroBackend(): Promise<CotizarResponse> {
         fechaSalida: buildDateTime(rango.end, horaSalida),
     };
 
-    const resp = await fetch(API_URL, {
+    const resp = await fetch(`${API_URL}/carro-compra/post`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

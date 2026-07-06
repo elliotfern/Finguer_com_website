@@ -1,4 +1,4 @@
-import { API_BASE } from '../../../config/globals';
+import { API_URL } from '../../../config/environment';
 import { ApiOk, ApiResponse } from '../../../types/api';
 import { fetchDataGet } from '../../../utils/fetchDataGet';
 import { renderFormInputs } from '../../../utils/renderFormInputs';
@@ -7,13 +7,13 @@ import { transmissioDadesDB } from '../../../utils/transmissioDadesBD';
 export const URLS = {
     GET: {
         USUARIOS_GET: (uuid: string) =>
-            `${API_BASE}/usuaris/get?type=clienteAnual&uuid=${encodeURIComponent(uuid)}`,
+            `${API_URL}/usuaris/get?type=clienteAnual&uuid=${encodeURIComponent(uuid)}`,
     },
     POST: {
-        USUARIOS_CREATE: `${API_BASE}/usuaris/post?type=clienteAnual-create`,
+        USUARIOS_CREATE: `${API_URL}/usuaris/post?type=clienteAnual-create`,
     },
     PUT: {
-        USUARIOS_UPDATE: `${API_BASE}/usuaris/put?type=clienteAnual-update`,
+        USUARIOS_UPDATE: `${API_URL}/usuaris/put?type=clienteAnual-update`,
     },
 };
 

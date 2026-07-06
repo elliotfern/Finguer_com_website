@@ -1,4 +1,4 @@
-import { apiUrl } from '../../../../config/globals';
+import { API_URL } from '../../../../config/environment';
 
 type ApiResponse<T = unknown> = {
     status: 'success' | 'error' | 'partial';
@@ -12,7 +12,7 @@ type ApiResponse<T = unknown> = {
 export const enviarConfirmacioReserva = async (
     id: string
 ): Promise<ApiResponse> => {
-    const url = `${apiUrl}/intranet/email/get?type=emailConfirmacioReserva&id=${encodeURIComponent(id)}`;
+    const url = `${API_URL}/intranet/email/get?type=emailConfirmacioReserva&id=${encodeURIComponent(id)}`;
 
     const res = await fetch(url, { method: 'GET' });
 

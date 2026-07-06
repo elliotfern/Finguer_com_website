@@ -1,4 +1,4 @@
-import { apiUrl, webUrl } from '../../../../config/globals';
+import { API_URL, WEB_BASE } from '../../../../config/environment';
 import { ApiResponse } from '../../../../types/api';
 import { Reserva } from '../../../../types/interfaces';
 import { isApiOk } from '../../../../utils/api';
@@ -43,7 +43,7 @@ export async function confirmarPagoManual(
     reservaId: number
 ): Promise<PagoManualData> {
     const res = await fetch(
-        `${apiUrl}/factures/post/confirmar-pago-manual?type=pagoManual`,
+        `${API_URL}/factures/post/confirmar-pago-manual?type=pagoManual`,
         {
             method: 'POST',
             credentials: 'include',
@@ -138,12 +138,14 @@ export const carregarDadesTaulaReserves = async (
         let url = '';
         const tipo_int = tipo;
         if (tipo_int) {
-            url = `${apiUrl}/intranet/reserves/get?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}&tipo=${encodeURIComponent(tipo_int)}`;
+            url = `${API_URL}/intranet/reserves/get?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}&tipo=${encodeURIComponent(tipo_int)}`;
         } else {
-            url = `${apiUrl}/intranet/reserves/get?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}`;
+            url = `${API_URL}/intranet/reserves/get?type=reserves&estado_vehiculo=${encodeURIComponent(estatParking)}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            credentials: 'include',
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -190,7 +192,7 @@ export const carregarDadesTaulaReserves = async (
         // Limpiar el cuerpo de la tabla antes de agregar nuevos datos
         tableBody.innerHTML = '';
 
-        const urlWeb = `${webUrl}/control`;
+        const urlWeb = `${WEB_BASE}/control`;
 
         function formatImporte(importe: string | number) {
             const numero = parseFloat(importe as string);
@@ -534,7 +536,7 @@ export const carregarDadesTaulaReserves = async (
 
                     try {
                         const response = await fetch(
-                            `${apiUrl}/factures/post?type=emitir-factura`,
+                            `${API_URL}/factures/post?type=emitir-factura`,
                             {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },

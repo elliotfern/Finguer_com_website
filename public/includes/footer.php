@@ -1,6 +1,6 @@
 <?php
-$bundleUrl  = BASE_URL . '/dist/bundle.js';       // ruta en URL
-$bundlePath = BASE_URL . '/dist/bundle.js';         // ruta en disco
+$bundleUrl = BASE_URL . '/dist/bundle.js'; // ruta en URL
+$bundlePath = BASE_URL . '/dist/bundle.js'; // ruta en disco
 
 $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 ?>
@@ -44,11 +44,25 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="<?= htmlspecialchars($bundleUrl, ENT_QUOTES) ?>?v=<?= $v ?>"></script>
+<script type="module" src="<?= htmlspecialchars(
+    $bundleUrl,
+    ENT_QUOTES,
+) ?>?v=<?= $v ?>"></script>
 <script src="<?php APP_ROOT; ?>/js/cookies.js"></script>
+
 <script>
-    window.APP_REDSYS_URL = "<?= htmlspecialchars($_ENV['URLREDSYS'] ?? '', ENT_QUOTES) ?>";
+    window.APP_ENV = <?php echo json_encode(
+        $_ENV['APP_ENV'] ?? 'production',
+    ); ?>;
+    window.APP_API_BASE = <?php echo json_encode($_ENV['API_BASE'] ?? ''); ?>;
+    window.APP_DOMAIN_WEB = <?php echo json_encode(
+        $_ENV['DOMAIN_WEB'] ?? '',
+    ); ?>;
+    window.APP_REDSYS_URL = <?php echo json_encode(
+        $_ENV['URLREDSYS'] ?? '',
+    ); ?>;
 </script>
+
 </body>
 
 </html>

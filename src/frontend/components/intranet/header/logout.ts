@@ -1,4 +1,4 @@
-import { API_BASE } from '../../../config/globals';
+import { API_URL } from '../../../config/environment';
 
 // logout.ts
 export const logout = async (event: Event) => {
@@ -6,7 +6,7 @@ export const logout = async (event: Event) => {
 
     try {
         const response = await fetch(
-            `${API_BASE}/intranet/users/get?type=logout`,
+            `${API_URL}/intranet/users/get?type=logout`,
             {
                 method: 'GET',
                 credentials: 'include',

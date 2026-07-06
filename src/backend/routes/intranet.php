@@ -36,52 +36,14 @@ $routes = [
         'roles' => ['admin'],
     ],
 
-    '/control/reserva/modificar/tipus/{id}' => [
-        'view' => './intranet/form-modificar/tipus-reserva.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/telefon/{id}' => [
-        'view' => './intranet/form-modificar/client-telefon.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/nom/{id}' => [
-        'view' => './intranet/form-modificar/client-nom.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/entrada/{id}' => [
-        'view' => './intranet/form-modificar/reserva-entrada.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/sortida/{id}' => [
-        'view' => './intranet/form-modificar/reserva-sortida.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/vehicle/{id}' => [
-        'view' => './intranet/form-modificar/vehicle.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/vol/{id}' => [
-        'view' => './intranet/form-modificar/vol.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
     '/control/reserva/modificar/nota/{id}' => [
         'view' => './intranet/form-modificar/nota.php',
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
     ],
-    '/control/reserva/modificar/cercador/{id}' => [
-        'view' => './intranet/form-modificar/cercador.php',
-        'needs_session' => true,
-        'roles' => ['admin', 'trabajador'],
-    ],
-    '/control/reserva/modificar/reserva/{id}' => [
+
+    // RESERVES
+    '/control/modifica-reserva/{id}' => [
         'view' => './intranet/form-modificar/reserva.php',
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
@@ -209,13 +171,6 @@ $routes = [
         'view' => './intranet/reserves/llistat-reserves.php',
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
-    ],
-
-    // test
-    '/control/test' => [
-        'view' => './intranet/test/test.php',
-        'needs_session' => true,
-        'roles' => ['admin'],
     ],
 
     // Facturacio
