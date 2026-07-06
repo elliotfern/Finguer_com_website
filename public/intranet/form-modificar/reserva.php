@@ -2,7 +2,7 @@
 
 
 <div class="container" style="margin-bottom:50px">
-     <div id="titolForm"></div>
+     <div id="titolForm"> </div>
 
     <form id="reservaForm" class="row g-3" style="background-color:#BDBDBD;padding:25px;margin-top:10px">
 
