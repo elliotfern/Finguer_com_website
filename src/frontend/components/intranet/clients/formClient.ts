@@ -71,20 +71,16 @@ export async function formUsuarios(isUpdate: boolean, uuid?: string) {
         setHidden('uuid', '');
         setHidden('estado', 'activo');
 
-        form.addEventListener(
-            'submit',
-            (event) => {
-                transmissioDadesDB<UsuarioCreateData>(
-                    event,
-                    'POST',
-                    'UsuariosForm',
-                    ENDPOINTS.POST.clients.creacioClient,
-                    false,
-                    'hide'
-                );
-            },
-            { once: true }
-        );
+        form.addEventListener('submit', (event) => {
+            transmissioDadesDB<UsuarioCreateData>(
+                event,
+                'POST',
+                'UsuariosForm',
+                ENDPOINTS.POST.clients.creacioClient,
+                false,
+                'hide'
+            );
+        });
 
         return;
     }
@@ -123,16 +119,12 @@ export async function formUsuarios(isUpdate: boolean, uuid?: string) {
     const pass = document.getElementById('password') as HTMLInputElement | null;
     if (pass) pass.value = '';
 
-    form.addEventListener(
-        'submit',
-        (event) => {
-            transmissioDadesDB(
-                event,
-                'PUT',
-                'UsuariosForm',
-                ENDPOINTS.PUT.clients.updateClient
-            );
-        },
-        { once: true }
-    );
+    form.addEventListener('submit', (event) => {
+        transmissioDadesDB(
+            event,
+            'PUT',
+            'UsuariosForm',
+            ENDPOINTS.PUT.clients.updateClient
+        );
+    });
 }

@@ -7,9 +7,9 @@
             <h1>Acceso Clientes</h1>
             <h6>Recibirá en su correo electrónico un enlace para acceder al área privada<h6><br>
                 <?php
-                echo '<div class="alert alert-success" id="loginMessageOk" style="display:none" role="alert"></div>';
+                echo '<div class="alert alert-success d-none" id="loginMessageOk" role="alert"></div>';
 
-                echo '<div class="alert alert-danger" id="loginMessageErr" style="display:none" role="alert"></div>';
+                echo '<div class="alert alert-danger d-none" id="loginMessageErr" role="alert"></div>';
                 ?>
 
                 <form action="" method="post" class="login">

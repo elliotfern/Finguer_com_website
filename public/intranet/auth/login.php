@@ -5,8 +5,16 @@
             <div class="container">
                 <h1>Accés intranet</h1>
 
-                    <div class="alert alert-success" id="loginMessageOk" style="display:none" role="alert"></div>
-                    <div class="alert alert-danger" id="loginMessageErr" style="display:none" role="alert"></div>
+                    <!-- Missatges -->
+                    <div class="col-12">
+                        <div id="okMessage" class="alert alert-success d-none">
+                            <div id="okText"></div>
+                        </div>
+
+                        <div id="errMessage" class="alert alert-danger d-none">
+                            <div id="errText"></div>
+                        </div>
+                    </div>
 
                         <form action="" method="post" class="login">
                                     <label for="email">Email</label>

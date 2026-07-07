@@ -23,11 +23,11 @@ require_once APP_ROOT . '/intranet/inc/header.php';
 
             <!-- OK / ERROR -->
             <div class="col-12">
-                <div class="alert alert-success" role="alert" id="okMessage" style="display:none">
+                <div class="alert alert-success d-none" role="alert" id="okMessage">
                     <div id="okText"></div>
                 </div>
 
-                <div class="alert alert-danger" role="alert" id="errMessage" style="display:none">
+                <div class="alert alert-danger d-none" role="alert" id="errMessage">
                     <div id="errText"></div>
                 </div>
             </div>

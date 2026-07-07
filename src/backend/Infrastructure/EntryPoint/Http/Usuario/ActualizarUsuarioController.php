@@ -5,13 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\EntryPoint\Http\Usuario;
 
 use App\Application\Shared\Schema\SchemaValidationException;
-use App\Application\Usuario\DTO\ActualizarPerfilDTO;
-use App\Application\Usuario\Factory\UsuarioFactory;
-use App\Domain\Shared\Email;
-use App\Domain\Shared\UsuarioUuid;
-use App\Domain\Usuario\Entity\Usuario;
-use App\Domain\Usuario\Enums\Locale;
-use App\Domain\Usuario\Enums\Rol;
+use App\Application\Usuario\UseCase\ActualizarUsuario;
 use App\Infrastructure\Persistence\MySql\MysqlConnection;
 use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository;
 
@@ -41,7 +35,6 @@ final class ActualizarUsuarioController
         requireAuthTokenCookie();
 
         $data = json_decode(file_get_contents('php://input'), true);
-
         if (!is_array($data)) {
             http_response_code(400);
             echo json_encode([
@@ -52,69 +45,32 @@ final class ActualizarUsuarioController
         }
 
         try {
-            $uuidStr = trim((string) ($data['uuid'] ?? ''));
-            if ($uuidStr === '') {
-                http_response_code(400);
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'UUID requerido',
-                ]);
-                exit();
-            }
-            $uuid = UsuarioUuid::fromString($uuidStr);
-
             $repo = new MySqlUsuarioRepository(MysqlConnection::get());
+            $useCase = new ActualizarUsuario($repo);
 
-            $existente = $repo->findByUuid($uuid);
-            if ($existente === null) {
-                http_response_code(404);
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Usuario no encontrado',
-                ]);
-                exit();
-            }
-
-            $email = Email::fromString($data['email'] ?? '');
-
-            $otro = $repo->findByEmail($email);
-            if ($otro !== null && !$otro->uuid()->equals($uuid)) {
-                http_response_code(409);
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Ya existe un usuario con este email',
-                ]);
-                exit();
-            }
-
-            $plainPass = trim((string) ($data['password'] ?? ''));
-            $passwordHash =
-                $plainPass !== ''
-                    ? password_hash($plainPass, PASSWORD_DEFAULT)
-                    : $existente->password();
-
-            $usuarioActualizado = Usuario::fromDatabase(
-                uuid: $uuid,
-                email: $email,
-                estado: $existente->estado(),
-                rol: Rol::tryFrom($data['tipo_rol'] ?? '') ?? $existente->rol(),
-                locale: Locale::tryFrom($data['locale'] ?? '') ??
-                    $existente->locale(),
-                password: $passwordHash,
-            );
-            $repo->save($usuarioActualizado);
-
-            if (!empty($data['nombre'])) {
-                $perfilDto = ActualizarPerfilDTO::fromArray($data);
-                $perfil = UsuarioFactory::crearPerfil($uuid, $perfilDto);
-                $repo->savePerfil($perfil);
-            }
+            $uuidStr = trim((string) ($data['uuid'] ?? ''));
+            $usuario = $useCase->execute($uuidStr, $data);
 
             echo json_encode([
                 'status' => 'success',
-                'usuario_uuid_hex' => str_replace('-', '', $uuidStr),
                 'message' => 'Usuario actualizado correctamente',
+                'data' => [
+                    'usuario_uuid_hex' => str_replace(
+                        '-',
+                        '',
+                        $usuario->uuid()->toString(),
+                    ),
+                ],
             ]);
+        } catch (\InvalidArgumentException $e) {
+            [$code, $msg] = match ($e->getMessage()) {
+                'MISSING_UUID' => [400, 'UUID requerido'],
+                'NOT_FOUND' => [404, 'Usuario no encontrado'],
+                'EMAIL_EXISTS' => [409, 'Ya existe un usuario con este email'],
+                default => [400, 'Datos inválidos'],
+            };
+            http_response_code($code);
+            echo json_encode(['status' => 'error', 'message' => $msg]);
         } catch (SchemaValidationException $e) {
             http_response_code(422);
             echo json_encode([

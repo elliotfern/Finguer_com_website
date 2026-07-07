@@ -63,12 +63,14 @@ final class CrearUsuarioController
 
             echo json_encode([
                 'status' => 'success',
-                'usuario_uuid_hex' => str_replace(
-                    '-',
-                    '',
-                    $usuario->uuid()->toString(),
-                ),
-                'message' => 'Usuario procesado',
+                'message' => 'Usuario creado correctamente',
+                'data' => [
+                    'usuario_uuid_hex' => str_replace(
+                        '-',
+                        '',
+                        $usuario->uuid()->toString(),
+                    ),
+                ],
             ]);
         } catch (SchemaValidationException $e) {
             http_response_code(422);

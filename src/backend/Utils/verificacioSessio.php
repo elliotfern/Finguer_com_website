@@ -71,12 +71,20 @@ function verificarSesionIntranet(): void
 {
     $user = auth_user();
     if ($user === null) {
-        deny(401, 'Has d\'iniciar sessió');
+        if (http_is_ajax_or_api()) {
+            deny(401, 'Has d\'iniciar sessió');
+        }
+        header('Location: /control/login');
+        exit();
     }
 
     $rolesPermitidos = ['admin', 'trabajador'];
     if (!in_array($user['role'], $rolesPermitidos, true)) {
-        deny(403, 'No tens permisos per accedir a aquesta secció.');
+        if (http_is_ajax_or_api()) {
+            deny(403, 'No tens permisos per accedir a aquesta secció.');
+        }
+        header('Location: /control/login');
+        exit();
     }
 }
 
@@ -88,12 +96,20 @@ function verificarAccesoCliente(): void
 {
     $user = auth_user();
     if ($user === null) {
-        deny(401, 'Has d\'iniciar sessió');
+        if (http_is_ajax_or_api()) {
+            deny(401, 'Has d\'iniciar sessió');
+        }
+        header('Location: /area-cliente/login');
+        exit();
     }
 
     $rolesPermitidos = ['cliente'];
     if (!in_array($user['role'], $rolesPermitidos, true)) {
-        deny(403, 'No tens permisos per accedir a aquesta secció.');
+        if (http_is_ajax_or_api()) {
+            deny(403, 'No tens permisos per accedir a aquesta secció.');
+        }
+        header('Location: /area-cliente/login');
+        exit();
     }
 }
 

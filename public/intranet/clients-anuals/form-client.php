@@ -12,11 +12,11 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
       <!-- Missatges -->
         <div class="col-12">
             <div id="okMessage" class="alert alert-success d-none">
-                <span id="okText"></span>
+                <div id="okText"></div>
             </div>
 
             <div id="errMessage" class="alert alert-danger d-none">
-                <span id="errText"></span>
+                <div id="errText"></div>
             </div>
         </div>
 
