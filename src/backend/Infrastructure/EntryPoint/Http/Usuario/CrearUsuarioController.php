@@ -64,6 +64,11 @@ final class CrearUsuarioController
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Usuario creado correctamente',
+                'usuario_uuid_hex' => str_replace(
+                    '-',
+                    '',
+                    $usuario->uuid()->toString(),
+                ),
                 'data' => [
                     'usuario_uuid_hex' => str_replace(
                         '-',
