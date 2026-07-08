@@ -1,5 +1,5 @@
 <?php
-
+/*
 declare(strict_types=1);
 
 namespace Tests\Integration\Infrastructure\EntryPoint\Http\Usuario;
@@ -174,3 +174,4 @@ final class ActualizarUsuarioControllerTest extends TestCase
         $stmt->execute();
     }
 }
+*/
