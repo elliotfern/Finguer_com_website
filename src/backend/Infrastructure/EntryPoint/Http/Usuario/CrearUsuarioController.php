@@ -79,6 +79,12 @@ final class CrearUsuarioController
                 'message' => 'Datos inválidos',
                 'errors' => $e->toApiArray(),
             ]);
+        } catch (\InvalidArgumentException $e) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ]);
         } catch (\Throwable $e) {
             http_response_code(500);
             error_log('[FINGUER] CrearUsuarioController: ' . $e->getMessage());

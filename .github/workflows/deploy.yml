@@ -22,7 +22,6 @@ jobs:
                 options: >-
                     --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
-
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -48,12 +47,15 @@ jobs:
                   mysql -h127.0.0.1 -uroot -proot finguer_test < tests/schema/finguer_test_schema.sql
 
             - name: Create .env.test
+              env:
+                  APP_TOKEN_SECRET: ${{ secrets.TOKEN }}
               run: |
                   cat > .env.test << EOF
                   DB_HOST=127.0.0.1
                   DB_USER=root
                   DB_PASS=root
                   DB_DBNAME=finguer_test
+                  TOKEN=${APP_TOKEN_SECRET}
                   EOF
 
             - name: Run Unit tests
@@ -61,6 +63,16 @@ jobs:
 
             - name: Run Integration tests
               run: ./vendor/bin/phpunit --testsuite Integration
+
+            - name: Start PHP built-in server for HTTP integration tests
+              run: |
+                  php -S 127.0.0.1:8000 tests/router-test.php &
+                  sleep 2
+
+            - name: Run Integration HTTP tests
+              env:
+                  API_BASE_TEST: http://127.0.0.1:8000/api
+              run: ./vendor/bin/phpunit --group http
 
     deploy:
         needs: test
