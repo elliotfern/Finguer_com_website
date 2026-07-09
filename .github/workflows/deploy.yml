@@ -66,13 +66,17 @@ jobs:
 
             - name: Start PHP built-in server for HTTP integration tests
               run: |
-                  php -S 127.0.0.1:8000 tests/router-test.php &
+                  php -S 127.0.0.1:8000 tests/router-test.php > /tmp/php-server.log 2>&1 &
                   sleep 2
 
             - name: Run Integration HTTP tests
               env:
                   API_BASE_TEST: http://127.0.0.1:8000/api
               run: ./vendor/bin/phpunit --group http
+
+            - name: Show PHP server log (debug)
+              if: always()
+              run: cat /tmp/php-server.log
 
     deploy:
         needs: test

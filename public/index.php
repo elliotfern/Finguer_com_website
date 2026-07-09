@@ -95,6 +95,7 @@ foreach ($routes as $route => $routeInfo) {
 
 // Si la ruta no es encontrada, asignamos la página 404
 if (!$routeFound) {
+    http_response_code(404);
     $view = '404.php';
     $noHeaderFooter = false;
 } else {
