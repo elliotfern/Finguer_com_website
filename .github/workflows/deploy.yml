@@ -62,7 +62,7 @@ jobs:
               run: ./vendor/bin/phpunit --testsuite Unit
 
             - name: Run Integration tests
-              run: ./vendor/bin/phpunit --testsuite Integration
+              run: ./vendor/bin/phpunit --testsuite Integration --exclude-group http
 
             - name: Start PHP built-in server for HTTP integration tests
               run: |
