@@ -80,10 +80,6 @@ jobs:
                   API_BASE_TEST: http://127.0.0.1:8000/api
               run: ./vendor/bin/phpunit --group http
 
-            - name: Show PHP server log (debug)
-              if: always()
-              run: cat /tmp/php-server.log
-
     deploy:
         needs: test
         runs-on: ubuntu-latest
