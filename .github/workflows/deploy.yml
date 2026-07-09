@@ -65,6 +65,12 @@ jobs:
               run: ./vendor/bin/phpunit --testsuite Integration --exclude-group http
 
             - name: Start PHP built-in server for HTTP integration tests
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_USER: root
+                  DB_PASS: root
+                  DB_DBNAME: finguer_test
+                  TOKEN: ${{ secrets.TOKEN }}
               run: |
                   php -S 127.0.0.1:8000 tests/router-test.php > /tmp/php-server.log 2>&1 &
                   sleep 2
