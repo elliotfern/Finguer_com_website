@@ -8,6 +8,8 @@ use App\Domain\Shared\Email;
 use App\Domain\Shared\UsuarioUuid;
 use App\Domain\Usuario\Entity\Usuario;
 use App\Domain\Usuario\Entity\Perfil;
+use App\Domain\Usuario\ValueObjects\UsuarioListCriteria;
+use App\Application\Usuario\DTO\UsuarioListResult;
 
 interface UsuarioRepositoryInterface
 {
@@ -22,4 +24,8 @@ interface UsuarioRepositoryInterface
     public function savePerfil(Perfil $perfil): void;
 
     public function existsEmail(Email $email): bool;
+
+    public function findByCriteria(
+        UsuarioListCriteria $criteria,
+    ): UsuarioListResult;
 }

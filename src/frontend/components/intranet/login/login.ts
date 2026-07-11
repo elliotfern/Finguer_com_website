@@ -10,10 +10,10 @@ export const login = () => {
             'password'
         ) as HTMLInputElement;
         const loginMessageOk = document.getElementById(
-            'loginMessageOk'
+            'okMessage'
         ) as HTMLElement;
         const loginMessageErr = document.getElementById(
-            'loginMessageErr'
+            'errMessage'
         ) as HTMLElement;
 
         if (btnLogin) {
@@ -37,23 +37,25 @@ export const login = () => {
 
                     if (data.status === 'success') {
                         loginMessageOk.innerHTML = data.message;
-                        loginMessageOk.style.display = 'block';
-                        loginMessageErr.style.display = 'none';
+
+                        loginMessageOk.classList.remove('d-none');
+                        loginMessageErr.classList.add('d-none');
 
                         setTimeout(() => {
                             window.location.href = `${window.location.origin}/control/reserves-pendents`;
-                        }, 2000); // Redirige después de 3 segundos
+                        }, 2000);
                     } else {
                         loginMessageErr.innerHTML = data.message;
-                        loginMessageErr.style.display = 'block';
-                        loginMessageOk.style.display = 'none';
+
+                        loginMessageErr.classList.remove('d-none');
+                        loginMessageOk.classList.add('d-none');
                     }
                 } catch (error) {
-                    console.error('Error en la solicitud:', error);
                     loginMessageErr.innerHTML =
                         'Error al intentar iniciar sesión.';
-                    loginMessageErr.style.display = 'block';
-                    loginMessageOk.style.display = 'none';
+
+                    loginMessageErr.classList.remove('d-none');
+                    loginMessageOk.classList.add('d-none');
                 }
             });
         }

@@ -6,10 +6,7 @@
 import { isAdmin } from '../auth/store';
 
 export type UserRole =
-    | 'cliente'
-    | 'administrador'
-    | 'cliente_anual'
-    | 'trabajador';
+    'cliente' | 'administrador' | 'cliente_anual' | 'trabajador';
 export type ActiveRole = UserRole | 'tots';
 
 export interface ApiUserRow {
@@ -48,7 +45,7 @@ interface ListUsersData {
 // ------------------------------
 // Config
 // ------------------------------
-const API_LIST_URL = '/api/usuaris/get?type=list';
+const API_LIST_URL = '/api/usuaris/get?type=usuarios-list';
 const CONTAINER_ID = 'contenidorTaulaClients';
 
 const ROLE_BUTTONS: Array<{ key: UserRole; label: string }> = [

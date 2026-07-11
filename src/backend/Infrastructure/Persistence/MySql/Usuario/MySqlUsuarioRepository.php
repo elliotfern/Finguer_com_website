@@ -16,6 +16,9 @@ use App\Domain\Usuario\ValueObjects\DireccionPostal;
 use App\Domain\Usuario\ValueObjects\Nif;
 use App\Domain\Usuario\ValueObjects\NombreCompleto;
 use App\Domain\Usuario\ValueObjects\Telefono;
+use App\Application\Usuario\DTO\UsuarioListItemDTO;
+use App\Application\Usuario\DTO\UsuarioListResult;
+use App\Domain\Usuario\ValueObjects\UsuarioListCriteria;
 use PDO;
 
 final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
@@ -129,6 +132,78 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
         $stmt->bindValue(':email', $email->value());
         $stmt->execute();
         return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function findByCriteria(
+        UsuarioListCriteria $criteria,
+    ): UsuarioListResult {
+        $roleWhere = $criteria->role !== null ? ' AND u.tipo_rol = :role ' : '';
+        $qLike = '%' . $criteria->q . '%';
+
+        $sql = "
+        SELECT
+            u.uuid,
+            p.nombre,
+            u.email,
+            p.telefono,
+            u.tipo_rol,
+            u.created_at
+        FROM usuarios u
+        LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
+        WHERE 1=1
+          AND (:q = '' OR p.nombre LIKE :qLikeNombre OR u.email LIKE :qLikeEmail OR p.telefono LIKE :qLikeTelefono)
+          {$roleWhere}
+        ORDER BY u.created_at DESC
+        LIMIT :limit OFFSET :offset
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':q', $criteria->q, PDO::PARAM_STR);
+        $stmt->bindValue(':qLikeNombre', $qLike, PDO::PARAM_STR);
+        $stmt->bindValue(':qLikeEmail', $qLike, PDO::PARAM_STR);
+        $stmt->bindValue(':qLikeTelefono', $qLike, PDO::PARAM_STR);
+        if ($criteria->role !== null) {
+            $stmt->bindValue(':role', $criteria->role->value, PDO::PARAM_STR);
+        }
+        $stmt->bindValue(':limit', $criteria->limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $criteria->offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sqlCount = "
+        SELECT COUNT(*) AS total
+        FROM usuarios u
+        LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
+        WHERE 1=1
+          AND (:q = '' OR p.nombre LIKE :qLikeNombre OR u.email LIKE :qLikeEmail OR p.telefono LIKE :qLikeTelefono)
+          {$roleWhere}
+    ";
+
+        $stmtC = $this->conn->prepare($sqlCount);
+        $stmtC->bindValue(':q', $criteria->q, PDO::PARAM_STR);
+        $stmtC->bindValue(':qLikeNombre', $qLike, PDO::PARAM_STR);
+        $stmtC->bindValue(':qLikeEmail', $qLike, PDO::PARAM_STR);
+        $stmtC->bindValue(':qLikeTelefono', $qLike, PDO::PARAM_STR);
+        if ($criteria->role !== null) {
+            $stmtC->bindValue(':role', $criteria->role->value, PDO::PARAM_STR);
+        }
+        $stmtC->execute();
+        $total = (int) ($stmtC->fetchColumn() ?: 0);
+
+        $items = array_map(
+            fn(array $row) => new UsuarioListItemDTO(
+                uuid: UsuarioUuid::fromBytes($row['uuid'])->toString(),
+                nombre: (string) ($row['nombre'] ?? ''),
+                email: (string) ($row['email'] ?? ''),
+                telefono: (string) ($row['telefono'] ?? ''),
+                tipoRol: (string) ($row['tipo_rol'] ?? ''),
+                createdAt: $row['created_at'] ?? null,
+            ),
+            $rows,
+        );
+
+        return new UsuarioListResult($items, $total);
     }
 
     // ── Mappers ──────────────────────────────────────────────
