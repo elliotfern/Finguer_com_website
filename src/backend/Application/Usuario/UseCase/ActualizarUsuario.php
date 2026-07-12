@@ -51,6 +51,8 @@ final class ActualizarUsuario
             locale: Locale::tryFrom($input['locale'] ?? '') ??
                 $existente->locale(),
             password: $passwordHash,
+            createdAt: $existente->createdAt(),
+            updatedAt: new \DateTimeImmutable(),
         );
         $this->usuarioRepository->save($usuarioActualizado);
 

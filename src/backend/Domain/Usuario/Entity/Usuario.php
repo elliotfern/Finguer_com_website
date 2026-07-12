@@ -9,6 +9,7 @@ use App\Domain\Shared\UsuarioUuid;
 use App\Domain\Usuario\Enums\Rol;
 use App\Domain\Usuario\Enums\UsuarioEstado;
 use App\Domain\Usuario\Enums\Locale;
+use DateTimeImmutable;
 
 final class Usuario
 {
@@ -19,6 +20,8 @@ final class Usuario
         private readonly Rol $rol,
         private readonly Locale $locale,
         private readonly ?string $password,
+        private readonly ?DateTimeImmutable $createdAt = null,
+        private readonly ?DateTimeImmutable $updatedAt = null,
     ) {}
 
     public static function create(
@@ -28,6 +31,8 @@ final class Usuario
         Locale $locale = Locale::Es,
         ?string $password = null,
     ): self {
+        $now = new DateTimeImmutable();
+
         return new self(
             uuid: $uuid,
             email: $email,
@@ -35,6 +40,8 @@ final class Usuario
             rol: $rol,
             locale: $locale,
             password: $password,
+            createdAt: $now,
+            updatedAt: $now,
         );
     }
 
@@ -45,8 +52,19 @@ final class Usuario
         Rol $rol,
         Locale $locale,
         ?string $password,
+        ?DateTimeImmutable $createdAt = null,
+        ?DateTimeImmutable $updatedAt = null,
     ): self {
-        return new self($uuid, $email, $estado, $rol, $locale, $password);
+        return new self(
+            $uuid,
+            $email,
+            $estado,
+            $rol,
+            $locale,
+            $password,
+            $createdAt,
+            $updatedAt,
+        );
     }
 
     public function uuid(): UsuarioUuid
@@ -84,6 +102,16 @@ final class Usuario
         return $this->password;
     }
 
+    public function createdAt(): ?DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function updatedAt(): ?DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
     public function esAdmin(): bool
     {
         return $this->rol === Rol::Admin;
@@ -108,6 +136,8 @@ final class Usuario
             $this->rol,
             $this->locale,
             $this->password,
+            $this->createdAt,
+            new DateTimeImmutable(), // updatedAt se refresca
         );
     }
 }

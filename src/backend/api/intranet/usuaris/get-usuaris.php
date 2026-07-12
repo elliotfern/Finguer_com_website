@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\EntryPoint\Http\Usuario\ListarUsuariosController;
+use App\Infrastructure\EntryPoint\Http\Usuario\ObtenerUsuarioController;
 
 // Solo admin (por ahora)
 $user = auth_user();
@@ -16,84 +17,12 @@ if ($type === 'usuarios-list') {
     exit();
 }
 
+if ($type === 'usuarios-get') {
+    ObtenerUsuarioController::handle();
+    exit();
+}
+
 try {
-    // =========================================================
-    // type=get  (detalle usuario por uuid)
-    // GET ?type=get&uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    // =========================================================
-    if ($type === 'get') {
-        $uuidStr = isset($_GET['uuid']) ? trim((string) $_GET['uuid']) : '';
-        if ($uuidStr === '') {
-            jsonResponse(vp2_err('Falta parámetro uuid', 'BAD_UUID'), 400);
-        }
-
-        try {
-            $uuidBin = uuid_bin_from_string($uuidStr);
-        } catch (Throwable $e) {
-            jsonResponse(vp2_err('UUID inválido', 'BAD_UUID'), 400);
-        }
-
-        $sql = "
-            SELECT
-                u.uuid,
-                p.nombre,
-                u.email,
-                u.estado,
-                p.empresa,
-                p.nif,
-                p.direccion,
-                p.ciudad,
-                p.codigo_postal,
-                p.pais,
-                p.telefono,
-                u.tipo_rol,
-                u.locale,
-                u.created_at,
-                u.updated_at
-            FROM usuarios u
-            LEFT JOIN usuarios_perfil AS p ON u.uuid = p.usuario_uuid
-            WHERE u.uuid = :uuid
-            LIMIT 1
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
-        $stmt->execute();
-
-        $r = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$r) {
-            jsonResponse(vp2_err('Usuario no encontrado', 'NOT_FOUND'), 404);
-        }
-
-        $uuidBinRow = $r['uuid'] ?? null;
-        if (!is_string($uuidBinRow) || strlen($uuidBinRow) !== 16) {
-            jsonResponse(
-                vp2_err('UUID almacenado inválido', 'DATA_ERROR'),
-                500,
-            );
-        }
-
-        $data = [
-            'uuid' => uuid_string_from_bin($uuidBinRow),
-            'nombre' => (string) ($r['nombre'] ?? ''),
-            'email' => (string) ($r['email'] ?? ''),
-            'estado' => (string) ($r['estado'] ?? ''),
-            'empresa' => $r['empresa'] ?? null,
-            'nif' => $r['nif'] ?? null,
-            'direccion' => $r['direccion'] ?? null,
-            'ciudad' => $r['ciudad'] ?? null,
-            'codigo_postal' => $r['codigo_postal'] ?? null,
-            'pais' => $r['pais'] ?? null,
-            'telefono' => $r['telefono'] ?? null,
-            'tipo_rol' => (string) ($r['tipo_rol'] ?? ''),
-            'locale' => (string) ($r['locale'] ?? ''),
-            'createdAt' => $r['created_at'] ?? null,
-            'updatedAt' => $r['updated_at'] ?? null,
-        ];
-
-        jsonResponse(vp2_ok('OK', $data), 200);
-    }
-
     // =========================================================
     // type=clienteAnual  (detalle cliente anual por uuid)
     // GET ?type=clienteAnual&uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

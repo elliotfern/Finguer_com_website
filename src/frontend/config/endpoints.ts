@@ -14,7 +14,7 @@ export const ENDPOINTS = {
         },
         clients: {
             dadesClient: (uuid: string) =>
-                `${API_URL}/usuaris/get?type=get&uuid=${encodeURIComponent(uuid)}`,
+                `${API_URL}/usuaris/get?type=usuarios-get&uuid=${encodeURIComponent(uuid)}`,
             nomUsuari: `${API_URL}/intranet/users/get?type=user`,
         },
     },

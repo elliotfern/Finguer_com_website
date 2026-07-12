@@ -71,4 +71,71 @@ class UsuarioTest extends TestCase
         $this->assertSame(Rol::Admin, $usuario->rol());
         $this->assertSame(Locale::Ca, $usuario->locale());
     }
+
+    public function test_crear_usuario_nuevo_fija_created_y_updated_at(): void
+    {
+        $usuario = Usuario::create($this->uuid, $this->email);
+
+        $this->assertNotNull($usuario->createdAt());
+        $this->assertNotNull($usuario->updatedAt());
+        $this->assertEquals($usuario->createdAt(), $usuario->updatedAt());
+    }
+
+    public function test_restaurar_desde_bd_sin_fechas_devuelve_null(): void
+    {
+        $usuario = Usuario::fromDatabase(
+            $this->uuid,
+            $this->email,
+            UsuarioEstado::Activo,
+            Rol::Admin,
+            Locale::Ca,
+            null,
+        );
+
+        $this->assertNull($usuario->createdAt());
+        $this->assertNull($usuario->updatedAt());
+    }
+
+    public function test_restaurar_desde_bd_con_fechas(): void
+    {
+        $createdAt = new \DateTimeImmutable('2025-01-15 10:00:00');
+        $updatedAt = new \DateTimeImmutable('2026-03-20 14:30:00');
+
+        $usuario = Usuario::fromDatabase(
+            $this->uuid,
+            $this->email,
+            UsuarioEstado::Activo,
+            Rol::Admin,
+            Locale::Ca,
+            null,
+            $createdAt,
+            $updatedAt,
+        );
+
+        $this->assertSame($createdAt, $usuario->createdAt());
+        $this->assertSame($updatedAt, $usuario->updatedAt());
+    }
+
+    public function test_bloquear_preserva_created_at_y_refresca_updated_at(): void
+    {
+        $createdAt = new \DateTimeImmutable('2025-01-15 10:00:00');
+        $updatedAt = new \DateTimeImmutable('2025-01-15 10:00:00');
+
+        $usuario = Usuario::fromDatabase(
+            $this->uuid,
+            $this->email,
+            UsuarioEstado::Activo,
+            Rol::Cliente,
+            Locale::Es,
+            null,
+            $createdAt,
+            $updatedAt,
+        );
+
+        $bloqueado = $usuario->bloquear();
+
+        $this->assertSame($createdAt, $bloqueado->createdAt());
+        $this->assertNotSame($updatedAt, $bloqueado->updatedAt());
+        $this->assertGreaterThan($updatedAt, $bloqueado->updatedAt());
+    }
 }

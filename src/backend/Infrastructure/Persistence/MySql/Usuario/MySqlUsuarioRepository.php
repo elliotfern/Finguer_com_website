@@ -16,9 +16,10 @@ use App\Domain\Usuario\ValueObjects\DireccionPostal;
 use App\Domain\Usuario\ValueObjects\Nif;
 use App\Domain\Usuario\ValueObjects\NombreCompleto;
 use App\Domain\Usuario\ValueObjects\Telefono;
-use App\Application\Usuario\DTO\UsuarioListItemDTO;
-use App\Application\Usuario\DTO\UsuarioListResult;
+use App\Domain\Usuario\ValueObjects\UsuarioListado;
+use App\Domain\Usuario\ValueObjects\UsuarioResumen;
 use App\Domain\Usuario\ValueObjects\UsuarioListCriteria;
+use DateTimeImmutable;
 use PDO;
 
 final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
@@ -28,11 +29,11 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
     public function findByUuid(UsuarioUuid $uuid): ?Usuario
     {
         $stmt = $this->conn->prepare("
-            SELECT uuid, email, estado, password, tipo_rol, locale
-            FROM usuarios
-            WHERE uuid = :uuid
-            LIMIT 1
-        ");
+        SELECT uuid, email, estado, password, tipo_rol, locale, created_at, updated_at
+        FROM usuarios
+        WHERE uuid = :uuid
+        LIMIT 1
+    ");
         $stmt->bindValue(':uuid', $uuid->toBytes(), PDO::PARAM_LOB);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -43,11 +44,11 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
     public function findByEmail(Email $email): ?Usuario
     {
         $stmt = $this->conn->prepare("
-            SELECT uuid, email, estado, password, tipo_rol, locale
-            FROM usuarios
-            WHERE email = :email
-            LIMIT 1
-        ");
+        SELECT uuid, email, estado, password, tipo_rol, locale, created_at, updated_at
+        FROM usuarios
+        WHERE email = :email
+        LIMIT 1
+    ");
         $stmt->bindValue(':email', $email->value());
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -58,8 +59,7 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
     public function findPerfilByUuid(UsuarioUuid $uuid): ?Perfil
     {
         $stmt = $this->conn->prepare("
-            SELECT nombre, telefono, empresa, nif,
-                   direccion, ciudad, codigo_postal, pais
+            SELECT nombre, telefono, empresa, nif, direccion, ciudad, codigo_postal, pais
             FROM usuarios_perfil
             WHERE usuario_uuid = :uuid
             LIMIT 1
@@ -73,16 +73,23 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
 
     public function save(Usuario $usuario): void
     {
+        if ($usuario->createdAt() === null) {
+            throw new \LogicException(
+                'Usuario::createdAt() es null. El objeto Usuario debe crearse con Usuario::create() o reconstruirse con Usuario::fromDatabase() antes de guardar.',
+            );
+        }
+
         $stmt = $this->conn->prepare("
-            INSERT INTO usuarios (uuid, email, estado, password, tipo_rol, locale)
-            VALUES (:uuid, :email, :estado, :password, :tipo_rol, :locale)
-            ON DUPLICATE KEY UPDATE
-                email    = VALUES(email),
-                estado   = VALUES(estado),
-                password = VALUES(password),
-                tipo_rol = VALUES(tipo_rol),
-                locale   = VALUES(locale)
-        ");
+        INSERT INTO usuarios (uuid, email, estado, password, tipo_rol, locale, created_at, updated_at)
+        VALUES (:uuid, :email, :estado, :password, :tipo_rol, :locale, :created_at, :updated_at)
+        ON DUPLICATE KEY UPDATE
+            email      = VALUES(email),
+            estado     = VALUES(estado),
+            password   = VALUES(password),
+            tipo_rol   = VALUES(tipo_rol),
+            locale     = VALUES(locale),
+            updated_at = VALUES(updated_at)
+    ");
         $stmt->execute([
             ':uuid' => $usuario->uuid()->toBytes(),
             ':email' => $usuario->email()->value(),
@@ -90,6 +97,10 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
             ':password' => null,
             ':tipo_rol' => $usuario->rol()->value,
             ':locale' => $usuario->locale()->value,
+            ':created_at' => $usuario->createdAt()->format('Y-m-d H:i:s'),
+            ':updated_at' =>
+                $usuario->updatedAt()?->format('Y-m-d H:i:s') ??
+                $usuario->createdAt()->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -136,7 +147,7 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
 
     public function findByCriteria(
         UsuarioListCriteria $criteria,
-    ): UsuarioListResult {
+    ): UsuarioListado {
         $roleWhere = $criteria->role !== null ? ' AND u.tipo_rol = :role ' : '';
         $qLike = '%' . $criteria->q . '%';
 
@@ -192,18 +203,20 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
         $total = (int) ($stmtC->fetchColumn() ?: 0);
 
         $items = array_map(
-            fn(array $row) => new UsuarioListItemDTO(
-                uuid: UsuarioUuid::fromBytes($row['uuid'])->toString(),
+            fn(array $row) => new UsuarioResumen(
+                uuid: UsuarioUuid::fromBytes($row['uuid']),
                 nombre: (string) ($row['nombre'] ?? ''),
                 email: (string) ($row['email'] ?? ''),
                 telefono: (string) ($row['telefono'] ?? ''),
-                tipoRol: (string) ($row['tipo_rol'] ?? ''),
-                createdAt: $row['created_at'] ?? null,
+                rol: Rol::from($row['tipo_rol']),
+                createdAt: $row['created_at']
+                    ? new \DateTimeImmutable($row['created_at'])
+                    : null,
             ),
             $rows,
         );
 
-        return new UsuarioListResult($items, $total);
+        return new UsuarioListado($items, $total);
     }
 
     // ── Mappers ──────────────────────────────────────────────
@@ -217,6 +230,12 @@ final class MySqlUsuarioRepository implements UsuarioRepositoryInterface
             rol: Rol::from($row['tipo_rol']),
             locale: Locale::from($row['locale']),
             password: $row['password'],
+            createdAt: isset($row['created_at'])
+                ? new DateTimeImmutable($row['created_at'])
+                : null,
+            updatedAt: isset($row['updated_at'])
+                ? new DateTimeImmutable($row['updated_at'])
+                : null,
         );
     }
 

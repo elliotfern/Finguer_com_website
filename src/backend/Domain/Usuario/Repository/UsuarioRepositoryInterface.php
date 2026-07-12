@@ -9,7 +9,7 @@ use App\Domain\Shared\UsuarioUuid;
 use App\Domain\Usuario\Entity\Usuario;
 use App\Domain\Usuario\Entity\Perfil;
 use App\Domain\Usuario\ValueObjects\UsuarioListCriteria;
-use App\Application\Usuario\DTO\UsuarioListResult;
+use App\Domain\Usuario\ValueObjects\UsuarioListado;
 
 interface UsuarioRepositoryInterface
 {
@@ -27,5 +27,5 @@ interface UsuarioRepositoryInterface
 
     public function findByCriteria(
         UsuarioListCriteria $criteria,
-    ): UsuarioListResult;
+    ): UsuarioListado;
 }

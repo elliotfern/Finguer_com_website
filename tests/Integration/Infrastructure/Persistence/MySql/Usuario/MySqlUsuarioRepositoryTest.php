@@ -8,6 +8,7 @@ use App\Domain\Usuario\Entity\Perfil;
 use App\Domain\Usuario\Entity\Usuario;
 use App\Domain\Usuario\Enums\Locale;
 use App\Domain\Usuario\Enums\Rol;
+use App\Domain\Usuario\Enums\UsuarioEstado;
 use App\Domain\Usuario\ValueObjects\DireccionPostal;
 use App\Domain\Usuario\ValueObjects\NombreCompleto;
 use App\Infrastructure\Persistence\MySql\Usuario\MySqlUsuarioRepository;
@@ -123,5 +124,63 @@ class MySqlUsuarioRepositoryTest extends TestCase
                 Email::fromString('noexiste@finguer-test.com'),
             ),
         );
+    }
+
+    public function test_guardar_usuario_persiste_created_y_updated_at(): void
+    {
+        $uuid = UsuarioUuid::generate();
+        $email = Email::fromString('test_' . uniqid() . '@finguer-test.com');
+        $usuario = Usuario::create($uuid, $email, Rol::Cliente, Locale::Es);
+
+        $this->repo->save($usuario);
+
+        $recuperado = $this->repo->findByUuid($uuid);
+
+        $this->assertNotNull($recuperado->createdAt());
+        $this->assertNotNull($recuperado->updatedAt());
+    }
+
+    public function test_actualizar_usuario_preserva_created_at_original(): void
+    {
+        $uuid = UsuarioUuid::generate();
+        $email = Email::fromString('test_' . uniqid() . '@finguer-test.com');
+        $usuario = Usuario::create($uuid, $email, Rol::Cliente, Locale::Es);
+        $this->repo->save($usuario);
+
+        $original = $this->repo->findByUuid($uuid);
+        $createdAtOriginal = $original->createdAt();
+
+        // Reconstruimos el usuario como si viniera de la BD, lo bloqueamos
+        // (refresca updatedAt) y lo guardamos de nuevo.
+        sleep(1); // asegura diferencia de segundo entre created y updated
+        $bloqueado = $original->bloquear();
+        $this->repo->save($bloqueado);
+
+        $actualizado = $this->repo->findByUuid($uuid);
+
+        $this->assertEquals(
+            $createdAtOriginal->format('Y-m-d H:i:s'),
+            $actualizado->createdAt()->format('Y-m-d H:i:s'),
+        );
+        $this->assertSame(UsuarioEstado::Bloqueado, $actualizado->estado());
+    }
+
+    public function test_save_lanza_excepcion_si_usuario_sin_created_at(): void
+    {
+        $uuid = UsuarioUuid::generate();
+        $email = Email::fromString('test_' . uniqid() . '@finguer-test.com');
+
+        // fromDatabase sin fechas -> createdAt() es null
+        $usuarioSinFecha = Usuario::fromDatabase(
+            $uuid,
+            $email,
+            UsuarioEstado::Activo,
+            Rol::Cliente,
+            Locale::Es,
+            null,
+        );
+
+        $this->expectException(\LogicException::class);
+        $this->repo->save($usuarioSinFecha);
     }
 }
