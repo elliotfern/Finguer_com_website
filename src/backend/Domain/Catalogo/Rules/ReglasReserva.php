@@ -106,4 +106,20 @@ final class ReglasReserva
 
         return ['valido' => true];
     }
+
+    /**
+     * Calcula el número de días de una reserva a partir de entrada/salida.
+     * Redondea hacia arriba (ceil) cualquier fracción de día.
+     */
+    public static function calcularDias(
+        DateTimeInterface $entrada,
+        DateTimeInterface $salida,
+    ): int {
+        $diffSegundos = $salida->getTimestamp() - $entrada->getTimestamp();
+        if ($diffSegundos < 0) {
+            return 0;
+        }
+
+        return (int) ceil($diffSegundos / 86400);
+    }
 }

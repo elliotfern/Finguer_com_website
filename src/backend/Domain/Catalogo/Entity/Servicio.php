@@ -166,10 +166,10 @@ final class Servicio
         $minimo = $this->segMinConIva ?? 0.0;
         $factor = $this->segFactor ?? 0.0;
 
-        if ($totalConIva < $umbral) {
-            return null; // No aplica
+        if ($totalConIva <= $umbral) {
+            return $minimo;
         }
 
-        return round(max($minimo, $totalConIva * $factor), 2);
+        return round($totalConIva * $factor, 2);
     }
 }

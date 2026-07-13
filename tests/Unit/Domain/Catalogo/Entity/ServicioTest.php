@@ -103,25 +103,28 @@ class ServicioTest extends TestCase
         $this->assertSame(12.4, $s->calcularPrecioExtra());
     }
 
-    public function test_precio_seguro_aplica(): void
+    public function test_precio_seguro_aplica_minimo_cuando_esta_en_el_umbral_o_por_debajo(): void
     {
         $s = $this->makeSeguro();
-        $this->assertTrue($s->esSeguro());
-        // 10% de 200€ = 20€, pero mínimo es 30€
-        $this->assertSame(30.0, $s->calcularPrecioSeguro(200.0));
+        // Total <= umbral (100€) → siempre se cobra el mínimo fijo (30€)
+        $this->assertSame(30.0, $s->calcularPrecioSeguro(80.0));
+        $this->assertSame(30.0, $s->calcularPrecioSeguro(100.0)); // límite exacto incluido
     }
 
-    public function test_precio_seguro_supera_minimo(): void
+    public function test_precio_seguro_aplica_porcentaje_cuando_supera_el_umbral(): void
     {
         $s = $this->makeSeguro();
-        // 10% de 400€ = 40€ > mínimo 30€
+        // Total > umbral (100€) → se aplica el factor, sin comparar con el mínimo
+        // 10% de 400€ = 40€
         $this->assertSame(40.0, $s->calcularPrecioSeguro(400.0));
     }
 
-    public function test_precio_seguro_no_aplica_bajo_umbral(): void
+    public function test_precio_seguro_no_aplica_maximo_con_el_minimo_al_superar_umbral(): void
     {
         $s = $this->makeSeguro();
-        // Total < 100€ → no aplica
-        $this->assertNull($s->calcularPrecioSeguro(80.0));
+        // Total > umbral pero el 10% da menos que el mínimo (30€): no hay "suelo",
+        // se aplica el factor tal cual, igual que el legacy.
+        // 10% de 150€ = 15€ (aunque sea menor que el mínimo de 30€)
+        $this->assertSame(15.0, $s->calcularPrecioSeguro(150.0));
     }
 }
