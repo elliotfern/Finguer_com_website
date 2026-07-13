@@ -100,6 +100,40 @@ CREATE TABLE `parking_servicios_catalogo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+-- Estructura de la taula `parking_reservas`
+--
+
+CREATE TABLE `parking_reservas` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `usuario_uuid` binary(16) NOT NULL,
+  `localizador` varchar(50) NOT NULL,
+  `estado` enum('pendiente','procesando_pago','pago_oficina','pagada','cancelada','anual') NOT NULL DEFAULT 'pendiente',
+  `estado_vehiculo` enum('pendiente_entrada','dentro','salido') NOT NULL DEFAULT 'pendiente_entrada',
+  `fecha_reserva` datetime NOT NULL,
+  `entrada_prevista` datetime NOT NULL,
+  `salida_prevista` datetime NOT NULL,
+  `subtotal_calculado` decimal(10,2) DEFAULT NULL,
+  `iva_calculado` decimal(10,2) DEFAULT NULL,
+  `total_calculado` decimal(10,2) DEFAULT NULL,
+  `vehiculo` varchar(100) DEFAULT NULL,
+  `matricula` varchar(20) DEFAULT NULL,
+  `personas` tinyint(3) UNSIGNED DEFAULT NULL,
+  `tipo` varchar(50) DEFAULT NULL,
+  `vuelo` varchar(30) DEFAULT NULL,
+  `notas` text DEFAULT NULL,
+  `canal` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `parking_reservas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ix_parking_reservas_usuario_uuid` (`usuario_uuid`);
+
+ALTER TABLE `parking_reservas`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- Bolcament de dades per a la taula `parking_servicios_catalogo`
 --
 
