@@ -33,7 +33,9 @@ $pago = $translations['paginaPago'] ?? [];
 
                         <div class="alert alert-danger d-none" id="messageErr" role="alert">
                             <h4 class="alert-heading"><strong>¡Error!</strong></h4>
-                            <h6>Por favor revise los datos que ha introducido antes de completar el pedido.</h6>
+                              <h6 id="messageErrText">
+
+                               </h6>
                         </div>
 
                         <h3><?php echo $pago['cliente']; ?></h3>

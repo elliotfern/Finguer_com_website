@@ -14,7 +14,7 @@ final class Email
 
         if ($value === '') {
             throw new \InvalidArgumentException(
-                'El email no puede estar vacío.',
+                'El campo Email no puede estar vacío.',
             );
         }
 

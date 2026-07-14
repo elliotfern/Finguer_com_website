@@ -46,7 +46,7 @@ final class Carrito
             2,
         );
 
-        $hash = self::calcularHash(
+        $snapshot = self::construirSnapshot(
             $session,
             $seleccion,
             $diasReserva,
@@ -55,6 +55,8 @@ final class Carrito
             $ivaTotal,
             $total,
         );
+
+        $hash = hash('sha256', $snapshot);
 
         return new self(
             session: $session,
@@ -93,55 +95,6 @@ final class Carrito
             $hash,
             $updatedAt,
         );
-    }
-
-    private static function calcularHash(
-        string $session,
-        SeleccionReserva $seleccion,
-        int $diasReserva,
-        array $lineas,
-        float $subtotal,
-        float $ivaTotal,
-        float $total,
-    ): string {
-        $payload = [
-            'moneda' => 'EUR',
-            'diasReserva' => $diasReserva,
-            'seleccion' => [
-                'session' => $session,
-                'tipoReserva' => $seleccion->tipoReserva,
-                'limpieza' => $seleccion->limpiezaCodigo,
-                'seguroCancelacion' => $seleccion->seguroCancelacion ? 1 : 0,
-                'fechaEntrada' => $seleccion->fechaEntrada->format(
-                    'Y-m-d H:i:s',
-                ),
-                'fechaSalida' => $seleccion->fechaSalida->format('Y-m-d H:i:s'),
-            ],
-            'lineas' => array_map(
-                fn(LineaPrecio $l) => [
-                    'codigo' => $l->codigo,
-                    'descripcion' => $l->descripcion,
-                    'cantidad' => $l->cantidad,
-                    'iva_percent' => $l->ivaPercent,
-                    'base' => $l->base,
-                    'iva' => $l->iva,
-                    'total' => $l->total,
-                ],
-                $lineas,
-            ),
-            'totales' => [
-                'subtotal_sin_iva' => $subtotal,
-                'iva_total' => $ivaTotal,
-                'total_con_iva' => $total,
-            ],
-        ];
-
-        $json = json_encode(
-            $payload,
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
-        );
-
-        return hash('sha256', (string) $json);
     }
 
     public function session(): string
@@ -184,22 +137,41 @@ final class Carrito
 
     public function lineasJson(): string
     {
+        return self::construirSnapshot(
+            $this->session,
+            $this->seleccion,
+            $this->diasReserva,
+            $this->lineas,
+            $this->subtotalSinIva,
+            $this->ivaTotal,
+            $this->totalConIva,
+        );
+    }
+
+    /**
+     * @param LineaPrecio[] $lineas
+     */
+    private static function construirSnapshot(
+        string $session,
+        SeleccionReserva $seleccion,
+        int $diasReserva,
+        array $lineas,
+        float $subtotal,
+        float $ivaTotal,
+        float $total,
+    ): string {
         $payload = [
             'moneda' => 'EUR',
-            'diasReserva' => $this->diasReserva,
+            'diasReserva' => $diasReserva,
             'seleccion' => [
-                'session' => $this->session,
-                'tipoReserva' => $this->seleccion->tipoReserva,
-                'limpieza' => $this->seleccion->limpiezaCodigo,
-                'seguroCancelacion' => $this->seleccion->seguroCancelacion
-                    ? 1
-                    : 0,
-                'fechaEntrada' => $this->seleccion->fechaEntrada->format(
+                'session' => $session,
+                'tipoReserva' => $seleccion->tipoReserva,
+                'limpieza' => $seleccion->limpiezaCodigo,
+                'seguroCancelacion' => $seleccion->seguroCancelacion ? 1 : 0,
+                'fechaEntrada' => $seleccion->fechaEntrada->format(
                     'Y-m-d H:i:s',
                 ),
-                'fechaSalida' => $this->seleccion->fechaSalida->format(
-                    'Y-m-d H:i:s',
-                ),
+                'fechaSalida' => $seleccion->fechaSalida->format('Y-m-d H:i:s'),
             ],
             'lineas' => array_map(
                 fn(LineaPrecio $l) => [
@@ -211,12 +183,12 @@ final class Carrito
                     'iva' => $l->iva,
                     'total' => $l->total,
                 ],
-                $this->lineas,
+                $lineas,
             ),
             'totales' => [
-                'subtotal_sin_iva' => $this->subtotalSinIva,
-                'iva_total' => $this->ivaTotal,
-                'total_con_iva' => $this->totalConIva,
+                'subtotal_sin_iva' => $subtotal,
+                'iva_total' => $ivaTotal,
+                'total_con_iva' => $total,
             ],
         ];
 

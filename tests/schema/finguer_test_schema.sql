@@ -133,6 +133,28 @@ ALTER TABLE `parking_reservas`
 ALTER TABLE `parking_reservas`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
+  --
+-- Estructura de la taula `carro_compra`
+--
+
+CREATE TABLE `carro_compra` (
+  `id` int(1) NOT NULL,
+  `session` varchar(64) NOT NULL,
+  `subtotal_sin_iva` decimal(10,2) DEFAULT NULL,
+  `iva_total` decimal(10,2) DEFAULT NULL,
+  `total_con_iva` decimal(10,2) DEFAULT NULL,
+  `lineas_json` longtext DEFAULT NULL,
+  `hash` char(64) DEFAULT NULL,
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `carro_compra`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ux_carro_compra_session` (`session`);
+
+ALTER TABLE `carro_compra`
+  MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
+
 --
 -- Bolcament de dades per a la taula `parking_servicios_catalogo`
 --

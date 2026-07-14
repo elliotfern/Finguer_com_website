@@ -7,14 +7,26 @@ interface PostRequest {
     session: string;
 }
 
-function getSessionFromUrl(): string | null {
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    return parts.length ? decodeURIComponent(parts[parts.length - 1]) : null;
-}
+const messageOk = document.getElementById('messageOk');
+const messageErr = document.getElementById('messageErr');
+const messageErrText = document.getElementById('messageErrText');
+
+const mostrarOk = () => {
+    messageOk?.classList.remove('d-none');
+    messageErr?.classList.add('d-none');
+};
+
+const mostrarError = (texto?: string) => {
+    messageErr?.classList.remove('d-none');
+    messageOk?.classList.add('d-none');
+
+    if (messageErrText) {
+        messageErrText.textContent =
+            texto ?? 'Se ha producido un error inesperado.';
+    }
+};
 
 export const pagamentTargeta = async (): Promise<void> => {
-    console.log('PAYMENT START');
-
     const session = window.location.pathname.split('/').filter(Boolean).pop();
     if (!session) return;
 
@@ -24,10 +36,9 @@ export const pagamentTargeta = async (): Promise<void> => {
         { session }
     );
 
-    console.log('REDSYS RESPONSE', response);
-
     if (!response || response.status !== 'success') {
         console.error('ERROR REDSYS');
+        mostrarError(response?.message);
         return;
     }
 
@@ -36,12 +47,14 @@ export const pagamentTargeta = async (): Promise<void> => {
     const r = await creacioDadesUsuaris(idReserva);
     if (!r || r.status !== 'success') {
         console.error('ERROR CREANDO USUARIO');
+        mostrarError(r?.message);
         return;
     }
 
     // 1. Validamos que la URL exista realmente
     if (!redsysUrl || redsysUrl.trim() === '') {
         console.error('Falta la URL de Redsys en la configuración');
+        mostrarError();
         return;
     }
 
@@ -67,7 +80,7 @@ export const pagamentTargeta = async (): Promise<void> => {
 
     document.body.appendChild(form);
 
-    console.log('ENVIANDO FORMULARIO A REDSYS...');
+    mostrarOk();
 
     // 3. Envío seguro
     requestAnimationFrame(() => {

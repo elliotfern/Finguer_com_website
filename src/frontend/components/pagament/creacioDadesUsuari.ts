@@ -39,10 +39,14 @@ export const creacioDadesUsuaris = async (
             body: JSON.stringify(formData),
         });
 
-        if (!response.ok)
-            throw new Error(`HTTP error! status: ${response.status}`);
-
         const data = await response.json();
+
+        if (!response.ok) {
+            return {
+                status: 'error',
+                message: data.message ?? `Error HTTP ${response.status}`,
+            };
+        }
 
         document
             .querySelectorAll('.invalid-feedback')
@@ -51,10 +55,11 @@ export const creacioDadesUsuaris = async (
             .querySelectorAll('.form-control')
             .forEach((el) => el.classList.remove('is-invalid'));
 
-        if (data.status === 'error' && data.errors) {
+        if (data.status === 'error') {
             for (const [field, message] of Object.entries(data.errors)) {
                 const errorDiv = document.getElementById(`error-${field}`);
                 const inputField = document.getElementById(field);
+
                 if (errorDiv && inputField) {
                     errorDiv.textContent =
                         typeof message === 'string' ? message : '';
@@ -63,7 +68,7 @@ export const creacioDadesUsuaris = async (
             }
             return {
                 status: 'error',
-                message: 'Errores en los datos enviados.',
+                message: data.message ?? 'Errores en los datos enviados.',
             };
         }
 

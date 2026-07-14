@@ -1,7 +1,30 @@
 // src/pages/home/motorReserves/carroCompraBackend.ts
 
 import { API_URL } from '../../../../config/environment';
-import { CotizarResponse } from './mostrarPreu';
+import { CotizarLinea, CotizarResponse } from './mostrarPreu';
+
+interface CarritoDataSuccess {
+    diasReserva: number;
+    lineas: CotizarLinea[];
+    subtotal: number;
+    iva_total: number;
+    total: number;
+    hash: string;
+}
+
+function isCotizarLinea(x: unknown): x is CotizarLinea {
+    if (!x || typeof x !== 'object') return false;
+    const o = x as Record<string, unknown>;
+    return (
+        typeof o.codigo === 'string' &&
+        typeof o.descripcion === 'string' &&
+        typeof o.cantidad === 'number' &&
+        typeof o.iva_percent === 'number' &&
+        typeof o.base === 'number' &&
+        typeof o.iva === 'number' &&
+        typeof o.total === 'number'
+    );
+}
 
 function getOrCreateSessionKey(): string {
     const key = 'carro_session';
@@ -27,29 +50,31 @@ function buildDateTime(dateYmd: string, hourHHmm: string): string {
     return `${dateYmd} ${hourHHmm}:00`;
 }
 
-function isCotizarResponse(x: unknown): x is CotizarResponse {
+function isSuccessEnvelope(
+    x: unknown
+): x is { status: 'success'; data: CarritoDataSuccess } {
     if (!x || typeof x !== 'object') return false;
     const o = x as Record<string, unknown>;
+    if (o.status !== 'success' || !o.data || typeof o.data !== 'object') {
+        return false;
+    }
+    const d = o.data as Record<string, unknown>;
     return (
-        typeof o.ok === 'boolean' &&
-        typeof o.diasReserva === 'number' &&
-        Array.isArray(o.lineas) &&
-        typeof o.subtotal === 'number' &&
-        typeof o.iva_total === 'number' &&
-        typeof o.total === 'number'
+        typeof d.diasReserva === 'number' &&
+        Array.isArray(d.lineas) &&
+        d.lineas.every(isCotizarLinea) &&
+        typeof d.subtotal === 'number' &&
+        typeof d.iva_total === 'number' &&
+        typeof d.total === 'number'
     );
 }
 
-function isBusinessErrorResponse(
+function isErrorEnvelope(
     x: unknown
-): x is { ok: false; codigo: string; mensaje: string } {
+): x is { status: 'error'; message: string; codigo?: string } {
     if (!x || typeof x !== 'object') return false;
     const o = x as Record<string, unknown>;
-    return (
-        o.ok === false &&
-        typeof o.codigo === 'string' &&
-        typeof o.mensaje === 'string'
-    );
+    return o.status === 'error' && typeof o.message === 'string';
 }
 
 export async function pressupostCarroBackend(): Promise<CotizarResponse> {
@@ -160,8 +185,8 @@ export async function pressupostCarroBackend(): Promise<CotizarResponse> {
         };
     }
 
-    // Error de regla de negocio (422): { ok:false, codigo, mensaje }
-    if (isBusinessErrorResponse(json)) {
+    // Error (400/422/500): { status: 'error', message, codigo? }
+    if (isErrorEnvelope(json)) {
         return {
             ok: false,
             diasReserva: 0,
@@ -169,12 +194,12 @@ export async function pressupostCarroBackend(): Promise<CotizarResponse> {
             subtotal: 0,
             iva_total: 0,
             total: 0,
-            error: json.mensaje,
-            codigo: json.codigo,
+            error: json.message,
+            ...(json.codigo ? { codigo: json.codigo } : {}),
         };
     }
 
-    if (!isCotizarResponse(json)) {
+    if (!isSuccessEnvelope(json)) {
         return {
             ok: false,
             diasReserva: 0,
@@ -188,5 +213,13 @@ export async function pressupostCarroBackend(): Promise<CotizarResponse> {
         };
     }
 
-    return json;
+    return {
+        ok: true,
+        diasReserva: json.data.diasReserva,
+        lineas: json.data.lineas,
+        subtotal: json.data.subtotal,
+        iva_total: json.data.iva_total,
+        total: json.data.total,
+        hash: json.data.hash,
+    };
 }
