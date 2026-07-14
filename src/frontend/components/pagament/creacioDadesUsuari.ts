@@ -1,6 +1,11 @@
 import { API_URL } from '../../config/environment';
 import { creacioReserva } from './creacioReserva';
 
+interface SchemaFieldError {
+    label: string;
+    messages: string[];
+}
+
 export const creacioDadesUsuaris = async (
     idReserva: string
 ): Promise<{ status: string; message: string }> => {
@@ -41,13 +46,6 @@ export const creacioDadesUsuaris = async (
 
         const data = await response.json();
 
-        if (!response.ok) {
-            return {
-                status: 'error',
-                message: data.message ?? `Error HTTP ${response.status}`,
-            };
-        }
-
         document
             .querySelectorAll('.invalid-feedback')
             .forEach((el) => (el.textContent = ''));
@@ -55,20 +53,37 @@ export const creacioDadesUsuaris = async (
             .querySelectorAll('.form-control')
             .forEach((el) => el.classList.remove('is-invalid'));
 
-        if (data.status === 'error') {
-            for (const [field, message] of Object.entries(data.errors)) {
+        // Errores de validación por campo (422): se procesan ANTES del
+        // chequeo genérico de response.ok, porque 422 no es "ok" para fetch.
+        if (data.status === 'error' && data.errors) {
+            for (const [field, fieldError] of Object.entries(
+                data.errors as Record<string, SchemaFieldError>
+            )) {
                 const errorDiv = document.getElementById(`error-${field}`);
                 const inputField = document.getElementById(field);
 
-                if (errorDiv && inputField) {
-                    errorDiv.textContent =
-                        typeof message === 'string' ? message : '';
+                const texto = Array.isArray(fieldError?.messages)
+                    ? fieldError.messages.join(', ')
+                    : '';
+
+                if (errorDiv) {
+                    errorDiv.textContent = texto;
+                }
+                if (inputField) {
                     inputField.classList.add('is-invalid');
                 }
             }
             return {
                 status: 'error',
-                message: data.message ?? 'Errores en los datos enviados.',
+                message:
+                    'Por favor, revise el formulario para completar correctamente los datos solicitados.',
+            };
+        }
+
+        if (!response.ok) {
+            return {
+                status: 'error',
+                message: data.message ?? `Error HTTP ${response.status}`,
             };
         }
 
@@ -82,7 +97,6 @@ export const creacioDadesUsuaris = async (
                 };
             }
 
-            // 👇 ahora creamos la reserva usando session (carrito real en BD)
             const reservaResponse = await creacioReserva(
                 usuarioUuidHex,
                 idReserva

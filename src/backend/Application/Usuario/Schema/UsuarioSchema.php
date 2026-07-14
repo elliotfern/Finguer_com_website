@@ -99,4 +99,44 @@ class UsuarioSchema
             ],
         ];
     }
+
+    // Añadir a UsuarioSchema.php existente
+
+    public static function crearConPerfil(): array
+    {
+        return array_merge(self::create(), [
+            'nombre' => [
+                'rules' => 'required|string|max:255',
+                'label' => 'Nombre',
+            ],
+            'telefono' => [
+                'rules' => 'required|string|max:20',
+                'label' => 'Teléfono',
+            ],
+            'empresa' => [
+                'rules' => 'string|max:255',
+                'label' => 'Empresa',
+            ],
+            'nif' => [
+                'rules' => 'string|max:30',
+                'label' => 'NIF',
+            ],
+            'direccion' => [
+                'rules' => 'string|max:255',
+                'label' => 'Dirección',
+            ],
+            'ciudad' => [
+                'rules' => 'string|max:100',
+                'label' => 'Ciudad',
+            ],
+            'codigo_postal' => [
+                'rules' => 'string|max:10',
+                'label' => 'Código postal',
+            ],
+            'pais' => [
+                'rules' => 'string|max:50',
+                'label' => 'País',
+            ],
+        ]);
+    }
 }

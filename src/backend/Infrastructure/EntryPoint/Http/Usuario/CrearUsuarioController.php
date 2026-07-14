@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\EntryPoint\Http\Usuario;
 
+use App\Application\Shared\Schema\SchemaProcessor;
 use App\Application\Shared\Schema\SchemaValidationException;
 use App\Application\Usuario\DTO\ActualizarPerfilDTO;
 use App\Application\Usuario\Factory\UsuarioFactory;
+use App\Application\Usuario\Schema\UsuarioSchema;
 use App\Application\Usuario\UseCase\BuscarOCrearUsuario;
 use App\Infrastructure\Persistence\MySql\MysqlConnection;
 use App\Infrastructure\Persistence\MySql\MySqlUsuarioRepository;
@@ -48,27 +50,24 @@ final class CrearUsuarioController
         }
 
         try {
+            // Validación completa ANTES de tocar ningún Value Object.
+            // Acumula todos los errores (nombre, email, teléfono, etc.) de una vez.
+            $validado = SchemaProcessor::process(
+                $data,
+                UsuarioSchema::crearConPerfil(),
+            );
+
             $repo = new UsuarioMySqlUsuarioRepository(MysqlConnection::get());
             $useCase = new BuscarOCrearUsuario($repo);
-            $usuario = $useCase->execute($data);
+            $usuario = $useCase->execute($validado);
 
-            if (!empty($data['nombre'])) {
-                $perfilDto = ActualizarPerfilDTO::fromArray($data);
-                $perfil = UsuarioFactory::crearPerfil(
-                    $usuario->uuid(),
-                    $perfilDto,
-                );
-                $repo->savePerfil($perfil);
-            }
+            $perfilDto = ActualizarPerfilDTO::fromArray($validado);
+            $perfil = UsuarioFactory::crearPerfil($usuario->uuid(), $perfilDto);
+            $repo->savePerfil($perfil);
 
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Usuario creado correctamente',
-                'usuario_uuid_hex' => str_replace(
-                    '-',
-                    '',
-                    $usuario->uuid()->toString(),
-                ),
                 'data' => [
                     'usuario_uuid_hex' => str_replace(
                         '-',

@@ -107,6 +107,7 @@ final class CrearUsuarioControllerTest extends TestCase
             [
                 'email' => $email,
                 'nombre' => 'Usuario De Prueba',
+                'telefono' => '600111222',
                 'tipo_rol' => 'cliente',
                 'locale' => 'es',
             ],
@@ -124,11 +125,14 @@ final class CrearUsuarioControllerTest extends TestCase
         $uuidBin = UsuarioUuid::fromString($this->uuidCreado)->toBytes();
 
         $stmt = $this->conn->prepare(
-            'SELECT nombre FROM usuarios_perfil WHERE usuario_uuid = :uuid',
+            'SELECT nombre, telefono FROM usuarios_perfil WHERE usuario_uuid = :uuid',
         );
         $stmt->bindValue(':uuid', $uuidBin, PDO::PARAM_LOB);
         $stmt->execute();
-        $this->assertSame('Usuario De Prueba', $stmt->fetchColumn());
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $this->assertSame('Usuario De Prueba', $row['nombre']);
+        $this->assertSame('600111222', $row['telefono']);
     }
 
     public function test_devuelve_usuario_existente_si_email_ya_existe(): void
@@ -138,7 +142,11 @@ final class CrearUsuarioControllerTest extends TestCase
         // Primera llamada: crea el usuario
         [$httpCode1, $body1] = $this->post(
             "{$this->apiBaseUrl()}/usuaris/post?type=usuarios-create",
-            ['email' => $email, 'nombre' => 'Primero'],
+            [
+                'email' => $email,
+                'nombre' => 'Primero',
+                'telefono' => '600111222',
+            ],
         );
         $this->assertSame(200, $httpCode1);
         $this->uuidCreado = $this->buscarUuidPorEmail($email);
@@ -146,7 +154,11 @@ final class CrearUsuarioControllerTest extends TestCase
         // Segunda llamada: mismo email, no debería crear un duplicado
         [$httpCode2, $body2] = $this->post(
             "{$this->apiBaseUrl()}/usuaris/post?type=usuarios-create",
-            ['email' => $email, 'nombre' => 'Segundo'],
+            [
+                'email' => $email,
+                'nombre' => 'Segundo',
+                'telefono' => '600333444',
+            ],
         );
 
         $this->assertSame(
@@ -164,14 +176,32 @@ final class CrearUsuarioControllerTest extends TestCase
         $this->assertSame(1, (int) $stmt->fetchColumn());
     }
 
-    public function test_devuelve_400_si_email_invalido(): void
+    public function test_devuelve_422_si_email_invalido(): void
     {
         [$httpCode, $body] = $this->post(
             "{$this->apiBaseUrl()}/usuaris/post?type=usuarios-create",
-            ['email' => 'esto-no-es-un-email', 'nombre' => 'Test'],
+            [
+                'email' => 'esto-no-es-un-email',
+                'nombre' => 'Test',
+                'telefono' => '600111222',
+            ],
         );
 
-        $this->assertSame(400, $httpCode);
+        $this->assertSame(422, $httpCode);
         $this->assertSame('error', $body['status'] ?? null);
+        $this->assertArrayHasKey('email', $body['errors'] ?? []);
+    }
+
+    public function test_devuelve_422_si_faltan_campos_obligatorios(): void
+    {
+        [$httpCode, $body] = $this->post(
+            "{$this->apiBaseUrl()}/usuaris/post?type=usuarios-create",
+            ['email' => 'valido@example.com'],
+            // Sin nombre ni teléfono
+        );
+
+        $this->assertSame(422, $httpCode);
+        $this->assertArrayHasKey('nombre', $body['errors'] ?? []);
+        $this->assertArrayHasKey('telefono', $body['errors'] ?? []);
     }
 }

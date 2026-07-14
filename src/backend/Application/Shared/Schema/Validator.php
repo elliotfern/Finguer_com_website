@@ -29,7 +29,7 @@ class Validator
          * REQUIRED CHECK (FIRST LINE OF DEFENSE)
          */
         if ($isRequired && $value === null) {
-            return ['Camp obligatori'];
+            return ['Campo obligatorio'];
         }
 
         /**
@@ -56,7 +56,7 @@ class Validator
                         !is_string($value) ||
                         !filter_var($value, FILTER_VALIDATE_EMAIL)
                     ) {
-                        $errors[] = 'Email invàlid';
+                        $errors[] = 'Email inválido';
                     }
                     break;
 
@@ -65,13 +65,13 @@ class Validator
                         is_string($value) &&
                         mb_strlen($value) > $rule['value']
                     ) {
-                        $errors[] = 'Longitud màxima: ' . $rule['value'];
+                        $errors[] = 'Longitud máxima: ' . $rule['value'];
                     }
                     break;
 
                 case 'date':
                     if (!self::isValidDate($value)) {
-                        $errors[] = 'Data invàlida';
+                        $errors[] = 'Fecha inválida';
                     }
                     break;
             }
@@ -98,22 +98,22 @@ class Validator
 
     private static function validateString(mixed $value): array
     {
-        return is_string($value) ? [] : ['Ha de ser un string'];
+        return is_string($value) ? [] : ['Tiene que ser texto'];
     }
 
     private static function validateInt(mixed $value): array
     {
-        return is_int($value) ? [] : ['Ha de ser un enter'];
+        return is_int($value) ? [] : ['Tiene que ser un número entero'];
     }
 
     private static function validateFloat(mixed $value): array
     {
-        return is_float($value) ? [] : ['Ha de ser un número'];
+        return is_float($value) ? [] : ['Tiene que ser un texto'];
     }
 
     private static function validateBool(mixed $value): array
     {
-        return is_bool($value) ? [] : ['Ha de ser un boolean'];
+        return is_bool($value) ? [] : ['Tiene que ser un booleano'];
     }
 
     private static function validateUuid(mixed $value): array
@@ -122,7 +122,7 @@ class Validator
             return ['UUID invàlid'];
         }
 
-        return preg_match('/^[0-9a-f-]{36}$/', $value) ? [] : ['UUID invàlid'];
+        return preg_match('/^[0-9a-f-]{36}$/', $value) ? [] : ['UUID inválido'];
     }
 
     /**
