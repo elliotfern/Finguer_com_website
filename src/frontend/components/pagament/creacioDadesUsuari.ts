@@ -88,7 +88,9 @@ export const creacioDadesUsuaris = async (
         }
 
         if (data.status === 'success') {
-            const usuarioUuidHex = (data.usuario_uuid_hex || '').toString();
+            const usuarioUuidHex = (
+                data.data?.usuario_uuid_hex || ''
+            ).toString();
 
             if (!usuarioUuidHex || !/^[0-9a-fA-F]{32}$/.test(usuarioUuidHex)) {
                 return {

@@ -156,6 +156,30 @@ ALTER TABLE `carro_compra`
   MODIFY `id` int(1) NOT NULL AUTO_INCREMENT;
 
 --
+-- Estructura de la taula `parking_reservas_servicios`
+--
+
+CREATE TABLE `parking_reservas_servicios` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `reserva_id` bigint(20) UNSIGNED NOT NULL,
+  `servicio_id` tinyint(3) UNSIGNED NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  `cantidad` decimal(10,2) NOT NULL DEFAULT 1.00,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `impuesto_percent` decimal(5,2) NOT NULL,
+  `total_base` decimal(10,2) NOT NULL,
+  `total_impuesto` decimal(10,2) NOT NULL,
+  `total_linea` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `parking_reservas_servicios`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_reserva` (`reserva_id`),
+  ADD KEY `idx_servicio` (`servicio_id`);
+
+ALTER TABLE `parking_reservas_servicios`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
 -- Bolcament de dades per a la taula `parking_servicios_catalogo`
 --
 

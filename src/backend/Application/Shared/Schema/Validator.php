@@ -11,9 +11,6 @@ class Validator
         $rules = $schema['rules'] ?? [];
         $type = $schema['type'] ?? null;
 
-        /**
-         * 🔥 HARD NORMALIZATION (critical)
-         */
         if (is_string($value)) {
             $value = trim($value);
 
@@ -25,28 +22,16 @@ class Validator
         $isNullable = self::hasRule($rules, 'nullable');
         $isRequired = self::hasRule($rules, 'required');
 
-        /**
-         * REQUIRED CHECK (FIRST LINE OF DEFENSE)
-         */
         if ($isRequired && $value === null) {
             return ['Campo obligatorio'];
         }
 
-        /**
-         * NULL HANDLING
-         */
         if ($value === null) {
             return $isNullable ? [] : [];
         }
 
-        /**
-         * TYPE VALIDATION
-         */
         $errors = array_merge($errors, self::validateType($value, $type));
 
-        /**
-         * RULE VALIDATION
-         */
         foreach ($rules as $rule) {
             $name = $rule['name'];
 
@@ -69,6 +54,27 @@ class Validator
                     }
                     break;
 
+                case 'min_value':
+                    if (is_numeric($value) && (float) $value < $rule['value']) {
+                        $errors[] = 'Valor mínimo: ' . $rule['value'];
+                    }
+                    break;
+
+                case 'max_value':
+                    if (is_numeric($value) && (float) $value > $rule['value']) {
+                        $errors[] = 'Valor máximo: ' . $rule['value'];
+                    }
+                    break;
+
+                case 'regex':
+                    if (
+                        !is_string($value) ||
+                        !preg_match($rule['value'], $value)
+                    ) {
+                        $errors[] = 'Formato inválido';
+                    }
+                    break;
+
                 case 'date':
                     if (!self::isValidDate($value)) {
                         $errors[] = 'Fecha inválida';
@@ -80,9 +86,6 @@ class Validator
         return $errors;
     }
 
-    /**
-     * TYPE VALIDATION
-     */
     private static function validateType(mixed $value, ?string $type): array
     {
         return match ($type) {
@@ -91,43 +94,39 @@ class Validator
             'float' => self::validateFloat($value),
             'bool' => self::validateBool($value),
             'uuid' => self::validateUuid($value),
-
             default => [],
         };
     }
 
     private static function validateString(mixed $value): array
     {
-        return is_string($value) ? [] : ['Tiene que ser texto'];
+        return is_string($value) ? [] : ['Ha de ser un string'];
     }
 
     private static function validateInt(mixed $value): array
     {
-        return is_int($value) ? [] : ['Tiene que ser un número entero'];
+        return is_int($value) ? [] : ['Ha de ser un entero'];
     }
 
     private static function validateFloat(mixed $value): array
     {
-        return is_float($value) ? [] : ['Tiene que ser un texto'];
+        return is_float($value) ? [] : ['Ha de ser un número'];
     }
 
     private static function validateBool(mixed $value): array
     {
-        return is_bool($value) ? [] : ['Tiene que ser un booleano'];
+        return is_bool($value) ? [] : ['Ha de ser un booleano'];
     }
 
     private static function validateUuid(mixed $value): array
     {
         if (!is_string($value)) {
-            return ['UUID invàlid'];
+            return ['UUID inválido'];
         }
 
         return preg_match('/^[0-9a-f-]{36}$/', $value) ? [] : ['UUID inválido'];
     }
 
-    /**
-     * DATE
-     */
     private static function isValidDate(mixed $value): bool
     {
         if (!is_string($value)) {
@@ -137,9 +136,6 @@ class Validator
         return strtotime($value) !== false;
     }
 
-    /**
-     * HELPERS
-     */
     private static function hasRule(array $rules, string $name): bool
     {
         foreach ($rules as $rule) {
