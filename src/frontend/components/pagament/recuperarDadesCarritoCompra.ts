@@ -29,14 +29,19 @@ export type CarroSnapshot = {
     };
 };
 
-type CarroGetResponse = {
-    ok: boolean;
-    subtotal?: number;
-    iva_total?: number;
-    total?: number;
-    snapshot?: CarroSnapshot | null;
-    error?: string;
+type CarroGetSuccessData = {
+    session: string;
+    subtotal: number;
+    iva_total: number;
+    total: number;
+    hash: string;
+    updated_at: string | null;
+    snapshot: CarroSnapshot;
 };
+
+type CarroGetResponse =
+    | { status: 'success'; data: CarroGetSuccessData }
+    | { status: 'error'; message: string };
 
 function getSessionFromUrl(): string | null {
     const parts = window.location.pathname.split('/').filter(Boolean);
@@ -59,23 +64,24 @@ export async function recuperarCarroCompra(): Promise<CarroSnapshot | null> {
 
     try {
         const resp = await fetch(
-            `${API_URL}/carro-compra/get/?session=${encodeURIComponent(sessionCode)}`
+            `${API_URL}/carro-compra/get?session=${encodeURIComponent(sessionCode)}`
         );
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
         const data = (await resp.json()) as CarroGetResponse;
-        if (!data.ok || !data.snapshot)
-            throw new Error(data.error || 'Carrito no encontrado');
+
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'Carrito no encontrado');
+        }
 
         // pintar
-        imprimirDadesReserva(data.snapshot, {
-            subtotal: data.subtotal ?? 0,
-            iva_total: data.iva_total ?? 0,
-            total: data.total ?? 0,
+        imprimirDadesReserva(data.data.snapshot, {
+            subtotal: data.data.subtotal,
+            iva_total: data.data.iva_total,
+            total: data.data.total,
         });
 
         // devolver snapshot para el pago
-        return data.snapshot;
+        return data.data.snapshot;
     } catch (e) {
         console.error(e);
         mostrarError();

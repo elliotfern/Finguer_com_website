@@ -209,4 +209,40 @@ final class CarritoTest extends TestCase
 
         $this->assertNull($carrito->updatedAt());
     }
+
+    public function test_to_snapshot_array_devuelve_estructura_completa(): void
+    {
+        $carrito = Carrito::crear(
+            'sess-123',
+            $this->makeSeleccion(),
+            4,
+            $this->makeLineas(),
+        );
+
+        $snapshot = $carrito->toSnapshotArray();
+
+        $this->assertSame('EUR', $snapshot['moneda']);
+        $this->assertSame(4, $snapshot['diasReserva']);
+        $this->assertSame(
+            'RESERVA_FINGUER',
+            $snapshot['seleccion']['tipoReserva'],
+        );
+        $this->assertSame('0', $snapshot['seleccion']['limpieza']);
+        $this->assertSame(0, $snapshot['seleccion']['seguroCancelacion']);
+        $this->assertCount(1, $snapshot['lineas']);
+        $this->assertSame('RESERVA_FINGUER', $snapshot['lineas'][0]['codigo']);
+        $this->assertEquals(121.0, $snapshot['totales']['total_con_iva']);
+    }
+
+    public function test_to_snapshot_json_coincide_con_lineas_json(): void
+    {
+        $carrito = Carrito::crear(
+            'sess-123',
+            $this->makeSeleccion(),
+            4,
+            $this->makeLineas(),
+        );
+
+        $this->assertSame($carrito->lineasJson(), $carrito->toSnapshotJson());
+    }
 }

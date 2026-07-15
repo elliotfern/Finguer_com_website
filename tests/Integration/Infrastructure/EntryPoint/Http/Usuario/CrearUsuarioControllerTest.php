@@ -162,8 +162,8 @@ final class CrearUsuarioControllerTest extends TestCase
         );
 
         $this->assertSame(
-            $body1['usuario_uuid_hex'],
-            $body2['usuario_uuid_hex'],
+            $body1['data']['usuario_uuid_hex'],
+            $body2['data']['usuario_uuid_hex'],
             'No debería crear un segundo usuario con el mismo email',
         );
 
