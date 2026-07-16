@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reserva\Entity;
 
+use App\Domain\Catalogo\Rules\ReglasReserva;
 use App\Domain\Reserva\Enums\CanalReserva;
 use App\Domain\Reserva\Enums\EstadoReserva;
 use App\Domain\Reserva\Enums\EstadoVehiculo;
@@ -60,7 +61,10 @@ final class Reserva
         array $lineas,
         ?string $notas = null,
     ): self {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable(
+            'now',
+            new \DateTimeZone(ReglasReserva::TIMEZONE),
+        );
 
         return new self(
             id: null,

@@ -1,9 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use App\Infrastructure\EntryPoint\Http\Usuario\ListarUsuariosController;
-use App\Infrastructure\EntryPoint\Http\Usuario\ObtenerUsuarioController;
-
 // Solo admin (por ahora)
 $user = auth_user();
 if (!$user || ($user['role'] ?? '') !== 'admin') {
@@ -11,16 +8,6 @@ if (!$user || ($user['role'] ?? '') !== 'admin') {
 }
 
 $type = (string) ($_GET['type'] ?? '');
-
-if ($type === 'usuarios-list') {
-    ListarUsuariosController::handle();
-    exit();
-}
-
-if ($type === 'usuarios-get') {
-    ObtenerUsuarioController::handle();
-    exit();
-}
 
 try {
     // =========================================================

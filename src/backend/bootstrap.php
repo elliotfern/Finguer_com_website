@@ -15,8 +15,6 @@ $conn = MysqlConnection::get();
 
 // Incluir configuraciones y rutas
 require_once __DIR__ . '/config/connection.php';
-require_once __DIR__ . '/api/apiRedsys.php';
-
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/Utils/uuidv7.php';
 require_once __DIR__ . '/Utils/getIdUserCookie.php';

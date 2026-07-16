@@ -1,4 +1,4 @@
-import { API_URL } from '../../config/environment';
+import { ENDPOINTS } from '../../config/endpoints';
 import { creacioReserva } from './creacioReserva';
 
 interface SchemaFieldError {
@@ -9,8 +9,6 @@ interface SchemaFieldError {
 export const creacioDadesUsuaris = async (
     idReserva: string
 ): Promise<{ status: string; message: string }> => {
-    const url = `${API_URL}/alta-client`;
-
     const formData = {
         nombre:
             (document.getElementById('nombre') as HTMLInputElement)?.value ||
@@ -38,7 +36,7 @@ export const creacioDadesUsuaris = async (
     };
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(ENDPOINTS.POST.clients.altaClient, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),

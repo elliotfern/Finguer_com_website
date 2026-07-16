@@ -54,7 +54,7 @@ test.describe('Formulario de reserva - condición de carrera horas/cotizar', () 
 
         // --- 2. Interceptar horas-disponibles con retraso artificial ---
         await page.route(
-            '**/carro-compra/horas-disponibles**',
+            '**/catalogo/get/horas-disponibles**',
             async (route) => {
                 await new Promise((resolve) => setTimeout(resolve, 1500));
                 await route.continue();

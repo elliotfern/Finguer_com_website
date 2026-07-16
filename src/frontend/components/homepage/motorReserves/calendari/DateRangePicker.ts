@@ -1,5 +1,6 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
+import { ENDPOINTS } from '../../../../config/endpoints';
 import { resetContadores } from '../formulari/ResetContadores';
 import { schedulePressupost } from '../pressupost/schedulePressupost';
 import { avisEspecialTancamentParking } from './avisEspecialTancamentParking';
@@ -34,7 +35,7 @@ const CONFIGURACION_FALLBACK: ConfiguracionReserva = {
 
 async function getConfiguracionReserva(): Promise<ConfiguracionReserva> {
     try {
-        const res = await fetch('api/carro-compra/configuracion-reserva');
+        const res = await fetch(ENDPOINTS.GET.catalogo.configuracionReserva);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as ConfiguracionReserva;
         if (!data.ok) throw new Error('Respuesta no ok');

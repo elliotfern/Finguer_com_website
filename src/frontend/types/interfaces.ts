@@ -50,10 +50,14 @@ export interface PaymentData {
     tipoLimpieza: string;
 }
 
-export interface ApiRespostaRedSys {
-    status: string;
+export interface ApiRespostaRedSysData {
     params: string;
     signature: string;
     idReserva: string;
-    message: string;
+}
+
+export interface ApiRespostaRedSys {
+    status: string;
+    data?: ApiRespostaRedSysData;
+    message?: string;
 }

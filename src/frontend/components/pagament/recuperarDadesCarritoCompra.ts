@@ -1,5 +1,5 @@
 // recuperarDadesCarritoCompra.ts
-import { API_URL } from '../../config/environment';
+import { ENDPOINTS } from '../../config/endpoints';
 import { imprimirDadesReserva } from './imprimirDadesReserva';
 
 export type CarroLinea = {
@@ -64,7 +64,7 @@ export async function recuperarCarroCompra(): Promise<CarroSnapshot | null> {
 
     try {
         const resp = await fetch(
-            `${API_URL}/carro-compra/get?session=${encodeURIComponent(sessionCode)}`
+            `${ENDPOINTS.GET.carrito.obtenerCarrito}?session=${encodeURIComponent(sessionCode)}`
         );
 
         const data = (await resp.json()) as CarroGetResponse;

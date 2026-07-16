@@ -1,4 +1,5 @@
-import { API_URL, redsysUrl } from '../../config/environment';
+import { ENDPOINTS } from '../../config/endpoints';
+import { redsysUrl } from '../../config/environment';
 import { fetchData } from '../../services/api/api';
 import type { ApiRespostaRedSys } from '../../types/interfaces';
 import { creacioDadesUsuaris } from './creacioDadesUsuari';
@@ -31,18 +32,18 @@ export const pagamentTargeta = async (): Promise<void> => {
     if (!session) return;
 
     const response = await fetchData<ApiRespostaRedSys, { session: string }>(
-        `${API_URL}/pagamentRedsysTargeta`,
+        `${ENDPOINTS.POST.pago.pagamentRedsysTargeta}`,
         'POST',
         { session }
     );
 
-    if (!response || response.status !== 'success') {
+    if (!response || response.status !== 'success' || !response.data) {
         console.error('ERROR REDSYS');
         mostrarError(response?.message);
         return;
     }
 
-    const { params, signature, idReserva } = response;
+    const { params, signature, idReserva } = response.data;
 
     const r = await creacioDadesUsuaris(idReserva);
     if (!r || r.status !== 'success') {

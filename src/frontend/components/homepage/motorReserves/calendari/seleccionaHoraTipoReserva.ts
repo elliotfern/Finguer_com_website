@@ -1,3 +1,4 @@
+import { ENDPOINTS } from '../../../../config/endpoints';
 import { actualizarBotonPagar } from '../formulari/ActualizarBotonPagar';
 import { avisEspecialTancamentParking } from './avisEspecialTancamentParking';
 
@@ -16,7 +17,7 @@ async function fetchHorasDisponibles(
     try {
         const params = new URLSearchParams({ tipoReserva, fecha });
         const res = await fetch(
-            `api/carro-compra/horas-disponibles?${params.toString()}`
+            `${ENDPOINTS.GET.catalogo.horasDisponibles}?${params.toString()}`
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as HorasDisponiblesResponse;

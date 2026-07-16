@@ -2,8 +2,46 @@
 
 // Rutas principales sin idioma explícito (solo para el idioma por defecto)
 $routes = [
-    '/api/area-client/login' => [
-        'view' => '../src/backend/api/area-client/authClient.php',
+    // Dominio: Usuario
+    '/api/usuaris/get' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Usuario/Endpoint/ListarUsuarioEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/usuaris/alta-client' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Usuario/Endpoint/CrearUsuarioEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => false,
+    ],
+
+    '/api/usuaris/post' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Usuario/Endpoint/CrearUsuarioEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/usuaris/put' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Usuario/Endpoint/ActualizarUsuarioEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/usuaris/login' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Usuario/Endpoint/LoginEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
+    // Dominio: Reserva
+    '/api/reserva/post/alta-reserva' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/CrearReservaEndpoint.php',
         'needs_session' => false,
         'no_header_footer' => true,
     ],
@@ -14,6 +52,45 @@ $routes = [
         'no_header_footer' => true,
     ],
 
+    // Dominio: Catálogo
+    '/api/catalogo/get/configuracion-reserva' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Catalogo/Endpoint/ConfiguracionReservaEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
+    '/api/catalogo/get/horas-disponibles' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Catalogo/Endpoint/HorasDisponiblesEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
+    // Dominio: Carrito
+    '/api/carrito/get' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Carrito/Endpoint/ObtenerCarritoEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+    '/api/carrito/post' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Carrito/Endpoint/GuardarCarritoEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
+    // Dominio: Pago
+    '/api/pago/post/pagament-redsys-targeta' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Pago/Endpoint/PrepararPagoRedsysEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
+    // altres
+
     '/api/formulario/post' => [
         'view' =>
             '../src/backend/api/web_publica/formulario/post-formulario.php',
@@ -22,11 +99,6 @@ $routes = [
     ],
 
     // API INTRANET
-    '/api/intranet/auth/login' => [
-        'view' => '../src/backend/api/intranet/auth/login.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
 
     '/api/intranet/reserves/get' => [
         'view' => '../src/backend/api/intranet/get-reserves.php',
@@ -59,48 +131,6 @@ $routes = [
     // API WEB PUBLICA
 
     // 1 - CARRO DE LA COMPRA
-    '/api/carro-compra/get' => [
-        'view' => '../src/backend/api/web_publica/carro-compra/get-carro.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-    '/api/carro-compra/post' => [
-        'view' => '../src/backend/api/web_publica/carro-compra/post-carro.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-
-    '/api/carro-compra/configuracion-reserva' => [
-        'view' =>
-            '../src/backend/api/web_publica/carro-compra/configuracion-reserva.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-
-    '/api/carro-compra/horas-disponibles' => [
-        'view' =>
-            '../src/backend/api/web_publica/carro-compra/horas-disponibles.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-
-    '/api/alta-client' => [
-        'view' => '../src/backend/api/web_publica/crear-usuario.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-
-    '/api/alta-reserva' => [
-        'view' => '../src/backend/api/web_publica/crear-reserva.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
-
-    '/api/pagamentRedsysTargeta' => [
-        'view' => '../src/backend/api/web_publica/pagament-redsys-targeta.php',
-        'needs_session' => false,
-        'no_header_footer' => true,
-    ],
 
     '/api/pagamentRedsysBizum' => [
         'view' => '../src/backend/api/web_publica/pagament-redsys-bizum.php',
@@ -160,25 +190,6 @@ $routes = [
 
     '/api/reserves/put/{slug}' => [
         'view' => '../src/backend/api/intranet/reserves/put-reserves.php',
-        'no_header_footer' => true,
-        'needs_session' => true,
-    ],
-
-    // API USUARIS / CLIENTS
-    '/api/usuaris/get' => [
-        'view' => '../src/backend/api/intranet/usuaris/get-usuaris.php',
-        'no_header_footer' => true,
-        'needs_session' => true,
-    ],
-
-    '/api/usuaris/post' => [
-        'view' => '../src/backend/api/intranet/usuaris/post-usuaris.php',
-        'no_header_footer' => true,
-        'needs_session' => true,
-    ],
-
-    '/api/usuaris/put' => [
-        'view' => '../src/backend/api/intranet/usuaris/put-usuaris.php',
         'no_header_footer' => true,
         'needs_session' => true,
     ],

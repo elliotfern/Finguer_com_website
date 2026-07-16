@@ -1,3 +1,5 @@
+import { ENDPOINTS } from '../../config/endpoints';
+
 interface ApiResponse {
     status: string;
     message: string;
@@ -25,8 +27,6 @@ export const creacioReserva = async (
     usuarioUuidHex: string,
     localizador: string
 ): Promise<{ status: string; message: string } | undefined> => {
-    const url = `${window.location.origin}/api/alta-reserva`;
-
     const session = getSessionFromUrl();
     if (!session) {
         return {
@@ -61,7 +61,7 @@ export const creacioReserva = async (
     };
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(ENDPOINTS.POST.reserves.CrearReserva, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),

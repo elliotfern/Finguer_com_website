@@ -1,6 +1,6 @@
 // src/pages/home/motorReserves/carroCompraBackend.ts
 
-import { API_URL } from '../../../../config/environment';
+import { ENDPOINTS } from '../../../../config/endpoints';
 import { CotizarLinea, CotizarResponse } from './mostrarPreu';
 
 interface CarritoDataSuccess {
@@ -164,7 +164,7 @@ export async function pressupostCarroBackend(): Promise<CotizarResponse> {
         fechaSalida: buildDateTime(rango.end, horaSalida),
     };
 
-    const resp = await fetch(`${API_URL}/carro-compra/post`, {
+    const resp = await fetch(ENDPOINTS.POST.carrito.guardarCarrito, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

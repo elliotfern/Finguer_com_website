@@ -35,7 +35,7 @@ const login = () => {
                 const response = await fetchData<
                     ApiResponse,
                     { email: string }
-                >(`${API_URL}/area-client/login`, 'POST', { email: email });
+                >(`${API_URL}/usuaris/login`, 'POST', { email: email });
 
                 if (response) {
                     if (response.status === 'success') {
