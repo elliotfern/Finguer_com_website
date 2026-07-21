@@ -146,7 +146,7 @@ function construirFila(client: ClientAnual): HTMLTableRowElement {
         </td>
         ${celdaAccionesAdmin(client.uuid_hex, baseUrl)}
         <td>
-            <a href="${baseUrl}/modifica-reserva/${client.uuid_hex ?? ''}" class="btn btn-info btn-sm">
+            <a href="${baseUrl}/nova-reserva/${client.uuid_hex ?? ''}" class="btn btn-info btn-sm">
                 Crear reserva
             </a>
         </td>

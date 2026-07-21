@@ -9,6 +9,7 @@ use App\Domain\Reserva\Enums\CanalReserva;
 use App\Domain\Reserva\Enums\EstadoReserva;
 use App\Domain\Reserva\Enums\EstadoVehiculo;
 use App\Domain\Reserva\Enums\TipoReserva;
+use App\Domain\Reserva\Exception\InvalidTransitionException;
 use App\Domain\Reserva\ValueObjects\ReservaServicioLinea;
 use App\Domain\Shared\UsuarioUuid;
 use DateTimeImmutable;
@@ -27,9 +28,9 @@ final class Reserva
         private readonly DateTimeImmutable $fechaReserva,
         private readonly DateTimeImmutable $entradaPrevista,
         private readonly DateTimeImmutable $salidaPrevista,
-        private readonly float $subtotalCalculado,
-        private readonly float $ivaCalculado,
-        private readonly float $totalCalculado,
+        private readonly ?float $subtotalCalculado,
+        private readonly ?float $ivaCalculado,
+        private readonly ?float $totalCalculado,
         private readonly ?string $vehiculo,
         private readonly ?string $matricula,
         private readonly ?int $personas,
@@ -88,6 +89,94 @@ final class Reserva
             lineas: $lineas,
             createdAt: $now,
             updatedAt: $now,
+        );
+    }
+
+    /**
+     * @param ReservaServicioLinea[];
+     */
+    public static function crearAnual(
+        UsuarioUuid $usuarioUuid,
+        string $localizador,
+        DateTimeImmutable $entradaPrevista,
+        ?DateTimeImmutable $salidaPrevista,
+        ?string $vehiculo,
+        ?string $matricula,
+        ?string $vuelo,
+        ?string $notas,
+    ): self {
+        $now = new DateTimeImmutable(
+            'now',
+            new \DateTimeZone(ReglasReserva::TIMEZONE),
+        );
+
+        return new self(
+            id: null,
+            usuarioUuid: $usuarioUuid,
+            localizador: $localizador,
+            estado: EstadoReserva::Anual,
+            estadoVehiculo: EstadoVehiculo::PendienteEntrada,
+            fechaReserva: $now,
+            entradaPrevista: $entradaPrevista,
+            salidaPrevista: $salidaPrevista ??
+                new DateTimeImmutable('2030-01-01 00:00:00'),
+            subtotalCalculado: null,
+            ivaCalculado: null,
+            totalCalculado: null,
+            vehiculo: $vehiculo,
+            matricula: $matricula,
+            personas: null,
+            tipo: TipoReserva::Anual,
+            vuelo: $vuelo,
+            notas: $notas,
+            canal: CanalReserva::Anual,
+            lineas: [],
+            createdAt: $now,
+            updatedAt: $now,
+        );
+    }
+
+    // En Reserva.php
+
+    public function actualizarDatosAnual(
+        DateTimeImmutable $entradaPrevista,
+        ?DateTimeImmutable $salidaPrevista,
+        ?string $vehiculo,
+        ?string $matricula,
+        ?string $vuelo,
+        ?string $notas,
+    ): self {
+        if ($this->estado !== EstadoReserva::Anual) {
+            throw new \DomainException(
+                'Solo se pueden actualizar datos de reservas de tipo anual.',
+            );
+        }
+
+        return new self(
+            $this->id,
+            $this->usuarioUuid,
+            $this->localizador,
+            $this->estado,
+            $this->estadoVehiculo,
+            $this->fechaReserva,
+            $entradaPrevista,
+            $salidaPrevista ?? $this->salidaPrevista,
+            $this->subtotalCalculado,
+            $this->ivaCalculado,
+            $this->totalCalculado,
+            $vehiculo,
+            $matricula,
+            $this->personas,
+            $this->tipo,
+            $vuelo,
+            $notas,
+            $this->canal,
+            $this->lineas,
+            $this->createdAt,
+            new DateTimeImmutable(
+                'now',
+                new \DateTimeZone(ReglasReserva::TIMEZONE),
+            ),
         );
     }
 
@@ -174,18 +263,20 @@ final class Reserva
     {
         return $this->salidaPrevista;
     }
-    public function subtotalCalculado(): float
+
+    public function subtotalCalculado(): ?float
     {
         return $this->subtotalCalculado;
     }
-    public function ivaCalculado(): float
+    public function ivaCalculado(): ?float
     {
         return $this->ivaCalculado;
     }
-    public function totalCalculado(): float
+    public function totalCalculado(): ?float
     {
         return $this->totalCalculado;
     }
+
     public function vehiculo(): ?string
     {
         return $this->vehiculo;
@@ -257,6 +348,134 @@ final class Reserva
             $this->lineas,
             $this->createdAt,
             $this->updatedAt,
+        );
+    }
+
+    public function marcarVehiculoDentro(): self
+    {
+        if ($this->estadoVehiculo === EstadoVehiculo::Dentro) {
+            return $this; // idempotente: ya está en el estado destino
+        }
+
+        if ($this->estadoVehiculo !== EstadoVehiculo::PendienteEntrada) {
+            throw new InvalidTransitionException(
+                id: $this->id ?? 0,
+                from: $this->estadoVehiculo->value,
+                to: EstadoVehiculo::Dentro->value,
+                allowedTo: $this->transicionesPermitidas(),
+            );
+        }
+
+        return $this->conEstadoVehiculo(EstadoVehiculo::Dentro);
+    }
+
+    public function marcarVehiculoSalido(): self
+    {
+        if ($this->estadoVehiculo === EstadoVehiculo::Salido) {
+            return $this; // idempotente: ya está en el estado destino
+        }
+
+        if ($this->estadoVehiculo !== EstadoVehiculo::Dentro) {
+            throw new InvalidTransitionException(
+                id: $this->id ?? 0,
+                from: $this->estadoVehiculo->value,
+                to: EstadoVehiculo::Salido->value,
+                allowedTo: $this->transicionesPermitidas(),
+            );
+        }
+
+        return $this->conEstadoVehiculo(EstadoVehiculo::Salido);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function transicionesPermitidas(): array
+    {
+        return match ($this->estadoVehiculo) {
+            EstadoVehiculo::PendienteEntrada => [EstadoVehiculo::Dentro->value],
+            EstadoVehiculo::Dentro => [EstadoVehiculo::Salido->value],
+            EstadoVehiculo::Salido => [],
+        };
+    }
+
+    private function conEstadoVehiculo(EstadoVehiculo $nuevo): self
+    {
+        return new self(
+            $this->id,
+            $this->usuarioUuid,
+            $this->localizador,
+            $this->estado,
+            $nuevo,
+            $this->fechaReserva,
+            $this->entradaPrevista,
+            $this->salidaPrevista,
+            $this->subtotalCalculado,
+            $this->ivaCalculado,
+            $this->totalCalculado,
+            $this->vehiculo,
+            $this->matricula,
+            $this->personas,
+            $this->tipo,
+            $this->vuelo,
+            $this->notas,
+            $this->canal,
+            $this->lineas,
+            $this->createdAt,
+            new \DateTimeImmutable(
+                'now',
+                new \DateTimeZone(
+                    \App\Domain\Catalogo\Rules\ReglasReserva::TIMEZONE,
+                ),
+            ),
+        );
+    }
+
+    public function cancelar(): self
+    {
+        if ($this->estado === EstadoReserva::Cancelada) {
+            return $this; // idempotente: ya está cancelada
+        }
+
+        if ($this->estado === EstadoReserva::Pagada) {
+            throw new InvalidTransitionException(
+                id: $this->id ?? 0,
+                from: $this->estado->value,
+                to: EstadoReserva::Cancelada->value,
+                allowedTo: [],
+            );
+        }
+
+        return $this->conEstado(EstadoReserva::Cancelada);
+    }
+
+    private function conEstado(EstadoReserva $nuevo): self
+    {
+        return new self(
+            $this->id,
+            $this->usuarioUuid,
+            $this->localizador,
+            $nuevo,
+            $this->estadoVehiculo,
+            $this->fechaReserva,
+            $this->entradaPrevista,
+            $this->salidaPrevista,
+            $this->subtotalCalculado,
+            $this->ivaCalculado,
+            $this->totalCalculado,
+            $this->vehiculo,
+            $this->matricula,
+            $this->personas,
+            $this->tipo,
+            $this->vuelo,
+            $this->notas,
+            $this->canal,
+            $this->lineas,
+            $this->createdAt,
+            new DateTimeImmutable(
+                'now',
+                new \DateTimeZone(ReglasReserva::TIMEZONE),
+            ),
         );
     }
 }

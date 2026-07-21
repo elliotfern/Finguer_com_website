@@ -39,4 +39,92 @@ class ReservaSchema
             ],
         ];
     }
+
+    // Añadir a ReservaSchema.php existente
+
+    public static function crearAnual(): array
+    {
+        return [
+            'usuario_uuid' => [
+                'rules' => 'required|uuid',
+                'label' => 'Usuario',
+            ],
+            'diaEntrada' => [
+                'rules' => 'required|date',
+                'label' => 'Día de entrada',
+            ],
+            'horaEntrada' => [
+                'rules' => 'required|string|max:5',
+                'label' => 'Hora de entrada',
+            ],
+            'diaSalida' => [
+                'rules' => 'string',
+                'label' => 'Día de salida',
+            ],
+            'horaSalida' => [
+                'rules' => 'string|max:5',
+                'label' => 'Hora de salida',
+            ],
+            'vehiculo' => [
+                'rules' => 'string|max:100',
+                'label' => 'Vehículo',
+            ],
+            'matricula' => [
+                'rules' => 'string|max:20',
+                'label' => 'Matrícula',
+            ],
+            'vuelo' => [
+                'rules' => 'string|max:30',
+                'label' => 'Vuelo',
+            ],
+            'notes' => [
+                'rules' => 'string',
+                'label' => 'Notas',
+            ],
+        ];
+    }
+
+    // Añadir a ReservaSchema.php existente
+
+    public static function actualizarAnual(): array
+    {
+        return [
+            'localizador' => [
+                'rules' => 'required|string|max:50',
+                'label' => 'Localizador',
+            ],
+            'diaEntrada' => [
+                'rules' => 'required|date',
+                'label' => 'Día de entrada',
+            ],
+            'horaEntrada' => [
+                'rules' => 'required|string|max:5',
+                'label' => 'Hora de entrada',
+            ],
+            'diaSalida' => [
+                'rules' => 'string',
+                'label' => 'Día de salida',
+            ],
+            'horaSalida' => [
+                'rules' => 'string|max:5',
+                'label' => 'Hora de salida',
+            ],
+            'vehiculo' => [
+                'rules' => 'string|max:100',
+                'label' => 'Vehículo',
+            ],
+            'matricula' => [
+                'rules' => 'string|max:20',
+                'label' => 'Matrícula',
+            ],
+            'vuelo' => [
+                'rules' => 'string|max:30',
+                'label' => 'Vuelo',
+            ],
+            'notes' => [
+                'rules' => 'string',
+                'label' => 'Notas',
+            ],
+        ];
+    }
 }

@@ -471,7 +471,8 @@ export const carregarDadesTaulaReserves = async (
                   role="button"
                   aria-pressed="true"
                   data-id="${data.id}"
-                  data-estado="${data.estado}">
+                  data-estado="${data.estado}"
+                  data-canal="${data.canal}">
             Obrir
           </button>
         </td>`;

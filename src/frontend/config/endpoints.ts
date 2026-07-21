@@ -30,10 +30,10 @@ export const ENDPOINTS = {
             login: `${API_URL}/usuaris/login`,
         },
         reserves: {
-            updateEstado: `${API_URL}/intranet/reserves/post?type=update-estado`,
+            updateEstado: `${API_URL}/reserva/post/actualizar-estado-vehiculo`,
             CrearReserva: `${API_URL}/reserva/post/alta-reserva`,
-
-            // ...
+            cancelarReserva: `${API_URL}/reserva/post/cancelar-reserva`,
+            crearReservaAnual: `${API_URL}/reserva/post/alta-reserva-anual`,
         },
         clients: {
             creacioClient: `${API_URL}/usuaris/post?type=usuarios-create`,
@@ -49,6 +49,9 @@ export const ENDPOINTS = {
     PUT: {
         clients: {
             updateClient: `${API_URL}/usuaris/put?type=usuarios-update`,
+        },
+        reserves: {
+            actualizarReservaAnual: `${API_URL}/reserva/put/actualizar-reserva-anual`,
         },
     },
     DELETE: {

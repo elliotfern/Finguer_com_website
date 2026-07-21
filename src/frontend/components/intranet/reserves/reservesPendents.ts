@@ -119,10 +119,12 @@ export const reserves = (estatParking: string, tipo?: string) => {
             const id = openBtn.getAttribute('data-id');
             if (!id) return;
 
-            const estado = openBtn.getAttribute('data-estado'); // 👈 nuevo
+            const estado = openBtn.getAttribute('data-estado');
             const deviceInfo = await obtenirDeviceInfo(id);
+            const esAnual = estado === 'anual';
 
-            obrirFinestra(event, id, deviceInfo, estado); // 👈 nuevo
+            obrirFinestra(event, id, deviceInfo, estado, esAnual);
+
             return;
         }
 

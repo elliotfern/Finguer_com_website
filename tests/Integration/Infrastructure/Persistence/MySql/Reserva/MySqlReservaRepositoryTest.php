@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Reserva\Entity\Reserva;
+use App\Domain\Reserva\Enums\EstadoReserva;
 use App\Domain\Reserva\Enums\TipoReserva;
 use App\Domain\Reserva\ValueObjects\ReservaServicioLinea;
 use App\Domain\Shared\Email;
@@ -230,5 +231,150 @@ class MySqlReservaRepositoryTest extends TestCase
         $stmt->bindValue(':loc', '0708268888');
         $stmt->execute();
         $this->assertSame(0, (int) $stmt->fetchColumn());
+    }
+
+    public function test_actualizar_estado_cambia_correctamente(): void
+    {
+        $usuarioUuid = $this->crearUsuarioDePrueba();
+
+        $reserva = Reserva::crear(
+            usuarioUuid: $usuarioUuid,
+            localizador: '0708269876',
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: null,
+            lineas: [],
+        );
+
+        $guardada = $this->repo->save($reserva);
+        $this->reservaIdCreada = $guardada->id();
+
+        $this->repo->actualizarEstado(
+            $guardada->id(),
+            EstadoReserva::Pendiente,
+            EstadoReserva::Cancelada,
+        );
+
+        $recuperada = $this->repo->findById($guardada->id());
+
+        $this->assertSame(EstadoReserva::Cancelada, $recuperada->estado());
+    }
+
+    public function test_actualizar_estado_lanza_conflicto_si_el_estado_actual_no_coincide(): void
+    {
+        $usuarioUuid = $this->crearUsuarioDePrueba();
+
+        $reserva = Reserva::crear(
+            usuarioUuid: $usuarioUuid,
+            localizador: '0708269877',
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: null,
+            lineas: [],
+        );
+
+        $guardada = $this->repo->save($reserva);
+        $this->reservaIdCreada = $guardada->id();
+
+        // Intentamos actualizar asumiendo un estado anterior incorrecto
+        $this->expectException(
+            \App\Domain\Reserva\Exception\EstadoConflictException::class,
+        );
+
+        $this->repo->actualizarEstado(
+            $guardada->id(),
+            EstadoReserva::Pagada, // el estado real es Pendiente, no Pagada
+            EstadoReserva::Cancelada,
+        );
+    }
+
+    public function test_find_by_localizador_encuentra_la_reserva(): void
+    {
+        $usuarioUuid = $this->crearUsuarioDePrueba();
+
+        $reserva = Reserva::crear(
+            usuarioUuid: $usuarioUuid,
+            localizador: '0708267777',
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: null,
+            lineas: [],
+        );
+
+        $guardada = $this->repo->save($reserva);
+        $this->reservaIdCreada = $guardada->id();
+
+        $encontrada = $this->repo->findByLocalizador('0708267777');
+
+        $this->assertNotNull($encontrada);
+        $this->assertSame($guardada->id(), $encontrada->id());
+    }
+
+    public function test_find_by_localizador_devuelve_null_si_no_existe(): void
+    {
+        $resultado = $this->repo->findByLocalizador('9999999999');
+        $this->assertNull($resultado);
+    }
+
+    public function test_actualizar_datos_anual_persiste_cambios(): void
+    {
+        $usuarioUuid = $this->crearUsuarioDePrueba();
+
+        $reserva = Reserva::crearAnual(
+            usuarioUuid: $usuarioUuid,
+            localizador: '0708266666',
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: null,
+            vehiculo: 'Seat Ibiza',
+            matricula: '1234ABC',
+            vuelo: null,
+            notas: null,
+        );
+
+        $guardada = $this->repo->save($reserva);
+        $this->reservaIdCreada = $guardada->id();
+
+        $actualizada = $guardada->actualizarDatosAnual(
+            entradaPrevista: new DateTimeImmutable('2026-09-01 12:00:00'),
+            salidaPrevista: null,
+            vehiculo: 'BMW Serie 3',
+            matricula: '9999XYZ',
+            vuelo: 'IB5678',
+            notas: 'Nota actualizada',
+        );
+
+        $this->repo->actualizarDatosAnual($actualizada);
+
+        $recuperada = $this->repo->findById($guardada->id());
+
+        $this->assertSame('BMW Serie 3', $recuperada->vehiculo());
+        $this->assertSame('9999XYZ', $recuperada->matricula());
+        $this->assertSame('IB5678', $recuperada->vuelo());
+        $this->assertSame('Nota actualizada', $recuperada->notas());
+        $this->assertSame(
+            '2026-09-01 12:00:00',
+            $recuperada->entradaPrevista()->format('Y-m-d H:i:s'),
+        );
     }
 }

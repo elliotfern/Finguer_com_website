@@ -1,3 +1,4 @@
+import { ENDPOINTS } from '../../../../config/endpoints';
 import { API_URL, WEB_BASE } from '../../../../config/environment';
 import { isAdmin } from '../../auth/store';
 import { enviarConfirmacioReserva } from './enviarConfirmacioReserva';
@@ -404,10 +405,18 @@ function bindPopupHandlers(container: HTMLElement, reservaId: string): void {
     }
 }
 
-function updateLinks(container: HTMLElement, reservaId: string): void {
+function updateLinks(
+    container: HTMLElement,
+    reservaId: string,
+    esClientAnual: boolean
+): void {
     const aMod = container.querySelector('#enlace3');
     if (aMod instanceof HTMLAnchorElement) {
-        aMod.href = `${WEB_BASE}/control/modifica-reserva/${encodeURIComponent(reservaId)}`;
+        const path = esClientAnual
+            ? `${WEB_BASE}/control/clients-anuals/modifica-reserva/${encodeURIComponent(reservaId)}`
+            : `${WEB_BASE}/control/modifica-reserva/${encodeURIComponent(reservaId)}`;
+
+        aMod.href = path;
     }
 }
 
@@ -416,7 +425,8 @@ export function obrirFinestra(
     opener: MouseEvent | HTMLElement | null,
     id: string,
     deviceInfo?: DeviceInfoInput,
-    estadoReserva?: string | null
+    estadoReserva?: string | null,
+    esClientAnual: boolean = false
 ): void {
     const ventana = ensurePopupContainer();
     if (!ventana) return;
@@ -429,7 +439,7 @@ export function obrirFinestra(
     applyVisibilityRules(ventana, estadoReserva);
 
     // 2) actualizar links + handlers (sin duplicar)
-    updateLinks(ventana, id);
+    updateLinks(ventana, id, esClientAnual);
     bindPopupHandlers(ventana, id);
 
     // 3) device info
@@ -475,16 +485,8 @@ export function initPopupReservaUX(): void {
 
 type ApiSimple = { status?: string; message?: string; code?: string };
 
-function buildCancelarUrl(): string {
-    const u = new URL(`${API_URL}/intranet/cancelar-reserva/post`);
-    u.searchParams.set('type', 'cancelar-reserva');
-    return u.toString();
-}
-
-const CANCEL_RESERVA_ENDPOINT = buildCancelarUrl();
-
 async function cancelarReserva(reservaId: string): Promise<string> {
-    const res = await fetch(CANCEL_RESERVA_ENDPOINT, {
+    const res = await fetch(ENDPOINTS.POST.reserves.cancelarReserva, {
         method: 'POST',
         credentials: 'include',
         headers: {

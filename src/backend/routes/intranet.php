@@ -117,11 +117,18 @@ $routes = [
         'roles' => ['admin'],
     ],
 
+    '/control/clients-anuals/nova-reserva/{idClient}' => [
+        'view' => './intranet/clients-anuals/form-reserva-anual.php',
+        'needs_session' => true,
+        'roles' => ['admin', 'trabajador'],
+    ],
+
     '/control/clients-anuals/nova-reserva' => [
         'view' => './intranet/clients-anuals/form-reserva-anual.php',
         'needs_session' => true,
         'roles' => ['admin', 'trabajador'],
     ],
+
     '/control/clients-anuals/modifica-reserva/{idClient}' => [
         'view' => './intranet/clients-anuals/form-reserva-anual.php',
         'needs_session' => true,

@@ -127,7 +127,19 @@ function routeIntranet(p: string): void {
         return;
     }
 
-    if (p.startsWith('/control/clients-anuals/nova-reserva')) {
+    // Ruta con UUID: /control/clients-anuals/nova-reserva/xxxxxxxx-xxxx-...
+    const matchNovaReservaAmbId = p.match(
+        /^\/control\/clients-anuals\/nova-reserva\/([0-9a-fA-F-]{36})$/
+    );
+
+    if (matchNovaReservaAmbId) {
+        const uuid = matchNovaReservaAmbId[1];
+        formReservaClientAnual(false, uuid);
+        return;
+    }
+
+    // Ruta exacta, sin id
+    if (p === '/control/clients-anuals/nova-reserva') {
         formReservaClientAnual(false);
         return;
     }

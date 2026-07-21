@@ -22,6 +22,7 @@ require_once APP_ROOT . '/intranet/inc/header-reserves-anuals.php';
         </div>
 
         <input type="hidden" name="usuario_uuid" id="usuario_uuid_hidden">
+        <input type="hidden" name="localizador" id="localizador">
 
         <div class="col-md-4">
             <label for="usuario_uuid" class="form-label">

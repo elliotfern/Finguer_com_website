@@ -52,6 +52,34 @@ $routes = [
         'no_header_footer' => true,
     ],
 
+    '/api/reserva/post/cancelar-reserva' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/CancelarReservaEndpoint.php',
+        'needs_session' => true,
+        'no_header_footer' => true,
+    ],
+
+    '/api/reserva/post/actualizar-estado-vehiculo' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/ActualizarEstadoVehiculoEndpoint.php',
+        'needs_session' => true,
+        'no_header_footer' => true,
+    ],
+
+    '/api/reserva/post/alta-reserva-anual' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/CrearReservaAnualEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
+    '/api/reserva/put/actualizar-reserva-anual' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/ActualizarReservaAnualEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
     // Dominio: Catálogo
     '/api/catalogo/get/configuracion-reserva' => [
         'view' =>
@@ -102,16 +130,6 @@ $routes = [
 
     '/api/intranet/reserves/get' => [
         'view' => '../src/backend/api/intranet/get-reserves.php',
-        'needs_session' => true,
-        'no_header_footer' => true,
-    ],
-    '/api/intranet/reserves/post' => [
-        'view' => '../src/backend/api/intranet/post-reserves.php',
-        'needs_session' => true,
-        'no_header_footer' => true,
-    ],
-    '/api/intranet/cancelar-reserva/post' => [
-        'view' => '../src/backend/api/intranet/post-cancelar-reserves.php',
         'needs_session' => true,
         'no_header_footer' => true,
     ],
@@ -179,19 +197,6 @@ $routes = [
         'view' => '../src/backend/api/intranet/factures/hash.php',
         'needs_session' => false,
         'no_header_footer' => true,
-    ],
-
-    // API RESERVES
-    '/api/reserves/post/{slug}' => [
-        'view' => '../src/backend/api/intranet/reserves/post-reserves.php',
-        'no_header_footer' => true,
-        'needs_session' => true,
-    ],
-
-    '/api/reserves/put/{slug}' => [
-        'view' => '../src/backend/api/intranet/reserves/put-reserves.php',
-        'no_header_footer' => true,
-        'needs_session' => true,
     ],
 
     // ALTRES

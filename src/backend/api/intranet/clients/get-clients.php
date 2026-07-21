@@ -16,6 +16,31 @@ if (!isset($conn) || !($conn instanceof PDO)) {
 
 $slug = $routeParams[0];
 
+/**
+ * Convierte un UUID en formato hex de 32 caracteres (sin guiones)
+ * al formato estándar con guiones (8-4-4-4-12).
+ */
+function formatearUuidConGuiones(?string $hex): ?string
+{
+    if ($hex === null) {
+        return null;
+    }
+
+    $hex = strtolower($hex);
+    if (!preg_match('/^[0-9a-f]{32}$/', $hex)) {
+        return null;
+    }
+
+    return sprintf(
+        '%s-%s-%s-%s-%s',
+        substr($hex, 0, 8),
+        substr($hex, 8, 4),
+        substr($hex, 12, 4),
+        substr($hex, 16, 4),
+        substr($hex, 20, 12),
+    );
+}
+
 try {
     // =========================================================
     // slug/clientsAnuals  (listado clientes anuales)
@@ -61,6 +86,12 @@ try {
             jsonResponse(vp2_err('Reserva no encontrada', 'NOT_FOUND'), 404);
         }
 
+        foreach ($rows as &$row) {
+            $row['uuid_hex'] = formatearUuidConGuiones($row['uuid_hex']);
+            $row['id'] = $row['uuid_hex'];
+        }
+        unset($row);
+
         jsonResponse(vp2_ok('OK', $rows), 200);
     }
 
@@ -69,7 +100,19 @@ try {
     // finguer.com/api/clients/get/clientAnualReserva?uuid=33333
     // =========================================================
     if ($slug === 'clientAnualReserva') {
-        $uuidHex = isset($_GET['uuid']) ? trim((string) $_GET['uuid']) : '';
+        $uuid = isset($_GET['uuid']) ? trim((string) $_GET['uuid']) : '';
+
+        if (empty($uuid)) {
+            jsonResponse(vp2_err('UUID obligatori', 'BAD_REQUEST'), 400);
+        }
+
+        // Acepta tanto UUID con guiones (formato estándar) como hex plano,
+        // normalizando siempre a hex puro antes de pasarlo a UNHEX().
+        $uuidHex = str_replace('-', '', strtolower($uuid));
+
+        if (!preg_match('/^[0-9a-f]{32}$/', $uuidHex)) {
+            jsonResponse(vp2_err('UUID inválido', 'BAD_UUID'), 400);
+        }
 
         if (empty($uuidHex)) {
             jsonResponse(vp2_err('UUID obligatori', 'BAD_REQUEST'), 400);
@@ -91,6 +134,9 @@ try {
         if (!$row) {
             jsonResponse(vp2_err('Client anual no trobat', 'NOT_FOUND'), 404);
         }
+
+        $row['uuid_hex'] = formatearUuidConGuiones($row['uuid_hex']);
+
         jsonResponse(vp2_ok('OK', $row), 200);
     }
     // Si llega aquí, type no válido

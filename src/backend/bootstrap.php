@@ -26,9 +26,6 @@ require_once __DIR__ . '/Utils/1_5_creacionFacturaParaReserva.php';
 require_once __DIR__ . '/Utils/1_6_generarFacturaPdf.php';
 require_once __DIR__ . '/Utils/1_7_enviarFacturaEmail.php';
 
-require_once __DIR__ . '/Utils/Reserva/cambiarEstadoReserva.php';
-require_once __DIR__ . '/Utils/Reserva/cancelarReserva.php';
-require_once __DIR__ . '/Utils/Reserva/reservaEstadoExceptions.php';
 require_once __DIR__ . '/Utils/verificacioSessio.php';
 
 require_once __DIR__ . '/Utils/generarNumeroFactura.php';
