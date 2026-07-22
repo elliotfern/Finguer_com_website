@@ -322,4 +322,42 @@ final class MySqlReservaRepository implements ReservaRepositoryInterface
             ':estado' => EstadoReserva::Anual->value,
         ]);
     }
+
+    public function actualizarDatosGenerales(Reserva $reserva): void
+    {
+        $stmt = $this->conn->prepare('
+        UPDATE parking_reservas
+        SET estado = :estado,
+            tipo = :tipo,
+            canal = :canal,
+            entrada_prevista = :entrada_prevista,
+            salida_prevista = :salida_prevista,
+            vehiculo = :vehiculo,
+            matricula = :matricula,
+            personas = :personas,
+            vuelo = :vuelo,
+            notas = :notas,
+            updated_at = :updated_at
+        WHERE id = :id
+    ');
+
+        $stmt->execute([
+            ':estado' => $reserva->estado()->value,
+            ':tipo' => (string) $reserva->tipo()->value,
+            ':canal' => $reserva->canal()->value,
+            ':entrada_prevista' => $reserva
+                ->entradaPrevista()
+                ->format('Y-m-d H:i:s'),
+            ':salida_prevista' => $reserva
+                ->salidaPrevista()
+                ->format('Y-m-d H:i:s'),
+            ':vehiculo' => $reserva->vehiculo(),
+            ':matricula' => $reserva->matricula(),
+            ':personas' => $reserva->personas(),
+            ':vuelo' => $reserva->vuelo(),
+            ':notas' => $reserva->notas(),
+            ':updated_at' => $reserva->updatedAt()?->format('Y-m-d H:i:s'),
+            ':id' => $reserva->id(),
+        ]);
+    }
 }

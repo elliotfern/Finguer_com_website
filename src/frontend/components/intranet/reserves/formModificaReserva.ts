@@ -1,3 +1,4 @@
+import { ENDPOINTS } from '../../../config/endpoints';
 import { API_URL } from '../../../config/environment';
 import { auxiliarSelect } from '../../../services/auxiliarSelect/auxiliarSelect';
 import { ApiOk, ApiResponse } from '../../../types/api';
@@ -118,7 +119,7 @@ export async function formReservaClient(isUpdate: boolean, id?: number) {
                 event,
                 'PUT',
                 'reservaForm',
-                URLS.PUT.USUARIOS_UPDATE
+                ENDPOINTS.PUT.reserves.actualizarReserva
             );
         };
         form.addEventListener('submit', handleSubmit);

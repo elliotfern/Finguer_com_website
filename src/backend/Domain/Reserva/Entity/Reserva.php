@@ -478,4 +478,48 @@ final class Reserva
             ),
         );
     }
+
+    public function forzarEstado(EstadoReserva $nuevo): self
+    {
+        return $this->conEstado($nuevo);
+    }
+
+    public function actualizarDatosGenerales(
+        TipoReserva $tipo,
+        CanalReserva $canal,
+        DateTimeImmutable $entradaPrevista,
+        DateTimeImmutable $salidaPrevista,
+        ?string $vehiculo,
+        ?string $matricula,
+        ?int $personas,
+        ?string $vuelo,
+        ?string $notas,
+    ): self {
+        return new self(
+            $this->id,
+            $this->usuarioUuid,
+            $this->localizador,
+            $this->estado,
+            $this->estadoVehiculo,
+            $this->fechaReserva,
+            $entradaPrevista,
+            $salidaPrevista,
+            $this->subtotalCalculado,
+            $this->ivaCalculado,
+            $this->totalCalculado,
+            $vehiculo,
+            $matricula,
+            $personas,
+            $tipo,
+            $vuelo,
+            $notas,
+            $canal,
+            $this->lineas,
+            $this->createdAt,
+            new DateTimeImmutable(
+                'now',
+                new \DateTimeZone(ReglasReserva::TIMEZONE),
+            ),
+        );
+    }
 }

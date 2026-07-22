@@ -97,6 +97,16 @@ class RuleParser
             if ($part === 'date') {
                 $parsed['type'] = 'date';
             }
+
+            // in:pendiente,procesando_pago,pagada
+            if (str_starts_with($part, 'in:')) {
+                $valores = explode(',', substr($part, 3));
+                $parsed['rules'][] = [
+                    'name' => 'in',
+                    'value' => $valores,
+                ];
+                continue;
+            }
         }
 
         return $parsed;

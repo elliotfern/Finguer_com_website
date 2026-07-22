@@ -103,4 +103,17 @@ class RuleParserTest extends TestCase
 
         $this->assertSame('Mi Campo', $parsed['label']);
     }
+
+    public function test_parsea_in_con_lista_de_valores(): void
+    {
+        $parsed = RuleParser::parse([
+            'rules' => 'in:pendiente,pagada,cancelada',
+            'label' => 'Test',
+        ]);
+
+        $this->assertSame(
+            [['name' => 'in', 'value' => ['pendiente', 'pagada', 'cancelada']]],
+            $parsed['rules'],
+        );
+    }
 }

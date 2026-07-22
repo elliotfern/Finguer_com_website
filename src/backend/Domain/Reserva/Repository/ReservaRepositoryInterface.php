@@ -33,4 +33,6 @@ interface ReservaRepositoryInterface
     public function findByLocalizador(string $localizador): ?Reserva;
 
     public function actualizarDatosAnual(Reserva $reserva): void;
+
+    public function actualizarDatosGenerales(Reserva $reserva): void;
 }

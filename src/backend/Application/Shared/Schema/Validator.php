@@ -80,6 +80,14 @@ class Validator
                         $errors[] = 'Fecha inválida';
                     }
                     break;
+
+                case 'in':
+                    if (!in_array($value, $rule['value'], true)) {
+                        $errors[] =
+                            'Valor no permitido. Permitidos: ' .
+                            implode(', ', $rule['value']);
+                    }
+                    break;
             }
         }
 

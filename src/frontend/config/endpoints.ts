@@ -52,6 +52,7 @@ export const ENDPOINTS = {
         },
         reserves: {
             actualizarReservaAnual: `${API_URL}/reserva/put/actualizar-reserva-anual`,
+            actualizarReserva: `${API_URL}/reserva/put/actualizar-reserva`,
         },
     },
     DELETE: {

@@ -80,6 +80,13 @@ $routes = [
         'needs_session' => true,
     ],
 
+    '/api/reserva/put/actualizar-reserva' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/ActualizarDatosReservaEndpoint.php',
+        'no_header_footer' => true,
+        'needs_session' => true,
+    ],
+
     // Dominio: Catálogo
     '/api/catalogo/get/configuracion-reserva' => [
         'view' =>

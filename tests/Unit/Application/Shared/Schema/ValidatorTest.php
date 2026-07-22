@@ -161,4 +161,22 @@ class ValidatorTest extends TestCase
         $errors = Validator::validate('no-es-uuid', $this->schema('uuid'));
         $this->assertNotEmpty($errors);
     }
+
+    public function test_in_acepta_valor_permitido(): void
+    {
+        $errors = Validator::validate(
+            'pagada',
+            $this->schema('required|string|in:pendiente,pagada,cancelada'),
+        );
+        $this->assertEmpty($errors);
+    }
+
+    public function test_in_rechaza_valor_no_permitido(): void
+    {
+        $errors = Validator::validate(
+            'valor_invalido',
+            $this->schema('required|string|in:pendiente,pagada,cancelada'),
+        );
+        $this->assertNotEmpty($errors);
+    }
 }

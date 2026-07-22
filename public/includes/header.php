@@ -83,13 +83,6 @@ $generalTranslations = $translations['header'] ?? [];
 ] ?? 'Contacto'; ?></a>
             </li>
 
-            <li class="nav-item">
-              <a class="nav-link" href="<?php echo $base_url; ?>area-cliente/"><?php echo $generalTranslations[
-    'micuenta'
-] ?? 'Mi cuenta'; ?></a>
-            </li>
-          </ul>
-
         </div>
         <!-- Menú de idiomas con Bootstrap -->
         <div class="dropdown">

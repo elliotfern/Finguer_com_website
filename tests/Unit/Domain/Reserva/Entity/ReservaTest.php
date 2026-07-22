@@ -658,4 +658,125 @@ final class ReservaTest extends TestCase
 
         $this->assertSame($salidaOriginal, $actualizada->salidaPrevista());
     }
+
+    public function test_forzar_estado_cambia_sin_validar_transicion(): void
+    {
+        $reserva = Reserva::fromDatabase(
+            id: 1,
+            usuarioUuid: UsuarioUuid::generate(),
+            localizador: '0708261234',
+            estado: EstadoReserva::Pendiente,
+            estadoVehiculo: EstadoVehiculo::PendienteEntrada,
+            fechaReserva: new DateTimeImmutable('2026-08-07 09:00:00'),
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: null,
+            notas: null,
+            canal: CanalReserva::Web,
+            lineas: [],
+            createdAt: new DateTimeImmutable(),
+            updatedAt: new DateTimeImmutable(),
+        );
+
+        // Salto directo de Pendiente a Pagada, algo que cancelar() nunca permitiría
+        $actualizada = $reserva->forzarEstado(EstadoReserva::Pagada);
+
+        $this->assertSame(EstadoReserva::Pagada, $actualizada->estado());
+    }
+
+    public function test_actualizar_datos_generales_actualiza_todos_los_campos(): void
+    {
+        $reserva = Reserva::crear(
+            usuarioUuid: UsuarioUuid::generate(),
+            localizador: '0708261234',
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: 'Seat Ibiza',
+            matricula: '1234ABC',
+            personas: 2,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: 'IB1234',
+            lineas: [],
+        );
+
+        $nuevaEntrada = new DateTimeImmutable('2026-09-01 12:00:00');
+        $nuevaSalida = new DateTimeImmutable('2026-09-05 12:00:00');
+
+        $actualizada = $reserva->actualizarDatosGenerales(
+            tipo: TipoReserva::GoldClass,
+            canal: CanalReserva::Manual,
+            entradaPrevista: $nuevaEntrada,
+            salidaPrevista: $nuevaSalida,
+            vehiculo: 'BMW Serie 3',
+            matricula: '9999XYZ',
+            personas: 3,
+            vuelo: 'IB5678',
+            notas: 'Cambio completo',
+        );
+
+        $this->assertSame(TipoReserva::GoldClass, $actualizada->tipo());
+        $this->assertSame(CanalReserva::Manual, $actualizada->canal());
+        $this->assertSame($nuevaEntrada, $actualizada->entradaPrevista());
+        $this->assertSame($nuevaSalida, $actualizada->salidaPrevista());
+        $this->assertSame('BMW Serie 3', $actualizada->vehiculo());
+        $this->assertSame('9999XYZ', $actualizada->matricula());
+        $this->assertSame(3, $actualizada->personas());
+        $this->assertSame('IB5678', $actualizada->vuelo());
+        $this->assertSame('Cambio completo', $actualizada->notas());
+    }
+
+    public function test_actualizar_datos_generales_no_toca_el_estado(): void
+    {
+        $reserva = Reserva::fromDatabase(
+            id: 1,
+            usuarioUuid: UsuarioUuid::generate(),
+            localizador: '0708261234',
+            estado: EstadoReserva::Pagada,
+            estadoVehiculo: EstadoVehiculo::Dentro,
+            fechaReserva: new DateTimeImmutable('2026-08-07 09:00:00'),
+            entradaPrevista: new DateTimeImmutable('2026-08-07 10:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-08-11 10:00:00'),
+            subtotalCalculado: 100.0,
+            ivaCalculado: 21.0,
+            totalCalculado: 121.0,
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            tipo: TipoReserva::FinguerClass,
+            vuelo: null,
+            notas: null,
+            canal: CanalReserva::Web,
+            lineas: [],
+            createdAt: new DateTimeImmutable(),
+            updatedAt: new DateTimeImmutable(),
+        );
+
+        $actualizada = $reserva->actualizarDatosGenerales(
+            tipo: TipoReserva::GoldClass,
+            canal: CanalReserva::Manual,
+            entradaPrevista: new DateTimeImmutable('2026-09-01 12:00:00'),
+            salidaPrevista: new DateTimeImmutable('2026-09-05 12:00:00'),
+            vehiculo: null,
+            matricula: null,
+            personas: null,
+            vuelo: null,
+            notas: null,
+        );
+
+        $this->assertSame(EstadoReserva::Pagada, $actualizada->estado());
+        $this->assertSame(
+            EstadoVehiculo::Dentro,
+            $actualizada->estadoVehiculo(),
+        );
+    }
 }
