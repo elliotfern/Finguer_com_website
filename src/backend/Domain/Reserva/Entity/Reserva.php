@@ -92,9 +92,6 @@ final class Reserva
         );
     }
 
-    /**
-     * @param ReservaServicioLinea[];
-     */
     public static function crearAnual(
         UsuarioUuid $usuarioUuid,
         string $localizador,

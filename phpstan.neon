@@ -1,0 +1,14 @@
+parameters:
+    level: 5
+
+    paths:
+        - src
+
+    bootstrapFiles:
+        - src/backend/bootstrap.php
+
+    excludePaths:
+            - src/backend/Infrastructure/Pago/Vendor/*
+            - src/backend/Utils/*
+            - src/backend/api/*
+            - src/backend/locales/*

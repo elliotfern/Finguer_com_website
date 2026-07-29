@@ -9,8 +9,10 @@ use Firebase\JWT\JWT;
 
 final class JwtTokenService implements JwtServiceInterface
 {
+    public function __construct(private readonly string $secret) {}
+
     public function generate(array $payload): string
     {
-        return JWT::encode($payload, $_ENV['TOKEN'], 'HS256');
+        return JWT::encode($payload, $this->secret, 'HS256');
     }
 }

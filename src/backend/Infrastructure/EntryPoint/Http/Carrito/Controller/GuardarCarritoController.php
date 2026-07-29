@@ -40,7 +40,7 @@ final class GuardarCarritoController
             $input = json_decode($raw ?: '{}', true);
             $input = is_array($input) ? $input : [];
         } else {
-            $input = $_POST ?? [];
+            $input = $_POST;
         }
 
         try {

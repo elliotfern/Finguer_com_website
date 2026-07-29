@@ -6,7 +6,8 @@ export const ENDPOINTS = {
     GET: {
         reserves: {
             list: `${API_URL}/intranet/reserves/get?type=list`,
-            // ...
+            reservaId: (id: string) =>
+                `${API_URL}/reserva/get/reservaId&id=${encodeURIComponent(id)}`,
         },
         areaClient: {
             reservaClient: (email: string) =>

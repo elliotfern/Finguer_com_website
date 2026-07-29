@@ -98,7 +98,7 @@ async function obtenirReserva(
     idReserva: string
 ): Promise<ReservaAnualData | null> {
     const res = await fetchDataGet<ApiResponse<ReservaAnualData>>(
-        URLS.GET.RESERVA_GET(idReserva)
+        ENDPOINTS.GET.reserves.reservaId(idReserva)
     );
 
     if (!res || !isOk(res)) return null;

@@ -37,7 +37,7 @@ class Normalizer
         };
     }
 
-    private static function normalizeString(mixed $value, array $rules): ?string
+    private static function normalizeString(mixed $value, array $rules): string
     {
         $value = (string) $value;
 
@@ -48,12 +48,12 @@ class Normalizer
         return $value;
     }
 
-    private static function normalizeInt(mixed $value): ?int
+    private static function normalizeInt(mixed $value): int
     {
         return (int) $value;
     }
 
-    private static function normalizeFloat(mixed $value): ?float
+    private static function normalizeFloat(mixed $value): float
     {
         return (float) $value;
     }
@@ -67,7 +67,7 @@ class Normalizer
         );
     }
 
-    private static function normalizeUuid(mixed $value): ?string
+    private static function normalizeUuid(mixed $value): string
     {
         return strtolower(trim((string) $value));
     }

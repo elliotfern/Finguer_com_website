@@ -39,6 +39,13 @@ $routes = [
     ],
 
     // Dominio: Reserva
+    '/api/reserva/get/reservaId' => [
+        'view' =>
+            '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/ObtenerReservaEndpoint.php',
+        'needs_session' => false,
+        'no_header_footer' => true,
+    ],
+
     '/api/reserva/post/alta-reserva' => [
         'view' =>
             '../src/backend/Infrastructure/EntryPoint/Http/Reserva/Endpoint/CrearReservaEndpoint.php',

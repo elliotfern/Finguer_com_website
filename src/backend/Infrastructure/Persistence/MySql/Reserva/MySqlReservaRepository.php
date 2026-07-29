@@ -312,7 +312,7 @@ final class MySqlReservaRepository implements ReservaRepositoryInterface
                 ->format('Y-m-d H:i:s'),
             ':salida_prevista' => $reserva
                 ->salidaPrevista()
-                ?->format('Y-m-d H:i:s'),
+                ->format('Y-m-d H:i:s'),
             ':vehiculo' => $reserva->vehiculo(),
             ':matricula' => $reserva->matricula(),
             ':vuelo' => $reserva->vuelo(),
