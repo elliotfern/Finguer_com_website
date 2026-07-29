@@ -35,6 +35,16 @@ jobs:
             - name: Install Composer dependencies
               run: composer install --prefer-dist --no-progress
 
+            - name: Create .env for PHPStan
+              run: |
+                  cat > .env << EOF
+                  DB_HOST=127.0.0.1
+                  DB_USER=root
+                  DB_PASS=root
+                  DB_DBNAME=finguer_test
+                  TOKEN=test_token
+                  EOF
+
             - name: Run PHPStan
               run: ./vendor/bin/phpstan analyse --no-progress
 
