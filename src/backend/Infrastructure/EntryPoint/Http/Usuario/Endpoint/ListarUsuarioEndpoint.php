@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\EntryPoint\Http\Usuario\Controller\ListarUsuariosController;
+use App\Infrastructure\EntryPoint\Http\Usuario\Controller\ObtenerClienteAnualController;
 use App\Infrastructure\EntryPoint\Http\Usuario\Controller\ObtenerUsuarioController;
 
 // Solo admin (por ahora)
@@ -19,5 +20,10 @@ if ($type === 'usuarios-list') {
 
 if ($type === 'usuarios-get') {
     ObtenerUsuarioController::handle();
+    exit();
+}
+
+if ($type === 'clienteAnual') {
+    ObtenerClienteAnualController::handle();
     exit();
 }
