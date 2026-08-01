@@ -51,6 +51,27 @@ interface ReservaAnualFormData {
     notes?: string;
 }
 
+// Nueva función auxiliar
+async function autoRellenarVehiculoMatricula(uuid: string): Promise<void> {
+    if (!uuid) return;
+
+    const res = await fetchDataGet<ApiResponse<ClienteAnualFitxa>>(
+        URLS.GET.USUARIOS_GET(uuid)
+    );
+
+    if (!res || !isOk(res)) return;
+
+    const vehiculoInput = document.getElementById(
+        'vehiculo'
+    ) as HTMLInputElement | null;
+    const matriculaInput = document.getElementById(
+        'matricula'
+    ) as HTMLInputElement | null;
+
+    if (vehiculoInput) vehiculoInput.value = res.data.vehiculo ?? '';
+    if (matriculaInput) matriculaInput.value = res.data.matricula ?? '';
+}
+
 function setTitle(html: string) {
     const div = document.getElementById('titolForm') as HTMLDivElement | null;
     if (div) div.innerHTML = html;
@@ -231,5 +252,13 @@ export async function formReservaClientAnual(
             'usuario_uuid',
             'nom'
         );
+
+        const selectCliente = document.getElementById(
+            'usuario_uuid'
+        ) as HTMLSelectElement | null;
+
+        selectCliente?.addEventListener('change', () => {
+            autoRellenarVehiculoMatricula(selectCliente.value);
+        });
     }
 }
