@@ -245,7 +245,7 @@ export async function formReservaClientAnual(
             true
         );
     } else {
-        // CREATE sin cliente preseleccionado: select vacío, el usuario elige el cliente manualmente
+        // CREATE sin cliente preseleccionado: select vacío, el usuario elige el cliente manualmente -
         await auxiliarSelect(
             '',
             '/api/clients/get/clientsAnuals',
