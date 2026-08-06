@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\EntryPoint\Http\Response;
+namespace App\Infrastructure\EntryPoint\Http\Response\ApiResponse;
 
 final class ApiResponse
 {
