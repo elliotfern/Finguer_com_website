@@ -25,7 +25,7 @@ export default defineConfig({
     reporter: 'html',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
-        baseURL: 'https://dev.finguer.com',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://dev.finguer.com',
         trace: 'on-first-retry',
     },
 

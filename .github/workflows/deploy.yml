@@ -190,3 +190,60 @@ jobs:
                     mv -f '$REMOTE_DIST_DIR/bundle.js.tmp' '$REMOTE_DIST_DIR/bundle.js' && \
                     chmod 644 '$REMOTE_DIST_DIR/bundle.js' \
                   "
+
+    e2e:
+        needs: deploy
+        runs-on: ubuntu-latest
+        if: github.ref_name == 'develop'
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '22'
+                  cache: 'npm'
+
+            - name: Install dependencies (npm)
+              run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium firefox
+
+            - name: Wait for deploy to settle
+              run: sleep 10
+
+            - name: Run Playwright E2E tests
+              env:
+                  PLAYWRIGHT_BASE_URL: https://dev.finguer.com
+              run: npx playwright test
+
+            - name: Upload Playwright report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 7
+
+            - name: Send email on failure
+              if: failure()
+              uses: dawidd6/action-send-mail@v4
+              with:
+                  server_address: hl121.lucushost.org
+                  server_port: 465
+                  secure: true
+                  username: ${{ secrets.SMTP_USERNAME }}
+                  password: ${{ secrets.SMTP_PASSWORD }}
+                  from: ${{ secrets.MAIL_FROM }}
+                  to: elliot@hispantic.com
+                  subject: '❌ E2E tests fallaron en dev.finguer.com (${{ github.sha }})'
+                  body: |
+                      Los tests Playwright fallaron tras el deploy a develop.
+
+                      Commit: ${{ github.sha }}
+                      Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+                      Revisa el reporte adjunto en los artifacts del run.
