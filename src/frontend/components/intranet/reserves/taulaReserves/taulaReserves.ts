@@ -241,14 +241,15 @@ export const carregarDadesTaulaReserves = async (
             );
 
             const tipo = data.tipo;
-            const limpieza = data.limpieza;
+
+            const limpieza = String(data.limpieza ?? '0');
             let limpieza2 = '';
-            if (limpieza === 1) {
+            if (limpieza === '1') {
                 limpieza2 = 'Servicio de limpieza exterior';
-            } else if (limpieza === 2) {
+            } else if (limpieza === '2') {
                 limpieza2 =
                     'Servicio de lavado exterior + aspirado tapicería interior';
-            } else if (limpieza === 3) {
+            } else if (limpieza === '3') {
                 limpieza2 = 'Limpieza PRO';
             } else {
                 limpieza2 = '-';
