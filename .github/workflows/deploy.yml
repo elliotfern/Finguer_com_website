@@ -230,7 +230,7 @@ jobs:
 
             - name: Send email on failure
               if: failure()
-              uses: dawidd6/action-send-mail@v4
+              uses: dawidd6/action-send-mail@v18
               with:
                   server_address: hl121.lucushost.org
                   server_port: 465
