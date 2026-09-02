@@ -9,46 +9,59 @@ const isCI = process.env.CI === 'true';
 let env = {};
 
 if (!isCI) {
-  const result = dotenv.config({ path: '.env.local' });
-  env = result.parsed || {};
+    const result = dotenv.config({ path: '.env.local' });
+    env = result.parsed || {};
 } else {
-  env = process.env; // CI injecta variables
+    env = process.env; // CI injecta variables
 }
 
 const envKeys = Object.keys(env).reduce((acc, key) => {
-  acc[`process.env.${key}`] = JSON.stringify(env[key] || '');
-  return acc;
+    acc[`process.env.${key}`] = JSON.stringify(env[key] || '');
+    return acc;
 }, {});
 
 module.exports = {
-  entry: './src/frontend/main.ts',
+    entry: './src/frontend/main.ts',
 
-  output: {
-    path: path.resolve(__dirname, 'public/dist'),
-    filename: 'bundle.js',
-    publicPath: '/dist/',
-    clean: true,
-  },
+    output: {
+        path: path.resolve(__dirname, 'public/dist'),
+        filename: 'bundle.js',
+        publicPath: '/dist/',
+        clean: true,
+    },
 
-  resolve: {
-    extensions: ['.ts', '.js'],
-  },
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
 
-  module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        exclude: /node_modules/,
-        use: 'ts-loader',
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
-    ],
-  },
+    module: {
+        rules: [
+            {
+                test: /\.ts$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'swc-loader',
+                    options: {
+                        jsc: {
+                            parser: {
+                                syntax: 'typescript',
+                            },
+                            target: 'es2021',
+                        },
+                        module: {
+                            type: 'es6',
+                        },
+                    },
+                },
+            },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
+            },
+        ],
+    },
 
-  plugins: [new webpack.DefinePlugin(envKeys)],
+    plugins: [new webpack.DefinePlugin(envKeys)],
 
-  devtool: false,
+    devtool: false,
 };
