@@ -110,7 +110,7 @@ const initForm = () => {
                     okMsg.innerHTML = '';
                 }
             }
-        } catch (error) {
+        } catch {
             if (errMsg) {
                 errMsg.innerHTML = 'Ha ocurrido un error. Inténtalo de nuevo.';
                 errMsg.classList.remove('d-none');

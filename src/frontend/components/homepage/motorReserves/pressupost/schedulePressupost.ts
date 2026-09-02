@@ -22,7 +22,7 @@ export function schedulePressupost(ms = 350): void {
 
             mostrarPreu(data);
             setBackendOk(true);
-        } catch (e) {
+        } catch {
             if (msg) msg.textContent = 'Error de red o servidor';
             setBackendOk(false);
         }

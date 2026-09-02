@@ -4,10 +4,6 @@ import { fetchData } from '../../services/api/api';
 import type { ApiRespostaRedSys } from '../../types/interfaces';
 import { creacioDadesUsuaris } from './creacioDadesUsuari';
 
-interface PostRequest {
-    session: string;
-}
-
 const messageOk = document.getElementById('messageOk');
 const messageErr = document.getElementById('messageErr');
 const messageErrText = document.getElementById('messageErrText');

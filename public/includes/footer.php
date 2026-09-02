@@ -48,7 +48,6 @@ $v = file_exists($bundlePath) ? filemtime($bundlePath) : time();
     $bundleUrl,
     ENT_QUOTES,
 ) ?>?v=<?= $v ?>"></script>
-<script src="<?php APP_ROOT; ?>/js/cookies.js"></script>
 
 <script>
     window.APP_ENV = <?php echo json_encode(

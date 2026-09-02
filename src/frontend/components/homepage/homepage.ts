@@ -5,9 +5,16 @@ import { RedirigirAPagament } from './motorReserves/pagament/RedirigirAPagament'
 import { RegistrarListenersPressupost } from './motorReserves/pressupost/RegistrarListenersPressupost';
 
 export const homePage = () => {
+    console.log('1 DateRangePicker');
     DateRangePicker();
+
+    console.log('2 RegistrarListenersPressupost');
     RegistrarListenersPressupost();
+
+    console.log('3 seleccionaHoraTipoReserva');
     seleccionaHoraTipoReserva();
+
+    console.log('4 homePage terminado');
 };
 
 // Seleccionar todos los botones con la clase "payButton"

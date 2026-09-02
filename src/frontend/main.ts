@@ -1,14 +1,7 @@
 // main.ts
-import { detectAndRedirect } from './utils/selectorIdioma';
-
-import { formUsuarios } from './components/intranet/clients/formClient';
-import { clientsUsersTable } from './components/intranet/clients/llistatClients';
-import { reservesClientPage } from './components/intranet/clients/reservesClient';
-import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
-import { reserves } from './components/intranet/reserves/reservesPendents';
-
 import { areaClientHistoricReserves } from './components/areaClient/areaClientHistoricReserves';
 import { areaClientLogin } from './components/areaClient/areaClientLogin';
+import './components/cookies/cookies';
 import { finguerAnualContactForm } from './components/homepage/formulari';
 import { homePage } from './components/homepage/homepage';
 import { applyRoleToDom } from './components/intranet/auth/applyRole';
@@ -16,11 +9,17 @@ import { setMe } from './components/intranet/auth/store';
 import { formClientAnual } from './components/intranet/clients-anuals/formClientAnual';
 import { formReservaClientAnual } from './components/intranet/clients-anuals/formReservaClientAnual';
 import { taulaClientsAnuals } from './components/intranet/clients-anuals/taulaClientsAnuals';
+import { formUsuarios } from './components/intranet/clients/formClient';
+import { clientsUsersTable } from './components/intranet/clients/llistatClients';
+import { reservesClientPage } from './components/intranet/clients/reservesClient';
+import { initTaulaFacturacio } from './components/intranet/facturacio/llistatFactures';
 import { header } from './components/intranet/header/header';
 import { nomUsuari } from './components/intranet/header/nomUsuari';
 import { login } from './components/intranet/login/login';
 import { formReservaClient } from './components/intranet/reserves/formModificaReserva';
+import { reserves } from './components/intranet/reserves/reservesPendents';
 import { pagament } from './components/pagament/pagament';
+import { detectAndRedirect } from './utils/selectorIdioma';
 
 const supportedLanguages = ['es', 'fr', 'en', 'ca'] as const;
 
@@ -58,6 +57,7 @@ function getUuidFromPath(prefix: string): string | undefined {
 // --------------------
 if (isReservaPage) {
     homePage();
+
     finguerAnualContactForm();
 }
 

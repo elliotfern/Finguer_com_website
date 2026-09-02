@@ -50,7 +50,7 @@ export const login = () => {
                         loginMessageErr.classList.remove('d-none');
                         loginMessageOk.classList.add('d-none');
                     }
-                } catch (error) {
+                } catch {
                     loginMessageErr.innerHTML =
                         'Error al intentar iniciar sesión.';
 

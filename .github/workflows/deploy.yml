@@ -110,6 +110,12 @@ jobs:
             - name: Install dependencies (npm)
               run: npm ci
 
+            - name: TypeScript type check
+              run: npx tsc --noEmit
+
+            - name: Lint (npm)
+              run: npm run lint
+
             - name: Build (npm)
               run: npm run build
 

@@ -1,5 +1,5 @@
 // src/utils/auxiliarSelect.ts
-import Choices from 'choices.js';
+import Choices, { Options } from 'choices.js';
 import 'choices.js/public/assets/styles/choices.min.css';
 
 type Item = { id: number | string; [key: string]: unknown };
@@ -15,11 +15,29 @@ const isEmptySel = (v: unknown): boolean =>
     v === '0' ||
     (typeof v === 'string' && ZERO_UUID.test(v));
 
-function pluckItems(json: any): Item[] {
-    if (Array.isArray(json?.data?.items)) return json.data.items;
-    if (Array.isArray(json?.items)) return json.items;
-    if (Array.isArray(json?.data)) return json.data;
-    if (Array.isArray(json)) return json;
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function pluckItems(json: unknown): Item[] {
+    if (!isRecord(json)) {
+        return [];
+    }
+
+    const data = json.data;
+
+    if (isRecord(data) && Array.isArray(data.items)) {
+        return data.items as Item[];
+    }
+
+    if (Array.isArray(json.items)) {
+        return json.items as Item[];
+    }
+
+    if (Array.isArray(data)) {
+        return data as Item[];
+    }
+
     return [];
 }
 
@@ -38,7 +56,7 @@ export async function auxiliarSelect(
     elementId: string,
     valorText: string,
     fallbackValue?: number | string,
-    config?: any,
+    config?: Partial<Options>,
     disabled = false
 ): Promise<Choices | void> {
     const urlAjax = `${api}`;
