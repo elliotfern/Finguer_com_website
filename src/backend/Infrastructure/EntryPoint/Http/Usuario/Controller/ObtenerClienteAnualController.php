@@ -58,7 +58,7 @@ final class ObtenerClienteAnualController
                 'MISSING_UUID' => 'Falta parámetro uuid',
                 'BAD_UUID' => 'UUID inválido',
                 'NOT_FOUND' => 'Usuario no encontrado',
-                default => 'Datos inválidos',
+                default => $e->getMessage(),
             };
             $code = $e->getMessage() === 'NOT_FOUND' ? 404 : 400;
 

@@ -36,7 +36,7 @@ class UsuarioSchema
                 'label' => 'Nombre',
             ],
             'telefono' => [
-                'rules' => 'string|max:20',
+                'rules' => 'string|max:100',
                 'label' => 'Teléfono',
             ],
             'empresa' => [
@@ -110,7 +110,7 @@ class UsuarioSchema
                 'label' => 'Nombre',
             ],
             'telefono' => [
-                'rules' => 'required|string|max:20',
+                'rules' => 'required|string|max:100',
                 'label' => 'Teléfono',
             ],
             'empresa' => [

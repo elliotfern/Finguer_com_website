@@ -18,8 +18,28 @@ final class Telefono
             );
         }
 
-        if (!preg_match('/^\+?[0-9\s\-]{6,20}$/', $value)) {
+        $telefonos = preg_split('/\s*\/\/\s*/', $value);
+
+        if ($telefonos === false || $telefonos === []) {
             throw new \InvalidArgumentException("Teléfono no válido: {$value}");
+        }
+
+        foreach ($telefonos as $telefono) {
+            $telefono = trim($telefono);
+
+            if (!preg_match('/^\+?[0-9\s\-().]{6,30}$/', $telefono)) {
+                throw new \InvalidArgumentException(
+                    "Teléfono no válido: {$value}",
+                );
+            }
+
+            $digits = preg_replace('/\D/', '', $telefono);
+
+            if ($digits === null || strlen($digits) < 6) {
+                throw new \InvalidArgumentException(
+                    "Teléfono no válido: {$value}",
+                );
+            }
         }
 
         $this->value = $value;
