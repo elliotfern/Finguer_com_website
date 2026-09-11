@@ -20,7 +20,7 @@ final class Telefono
 
         $telefonos = preg_split('/\s*\/\/\s*/', $value);
 
-        if ($telefonos === false || $telefonos === []) {
+        if ($telefonos === false) {
             throw new \InvalidArgumentException("Teléfono no válido: {$value}");
         }
 
