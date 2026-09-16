@@ -34,7 +34,7 @@
         "@swc/core": "^1.16.2",
         "@types/eslint__js": "^9.14.0",
         "@types/flatpickr": "^3.1.4",
-        "@types/node": "^26.4.1",
+        "@types/node": "^26.5.1",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "@typescript/native": "npm:typescript@^7.0.2",
         "css-loader": "^7.1.4",
