@@ -51,11 +51,11 @@
         "webpack-cli": "^7.2.1"
     },
     "lint-staged": {
-        "*.js": "eslint --fix",
-        "*.ts": "eslint --fix",
-        "*.css": "prettier --write"
+        "src/**/*.js": "eslint --fix",
+        "src/**/*.ts": "eslint --fix",
+        "src/**/*.css": "prettier --write"
     },
     "allowScripts": {
-        "@swc/core@1.16.1": true
+        "@swc/core@1.16.2": true
     }
 }
