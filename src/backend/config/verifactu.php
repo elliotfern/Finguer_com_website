@@ -1,5 +1,6 @@
 <?php
 
+/*
 use eseperio\verifactu\Verifactu;
 
 Verifactu::config(
@@ -8,3 +9,4 @@ Verifactu::config(
     Verifactu::TYPE_CERTIFICATE,      // o TYPE_SEAL si usas sello
     Verifactu::ENVIRONMENT_SANDBOX    // de momento sandbox
 );
+*/
