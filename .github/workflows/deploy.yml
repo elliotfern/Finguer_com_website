@@ -140,6 +140,8 @@ jobs:
                   mkdir -p ~/.ssh
                   echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
+
+                  ssh-keygen -y -f ~/.ssh/id_rsa | ssh-keygen -lf -
                   ssh-keyscan -H 87.98.230.129 >> ~/.ssh/known_hosts
 
             - name: 'Deploy BACKEND (reset hard) + vendor (composer install)'
